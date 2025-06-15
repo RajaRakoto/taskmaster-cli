@@ -147,7 +147,9 @@
 			"jspm_packages",
 			".cursor",
 			".roo",
+			".roomodes",
 			".taskmaster",
+			".windsurfrules",
 			"backups",
 			"tmp"
 		]
