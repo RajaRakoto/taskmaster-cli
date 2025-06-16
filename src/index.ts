@@ -2,15 +2,15 @@
 import inquirer from "inquirer";
 import { Command } from "commander";
 
-/* menu */
-import { menu_prompt } from "@/menu";
-
 /* core */
-import { tm } from "@/core/app";
+import { tmaiInitAsync } from "@/core/taskmaster/exec";
 
 /* utils */
 import { bannerRendererAsync } from "@/utils/ascii";
 import { exitCLI } from "@/utils/extras";
+
+/* prompt */
+import { mainMenu_prompt } from "@/prompt";
 
 /* files */
 import pkg from "../package.json";
@@ -20,24 +20,45 @@ import pkg from "../package.json";
 /**
  * @description Entry point of the CLI
  */
-export async function myCLI(): Promise<void> {
+export async function taskmasterCLI(): Promise<void> {
   // show banner
-  const banner = await bannerRendererAsync("taskmaster-cli", `${pkg.description}`);
+  const banner = await bannerRendererAsync(
+    "taskmaster-cli",
+    `${pkg.description}`
+  );
   console.log(`${banner}\n`);
 
   // start menu
-  const menu_answers = await inquirer.prompt(menu_prompt);
+  const choice = await inquirer.prompt(mainMenu_prompt);
 
   // switch menu
-  switch (menu_answers.menu) {
-    case "tm-install":
-      tm("install");
+  switch (choice.mainMenu) {
+    case "tmai-init":
+      await tmaiInitAsync();
+      break;
+    case "tmai-gen":
+      console.log("TM operations for generation ...");
+      break;
+    case "tmai-manage":
+      console.log("TM operations for management ...");
+      break;
+    case "tmai-deps":
+      console.log("TM operations for dependencies ...");
+      break;
+    case "tmai-analysis":
+      console.log("TM operations for analysis ...");
+      break;
+    case "tmai-docs":
+      console.log("TM operations for documentation ...");
+      break;
+    case "tmai-dev":
+      console.log("TM operations for development ...");
       break;
     case "exit":
       exitCLI();
       break;
     default:
-      myCLI();
+      taskmasterCLI();
       break;
   }
 }
@@ -50,7 +71,7 @@ function args(): void {
   if (program.opts().version) {
     console.log(`version ${packageVersion}`);
   } else {
-    myCLI();
+    taskmasterCLI();
   }
 }
 
