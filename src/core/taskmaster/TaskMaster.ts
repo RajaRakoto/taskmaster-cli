@@ -13,7 +13,7 @@ import { DEV_MODE } from "@/constants";
 import { existsAsync } from "@/utils/extras";
 
 /* types */
-import type { ShellOutput } from "bun";
+
 import type { T_PackageManager } from "@/@types/index";
 
 // ===============================
@@ -98,14 +98,14 @@ export class TaskMaster {
 	/**
 	 * @description - Initializes the task-master AI by creating a PRD file
 	 */
-	async initAsync(): Promise<ShellOutput> {
+	async initAsync() {
 		const prdFile = DEV_MODE ? "PRD-test.md" : "PRD.md";
 		const prdDestination = DEV_MODE ? "tests" : "docs";
 		const prdFilePath = path.join(prdDestination, prdFile);
 
 		if (await existsAsync(prdFilePath)) {
 			console.log(chalk.yellow(`PRD file already exists at ${prdFilePath}.`));
-			return await $`task-master init`;
+			await $`task-master init`;
 		}
 
 		try {
@@ -128,13 +128,13 @@ export class TaskMaster {
 			throw error;
 		}
 
-		return await $`task-master init`;
+		await $`task-master init`;
 	}
 
 	/**
 	 * @description - Configures the AI models for task-master AI
 	 */
-	async configAsync(): Promise<ShellOutput> {
-		return await $`task-master models --setup`;
+	async configAsync() {
+		await $`task-master models --setup`;
 	}
 }
