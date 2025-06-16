@@ -1,7 +1,7 @@
 /* libs */
-import { $ } from "bun";
 import { oraPromise } from "ora";
-import { mkdir } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
+import { execa } from "execa";
 import inquirer from "inquirer";
 import path from "node:path";
 import chalk from "chalk";
@@ -13,7 +13,6 @@ import { DEV_MODE } from "@/constants";
 import { existsAsync } from "@/utils/extras";
 
 /* types */
-
 import type { T_PackageManager } from "@/@types/index";
 
 // ===============================
@@ -58,41 +57,32 @@ export class TaskMaster {
 			)}.`,
 		};
 
-		await oraPromise(
-			(async () => {
-				let cmd: string[] = [];
-				let args: string[] = [];
+		await oraPromise(async () => {
+			let command: string;
+			let args: string[] = [];
 
-				switch (packageManagerChoice) {
-					case "npm":
-						cmd = ["npm"];
-						args = ["install", "-g", "task-master-ai@latest"];
-						break;
-					case "pnpm":
-						cmd = ["pnpm"];
-						args = ["add", "-g", "task-master-ai@latest"];
-						break;
-					case "bun":
-						cmd = [process.execPath];
-						args = ["add", "-g", "task-master-ai@latest"];
-						break;
-				}
+			switch (packageManagerChoice) {
+				case "npm":
+					command = "npm";
+					args = ["install", "-g", "task-master-ai@latest"];
+					break;
+				case "pnpm":
+					command = "pnpm";
+					args = ["add", "-g", "task-master-ai@latest"];
+					break;
+				case "bun":
+					command = "bun";
+					args = ["add", "-g", "task-master-ai@latest"];
+					break;
+				default:
+					throw new Error("Invalid package manager");
+			}
 
-				const proc = Bun.spawn([...cmd, ...args], {
-					stdout: "inherit",
-					stderr: "inherit",
-					env: process.env,
-				});
-
-				await proc.exited;
-				if (proc.exitCode !== 0) {
-					throw new Error(
-						`Installation failed with exit code ${proc.exitCode}`,
-					);
-				}
-			})(),
-			oraOptions,
-		);
+			await execa(command, args, {
+				stdio: "inherit",
+				env: process.env,
+			});
+		}, oraOptions);
 	}
 
 	/**
@@ -105,15 +95,14 @@ export class TaskMaster {
 
 		if (await existsAsync(prdFilePath)) {
 			console.log(chalk.yellow(`PRD file already exists at ${prdFilePath}.`));
-			await $`task-master init`;
+			await execa("task-master", ["init"], { stdio: "inherit" });
 		}
 
 		try {
 			await oraPromise(
 				async () => {
 					await mkdir(prdDestination, { recursive: true });
-					const file = Bun.file(prdFilePath);
-					await Bun.write(file, "");
+					await writeFile(prdFilePath, "");
 				},
 				{
 					text: "Generating PRD file ...",
@@ -128,13 +117,13 @@ export class TaskMaster {
 			throw error;
 		}
 
-		await $`task-master init`;
+		await execa("task-master", ["init"], { stdio: "inherit" });
 	}
 
 	/**
 	 * @description - Configures the AI models for task-master AI
 	 */
 	async configAsync() {
-		await $`task-master models --setup`;
+		await execa("task-master", ["models", "--setup"], { stdio: "inherit" });
 	}
 }
