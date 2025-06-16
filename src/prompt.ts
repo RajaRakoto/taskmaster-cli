@@ -58,10 +58,10 @@ export const mainMenu_prompt = [
 // Initialization and Configuration menu
 // ==============================
 
-export const tmInitMenu_prompt = [
+export const tmaiInitMenu_prompt = [
 	{
 		type: "list",
-		name: "tmInitMenu",
+		name: "tmaiInitMenu",
 		message: chalk.green("Choose an operation"),
 		loop: false,
 		pageSize: 10,
@@ -87,10 +87,10 @@ export const tmInitMenu_prompt = [
 // Task generation menu
 // ==============================
 
-export const tmGenMenu_prompt = [
+export const tmaiGenMenu_prompt = [
 	{
 		type: "list",
-		name: "tmGenMenu",
+		name: "tmaiGenMenu",
 		message: chalk.green("Choose an operation"),
 		loop: false,
 		pageSize: 7,
@@ -112,10 +112,10 @@ export const tmGenMenu_prompt = [
 // Task management menu
 // ==============================
 
-export const tmManageMenu_prompt = [
+export const tmaiManageMenu_prompt = [
 	{
 		type: "list",
-		name: "tmManageMenu",
+		name: "tmaiManageMenu",
 		message: chalk.green("Choose an operation"),
 		loop: false,
 		pageSize: 30,
@@ -225,10 +225,10 @@ export const tmManageMenu_prompt = [
 // Dependencies menu
 // ==============================
 
-export const tmDepsMenu_prompt = [
+export const tmaiDepsMenu_prompt = [
 	{
 		type: "list",
-		name: "tmDepsMenu",
+		name: "tmaiDepsMenu",
 		message: chalk.green("Choose an operation"),
 		loop: false,
 		pageSize: 7,
@@ -260,10 +260,10 @@ export const tmDepsMenu_prompt = [
 // Analysis and Decomposition menu
 // ==============================
 
-export const tmAnalysisMenu_prompt = [
+export const tmaiAnalysisMenu_prompt = [
 	{
 		type: "list",
-		name: "tmAnalysisMenu",
+		name: "tmaiAnalysisMenu",
 		message: chalk.green("Choose an operation"),
 		loop: false,
 		pageSize: 7,
@@ -293,10 +293,10 @@ export const tmAnalysisMenu_prompt = [
 // Documentation menu
 // ==============================
 
-export const tmDocsMenu_prompt = [
+export const tmaiDocsMenu_prompt = [
 	{
 		type: "list",
-		name: "tmDocsMenu",
+		name: "tmaiDocsMenu",
 		message: chalk.green("Choose an operation"),
 		loop: false,
 		pageSize: 7,
