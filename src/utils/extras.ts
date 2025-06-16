@@ -13,7 +13,7 @@ import { DEV_MODE } from "@/constants";
 // ==============================
 
 export const writeFileAsync = util.promisify(fs.writeFile);
-export const fileExistsAsync = util.promisify(fs.exists);
+export const existsAsync = util.promisify(fs.exists);
 export const readFileAsync = util.promisify(fs.readFile);
 export const readDirAsync = util.promisify(fs.readdir);
 export const realPathAsync = util.promisify(fs.realpath);
@@ -24,7 +24,7 @@ export const rmdirAsync = util.promisify(fs.rm);
  * @description A function that exits the CLI
  */
 export function exitCLI(): void {
-	console.log(`See you soon ${emoji.get("blush")} !`);
+	console.log(`See you soon ${emoji.get("blush")}`);
 	process.exit();
 }
 
@@ -132,7 +132,7 @@ export async function writeToFileAsync(
 	successMessage: string,
 ): Promise<void> {
 	try {
-		const fileExists = await fileExistsAsync(destination);
+		const fileExists = await existsAsync(destination);
 		let finalContent = content;
 
 		if (fileExists) {
@@ -174,7 +174,7 @@ export function successMessage(
 	emojiCode: string,
 	context: string,
 ): string {
-	return chalk.green(`${emoji.get(emojiCode)} ${file} ${context} ... [done]`)
+	return chalk.green(`${emoji.get(emojiCode)} ${file} ${context} ... [done]`);
 }
 
 /**
