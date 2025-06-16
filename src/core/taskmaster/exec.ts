@@ -12,7 +12,7 @@ import { tmaiInitMenu_prompt } from "@/prompt";
 
 const tmai = new TaskMaster();
 
-export async function tmInitAsync() {
+export async function tmaiInitAsync() {
   const choice = await inquirer.prompt(tmaiInitMenu_prompt);
 
   if (choice.tmInitMenu === "tmai-install") {
