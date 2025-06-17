@@ -185,3 +185,28 @@ export function successMessage(
 export function errorMessage(error: Error | unknown, context: string): void {
 	throw new Error(`[error]: ${context} failed: \n${error}`);
 }
+
+/**
+ * @description Run a command with its arguments and inherit stdio
+ * @param command The command to run
+ * @param args The arguments to pass to the command
+ * @param interactiveMode Whether to run the command in interactive mode (inherit stdio)
+ * @param shellMode Whether to run the command in shell mode
+ */
+export async function runCommandAsync(
+	command: string,
+	args: string[],
+	interactiveMode: boolean,
+	shellMode: boolean,
+): Promise<void> {
+	await execa(command, args, {
+		stdio: interactiveMode ? "inherit" : ["pipe", "inherit", "inherit"],
+		input: interactiveMode ? undefined : process.stdin, // Inherit input if in interactive mode
+		shell: shellMode, // Use shell mode if specified
+		env: process.env, // Inherit environment variables
+		cleanup: true, // Cleanup resources after execution
+		preferLocal: false, // Prefer global installation of task-master
+		windowsHide: false, // Hide the console window on MS Windows
+		buffer: false, // Disable output buffering
+	});
+}
