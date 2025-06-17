@@ -23,7 +23,7 @@ import pkg from "../package.json";
 export async function taskmasterCLI(): Promise<void> {
 	// show banner
 	const banner = await bannerRendererAsync(
-		"taskmaster-cli",
+		"TaskMaster-CLI",
 		`${pkg.description}`,
 	);
 	console.log(`${banner}\n`);
