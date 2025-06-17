@@ -5,9 +5,6 @@ import inquirer from "inquirer";
 import path from "node:path";
 import chalk from "chalk";
 
-/* constants */
-import { DEV_MODE } from "@/constants";
-
 /* extras */
 import { existsAsync, runCommandAsync } from "@/utils/extras";
 
@@ -53,10 +50,9 @@ export class TaskMaster {
 			text: `Installing task-master AI with ${chalk.bold(
 				packageManagerChoice,
 			)} ...`,
-			successText: "Task-master AI installed successfully !",
-			failText: `Failed to install task-master AI with ${chalk.bold(
-				packageManagerChoice,
-			)}.`,
+			successText: chalk.bgGreen("Task-master AI installed successfully!"),
+			failText: chalk.bgRed(`Failed to install task-master AI with
+      ${packageManagerChoice}.`),
 		};
 
 		await oraPromise(async () => {
@@ -86,7 +82,7 @@ export class TaskMaster {
 
 	/**
 	 * @description - Initializes the task-master AI by creating a PRD file
-	 * @note1 - This function doesn't use oraPromise as it is not a long-running task
+	 * @note - This function doesn't use oraPromise as it is not a long-running task
 	 * @throws Will throw an error if file operations fail
 	 */
 	async initAsync(): Promise<void> {
@@ -114,13 +110,65 @@ export class TaskMaster {
 	async configAsync(): Promise<void> {
 		const oraOptions = {
 			text: "Configuring AI models...",
-			successText: "AI models configured successfully!",
-			failText: "AI model configuration failed",
+			successText: chalk.bgGreen("AI models configured successfully!"),
+			failText: chalk.bgRed("AI model configuration failed"),
 		};
 
 		await oraPromise(
 			runCommandAsync("task-master", ["models", "--setup"], true, false),
 			oraOptions,
 		);
+	}
+
+	// ==============================================
+	// Method for Task Generation
+	// ==============================================
+
+	/**
+	 * @description - Parses a PRD file to generate tasks
+	 * @param inputFile - Path to the PRD file
+	 */
+	async parseAsync(inputFile: string): Promise<void> {
+		const oraOptions = {
+			text: `Parsing PRD file: ${chalk.bold(inputFile)}...`,
+			successText: chalk.bgGreen("PRD parsed successfully!"),
+			failText: chalk.bgRed("Failed to parse PRD file"),
+		};
+
+		await oraPromise(
+			runCommandAsync(
+				"task-master",
+				["parse-prd", `--input=${inputFile}`],
+				false,
+				false,
+			),
+			oraOptions,
+		);
+	}
+
+	/**
+	 * @description - Generates task files from parsed data
+	 */
+	async genAsync(): Promise<void> {
+		const tasksJsonPath = path.join(".taskmaster", "tasks", "tasks.json");
+
+		if (!(await existsAsync(tasksJsonPath))) {
+			console.log(
+				chalk.yellow(
+					`"${tasksJsonPath}" required file not found, aborting generation.`,
+				),
+			);
+		} else {
+			const oraOptions = {
+				text: "Generating task files...",
+				successText: chalk.bgGreen("Task files generated successfully!"),
+				failText: chalk.bgRed("Task file generation failed"),
+			};
+
+			await oraPromise(
+				runCommandAsync("task-master", ["generate"], false, false),
+				oraOptions,
+			);
+		}
 	}
 }
