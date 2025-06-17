@@ -6,6 +6,7 @@ import * as emoji from "node-emoji";
 /* constants */
 import { DEV_MODE } from "./constants";
 
+// TODO: done
 // ==============================
 // Main menu
 // ==============================
@@ -60,6 +61,7 @@ export const mainMenu_prompt = [
 	},
 ];
 
+// TODO: done
 // ==============================
 // Initialization and Configuration menu
 // ==============================
@@ -93,6 +95,7 @@ export const tmaiInitMenu_prompt = [
 	},
 ];
 
+// TODO: done
 // ==============================
 // Task generation (AI) menu
 // ==============================
@@ -120,6 +123,7 @@ export const tmaiGenMenu_prompt = [
 	},
 ];
 
+// TODO: in-progress
 // ==============================
 // Task management (AI) menu
 // ==============================
@@ -157,6 +161,7 @@ export const tmaiManageMenu_prompt = [
 	},
 ];
 
+// TODO: in-progress
 // ==============================
 // Task list & navigation menu
 // ==============================
@@ -179,13 +184,14 @@ export const tmaiListNavMenu_prompt = [
 				value: "tmai-show",
 			},
 			{
-				name: `${emoji.get("arrow_forward")} Show next task`,
+				name: `${emoji.get("arrow_forward")}  Show next task`,
 				value: "tmai-next",
 			},
 		],
 	},
 ];
 
+// TODO: pending
 // ==============================
 // Adding tasks menu
 // ==============================
@@ -204,21 +210,22 @@ export const tmaiAddTasksMenu_prompt = [
 				value: "tmai-manage-add-task-ai",
 			},
 			{
-				name: `${emoji.get("link")} Add task with dependencies`,
+				name: `${emoji.get("heavy_plus_sign")} Add task with dependencies`,
 				value: "tmai-manage-add-task-deps",
 			},
 			{
-				name: `${emoji.get("nesting_dolls")} Add existing task as subtask`,
+				name: `${emoji.get("heavy_plus_sign")} Add existing task as subtask`,
 				value: "tmai-manage-add-subtask-existing",
 			},
 			{
-				name: `${emoji.get("baby")} Add manual subtask`,
+				name: `${emoji.get("heavy_plus_sign")} Add manual subtask`,
 				value: "tmai-manage-add-subtask-manual",
 			},
 		],
 	},
 ];
 
+// TODO: pending
 // ==============================
 // Modifying tasks menu
 // ==============================
@@ -248,6 +255,7 @@ export const tmaiUpdateTasksMenu_prompt = [
 	},
 ];
 
+// TODO: pending
 // ==============================
 // Deleting tasks menu
 // ==============================
@@ -289,6 +297,7 @@ export const tmaiDeleteTasksMenu_prompt = [
 	},
 ];
 
+// TODO: pending
 // ==============================
 // Status tracking menu
 // ==============================
@@ -330,6 +339,7 @@ export const tmaiStatusTrackingMenu_prompt = [
 	},
 ];
 
+// TODO: pending
 // ==============================
 // Dependencies menu
 // ==============================
@@ -365,6 +375,7 @@ export const tmaiDepsMenu_prompt = [
 	},
 ];
 
+// TODO: pending
 // ==============================
 // Analysis and Decomposition menu
 // ==============================
@@ -398,6 +409,7 @@ export const tmaiAnalysisMenu_prompt = [
 	},
 ];
 
+// TODO: pending
 // ==============================
 // Documentation menu
 // ==============================
