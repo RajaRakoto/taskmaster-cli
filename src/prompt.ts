@@ -14,7 +14,7 @@ export const mainMenu_prompt = [
 	{
 		type: "list",
 		name: "mainMenu",
-		message: chalk.green("Choose an operation"),
+		message: chalk.bgBlue("Choose an operation"),
 		loop: false,
 		pageSize: 15,
 		choices: [
@@ -62,7 +62,7 @@ export const tmaiInitMenu_prompt = [
 	{
 		type: "list",
 		name: "tmaiInitMenu",
-		message: chalk.green("Choose an operation"),
+		message: chalk.bgBlue("Choose an operation"),
 		loop: false,
 		pageSize: 10,
 		choices: [
@@ -91,7 +91,7 @@ export const tmaiGenMenu_prompt = [
 	{
 		type: "list",
 		name: "tmaiGenMenu",
-		message: chalk.green("Choose an operation"),
+		message: chalk.bgBlue("Choose an operation"),
 		loop: false,
 		pageSize: 7,
 		choices: [
@@ -116,7 +116,7 @@ export const tmaiManageMenu_prompt = [
 	{
 		type: "list",
 		name: "tmaiManageMenu",
-		message: chalk.green("Choose an operation"),
+		message: chalk.bgBlue("Choose an operation"),
 		loop: false,
 		pageSize: 30,
 		choices: [
@@ -229,7 +229,7 @@ export const tmaiDepsMenu_prompt = [
 	{
 		type: "list",
 		name: "tmaiDepsMenu",
-		message: chalk.green("Choose an operation"),
+		message: chalk.bgBlue("Choose an operation"),
 		loop: false,
 		pageSize: 7,
 		choices: [
@@ -264,7 +264,7 @@ export const tmaiAnalysisMenu_prompt = [
 	{
 		type: "list",
 		name: "tmaiAnalysisMenu",
-		message: chalk.green("Choose an operation"),
+		message: chalk.bgBlue("Choose an operation"),
 		loop: false,
 		pageSize: 7,
 		choices: [
@@ -297,7 +297,7 @@ export const tmaiDocsMenu_prompt = [
 	{
 		type: "list",
 		name: "tmaiDocsMenu",
-		message: chalk.green("Choose an operation"),
+		message: chalk.bgBlue("Choose an operation"),
 		loop: false,
 		pageSize: 7,
 		choices: [
