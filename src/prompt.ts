@@ -28,7 +28,7 @@ export const mainMenu_prompt = [
 				value: "tmai-gen",
 			},
 			{
-				name: `${emoji.get("heavy_check_mark")} Task management (AI)`,
+				name: `${emoji.get("heavy_check_mark")}  Task management (AI)`,
 				value: "tmai-manage",
 			},
 			{
@@ -47,7 +47,7 @@ export const mainMenu_prompt = [
 			...(DEV_MODE
 				? [
 						{
-							name: `${emoji.get("gear")} Dev mode`,
+							name: `${emoji.get("gear")}  Dev mode`,
 							value: "tmai-dev",
 						},
 					]
@@ -69,7 +69,7 @@ export const tmaiInitMenu_prompt = [
 		type: "list",
 		name: "tmaiInitMenu",
 		message: chalk.bgBlue("Choose an operation"),
-		loop: false,
+		loop: true,
 		pageSize: 10,
 		choices: [
 			new inquirer.Separator("=== Installation and Configuration ==="),
@@ -94,7 +94,7 @@ export const tmaiInitMenu_prompt = [
 ];
 
 // ==============================
-// Task generation menu
+// Task generation (AI) menu
 // ==============================
 
 export const tmaiGenMenu_prompt = [
@@ -102,10 +102,10 @@ export const tmaiGenMenu_prompt = [
 		type: "list",
 		name: "tmaiGenMenu",
 		message: chalk.bgBlue("Choose an operation"),
-		loop: false,
+		loop: true,
 		pageSize: 7,
 		choices: [
-			new inquirer.Separator("=== Task Generation ==="),
+			new inquirer.Separator("=== Task generation (AI) ==="),
 			{
 				name: `${emoji.get("notebook")} Generate tasks from PRD`,
 				value: "tmai-parse",
@@ -121,6 +121,43 @@ export const tmaiGenMenu_prompt = [
 ];
 
 // ==============================
+// Task management (AI) menu
+// ==============================
+
+export const tmaiManageMenu_prompt = [
+	{
+		type: "list",
+		name: "tmaiManageMenu",
+		message: chalk.bgBlue("Choose an operation"),
+		loop: true,
+		pageSize: 10,
+		choices: [
+			new inquirer.Separator("=== Task management (AI) ==="),
+			{
+				name: `${emoji.get("link")} List and Navigation`,
+				value: "tmai-listnav",
+			},
+			{
+				name: `${emoji.get("heavy_plus_sign")} Add tasks`,
+				value: "tmai-addtasks",
+			},
+			{
+				name: `${emoji.get("pencil2")}  Update tasks`,
+				value: "tmai-updatetasks",
+			},
+			{
+				name: `${emoji.get("wastebasket")}  Delete tasks`,
+				value: "tmai-deletetasks",
+			},
+			{
+				name: `${emoji.get("hourglass")} Status tracking`,
+				value: "tmai-statustracking",
+			},
+		],
+	},
+];
+
+// ==============================
 // Task list & navigation menu
 // ==============================
 
@@ -129,7 +166,7 @@ export const tmaiListNavMenu_prompt = [
 		type: "list",
 		name: "tmaiListNavMenu",
 		message: chalk.bgBlue("Choose an operation"),
-		loop: false,
+		loop: true,
 		pageSize: 5,
 		choices: [
 			new inquirer.Separator("=== List and Navigation ==="),
@@ -158,7 +195,7 @@ export const tmaiAddTasksMenu_prompt = [
 		type: "list",
 		name: "tmaiAddTasksMenu",
 		message: chalk.bgBlue("Choose an operation"),
-		loop: false,
+		loop: true,
 		pageSize: 7,
 		choices: [
 			new inquirer.Separator("=== Adding tasks ==="),
@@ -191,7 +228,7 @@ export const tmaiUpdateTasksMenu_prompt = [
 		type: "list",
 		name: "tmaiUpdateTasksMenu",
 		message: chalk.bgBlue("Choose an operation"),
-		loop: false,
+		loop: true,
 		pageSize: 7,
 		choices: [
 			new inquirer.Separator("=== Updating tasks ==="),
@@ -220,7 +257,7 @@ export const tmaiDeleteTasksMenu_prompt = [
 		type: "list",
 		name: "tmaiDeleteTasksMenu",
 		message: chalk.bgBlue("Choose an operation"),
-		loop: false,
+		loop: true,
 		pageSize: 15,
 		choices: [
 			new inquirer.Separator("=== Deleting tasks ==="),
@@ -261,7 +298,7 @@ export const tmaiStatusTrackingMenu_prompt = [
 		type: "list",
 		name: "tmaiStatusTrackingMenu",
 		message: chalk.bgBlue("Choose an operation"),
-		loop: false,
+		loop: true,
 		pageSize: 7,
 		choices: [
 			new inquirer.Separator("=== Status Tracking ==="),
@@ -302,10 +339,10 @@ export const tmaiDepsMenu_prompt = [
 		type: "list",
 		name: "tmaiDepsMenu",
 		message: chalk.bgBlue("Choose an operation"),
-		loop: false,
+		loop: true,
 		pageSize: 7,
 		choices: [
-			new inquirer.Separator("=== Dependencies ==="),
+			new inquirer.Separator("=== Dependencies (AI) ==="),
 			{
 				name: `${emoji.get("paperclip")} Add dependency`,
 				value: "tmai-deps-add",
@@ -337,10 +374,10 @@ export const tmaiAnalysisMenu_prompt = [
 		type: "list",
 		name: "tmaiAnalysisMenu",
 		message: chalk.bgBlue("Choose an operation"),
-		loop: false,
+		loop: true,
 		pageSize: 7,
 		choices: [
-			new inquirer.Separator("=== Analysis and Decomposition ==="),
+			new inquirer.Separator("=== Analysis and Decomposition (AI) ==="),
 			{
 				name: `${emoji.get("bar_chart")} Analyze task complexity`,
 				value: "tmai-analysis-complexity",
@@ -370,7 +407,7 @@ export const tmaiDocsMenu_prompt = [
 		type: "list",
 		name: "tmaiDocsMenu",
 		message: chalk.bgBlue("Choose an operation"),
-		loop: false,
+		loop: true,
 		pageSize: 7,
 		choices: [
 			new inquirer.Separator("=== Documentation ==="),

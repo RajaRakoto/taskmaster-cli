@@ -3,7 +3,11 @@ import inquirer from "inquirer";
 import { Command } from "commander";
 
 /* core */
-import { tmaiInitAsync, tmaiGenAsync } from "@/core/taskmaster/exec";
+import {
+	tmaiInitAsync,
+	tmaiGenAsync,
+	tmaiManageAsync,
+} from "@/core/taskmaster/exec";
 
 /* utils */
 import { bannerRendererAsync } from "@/utils/ascii";
@@ -40,7 +44,7 @@ export async function taskmasterCLI(): Promise<void> {
 			await tmaiGenAsync();
 			break;
 		case "tmai-manage":
-			console.log("TM operations for management ...");
+			await tmaiManageAsync();
 			break;
 		case "tmai-deps":
 			console.log("TM operations for dependencies ...");
