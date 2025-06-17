@@ -17,11 +17,14 @@ import type { T_PackageManager } from "@/@types/index";
 // ===============================
 
 /**
- * Principal Class for interacting with the task-master tool
+ * TaskMaster - Core class for managing task-master AI operations
+ * Provides methods to install, initialize, configure, manage, and more ...
+ * Handles user interactions and system operations related to task-master setup.
+ * @class
  */
 export class TaskMaster {
 	constructor() {
-		console.log("TaskMaster initialized !");
+		console.log(chalk.bgMagenta("TMAI Core initialized !"));
 	}
 
 	// ==============================================
@@ -84,8 +87,9 @@ export class TaskMaster {
 	/**
 	 * @description - Initializes the task-master AI by creating a PRD file
 	 * @note1 - This function doesn't use oraPromise as it is not a long-running task
+	 * @throws Will throw an error if file operations fail
 	 */
-	async initAsync() {
+	async initAsync(): Promise<void> {
 		const prdFile = DEV_MODE ? "PRD-test.md" : "PRD.md";
 		const prdDestination = DEV_MODE ? "tests" : "docs";
 		const prdFilePath = path.join(prdDestination, prdFile);
@@ -98,17 +102,27 @@ export class TaskMaster {
 			);
 		} else {
 			await mkdir(prdDestination, { recursive: true });
-			await writeFile(prdFilePath, "");
-			console.log(chalk.green(`PRD file created at ${prdFilePath}.`));
+			await writeFile(prdFilePath, "# Product Requirements Document\n\n");
+			console.log(chalk.bgGreen(`PRD file created at ${prdFilePath}.`));
 		}
 
 		await runCommandAsync("task-master", ["init"], false, false);
+		console.log(chalk.bgGreen("Task-master project initialized successfully!"));
 	}
 
 	/**
-	 * @description - Configures the AI models for task-master AI
+	 * @description - Configures AI models for task-master by running the interactive setup
 	 */
-	async configAsync() {
-		await runCommandAsync("task-master", ["models", "--setup"], true, false);
+	async configAsync(): Promise<void> {
+		const oraOptions = {
+			text: "Configuring AI models...",
+			successText: "AI models configured successfully!",
+			failText: "AI model configuration failed",
+		};
+
+		await oraPromise(
+			runCommandAsync("task-master", ["models", "--setup"], true, false),
+			oraOptions,
+		);
 	}
 }
