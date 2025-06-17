@@ -97,12 +97,12 @@ export const tmaiGenMenu_prompt = [
 		choices: [
 			new inquirer.Separator("=== Task Generation ==="),
 			{
-				name: `${emoji.get("page_facing_up")} Generate tasks from PRD`,
-				value: "tmai-gen-parse-prd",
+				name: `${emoji.get("notebook")} Generate tasks from PRD`,
+				value: "tmai-parse",
 			},
 			{
-				name: `${emoji.get("file_directory")} Generate task files`,
-				value: "tmai-gen-generate",
+				name: `${emoji.get("page_facing_up")} Generate task files (from tasks.json) `,
+				value: "tmai-gen",
 			},
 		],
 	},
