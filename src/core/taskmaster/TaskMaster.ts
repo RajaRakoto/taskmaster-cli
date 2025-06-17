@@ -90,9 +90,7 @@ export class TaskMaster {
 	 * @throws Will throw an error if file operations fail
 	 */
 	async initAsync(): Promise<void> {
-		const prdFile = DEV_MODE ? "PRD-test.md" : "PRD.md";
-		const prdDestination = DEV_MODE ? "tests" : "docs";
-		const prdFilePath = path.join(prdDestination, prdFile);
+		const prdFilePath = path.join("docs", "PRD.md");
 
 		if (await existsAsync(prdFilePath)) {
 			console.log(
@@ -101,7 +99,7 @@ export class TaskMaster {
 				),
 			);
 		} else {
-			await mkdir(prdDestination, { recursive: true });
+			await mkdir("docs", { recursive: true });
 			await writeFile(prdFilePath, "# Product Requirements Document\n\n");
 			console.log(chalk.bgGreen(`PRD file created at ${prdFilePath}.`));
 		}
