@@ -68,15 +68,15 @@ export const tmaiInitMenu_prompt = [
 		choices: [
 			new inquirer.Separator("=== Installation and Configuration ==="),
 			{
-				name: `${emoji.get("package")} Install/Upgrade TMAI (latest version)`,
+				name: `${emoji.get("package")} 1 - Install/Upgrade TMAI (latest version)`,
 				value: "tmai-install",
 			},
 			{
-				name: `${emoji.get("sparkles")} Initialize TMAI | Update/Fix all rules`,
+				name: `${emoji.get("sparkles")} 2 - Initialize TMAI | Update/Fix all rules`,
 				value: "tmai-init",
 			},
 			{
-				name: `${emoji.get("wrench")} Configure AI models`,
+				name: `${emoji.get("wrench")} 3 - Configure AI models`,
 				value: "tmai-config",
 			},
 		],
