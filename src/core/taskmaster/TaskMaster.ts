@@ -1,7 +1,6 @@
 /* libs */
 import { oraPromise } from "ora";
 import { mkdir, writeFile } from "node:fs/promises";
-import { execa } from "execa";
 import inquirer from "inquirer";
 import path from "node:path";
 import chalk from "chalk";
@@ -10,7 +9,7 @@ import chalk from "chalk";
 import { DEV_MODE } from "@/constants";
 
 /* extras */
-import { existsAsync } from "@/utils/extras";
+import { existsAsync, runCommandAsync } from "@/utils/extras";
 
 /* types */
 import type { T_PackageManager } from "@/@types/index";
@@ -78,15 +77,13 @@ export class TaskMaster {
 					throw new Error("Invalid package manager");
 			}
 
-			await execa(command, args, {
-				stdio: "inherit",
-				env: process.env,
-			});
+			await runCommandAsync(command, args, false, false);
 		}, oraOptions);
 	}
 
 	/**
 	 * @description - Initializes the task-master AI by creating a PRD file
+	 * @note1 - This function doesn't use oraPromise as it is not a long-running task
 	 */
 	async initAsync() {
 		const prdFile = DEV_MODE ? "PRD-test.md" : "PRD.md";
@@ -94,36 +91,24 @@ export class TaskMaster {
 		const prdFilePath = path.join(prdDestination, prdFile);
 
 		if (await existsAsync(prdFilePath)) {
-			console.log(chalk.yellow(`PRD file already exists at ${prdFilePath}.`));
-			await execa("task-master", ["init"], { stdio: "inherit" });
-		}
-
-		try {
-			await oraPromise(
-				async () => {
-					await mkdir(prdDestination, { recursive: true });
-					await writeFile(prdFilePath, "");
-				},
-				{
-					text: "Generating PRD file ...",
-					successText: `PRD file created at ${prdFilePath}`,
-					failText: (error) => `Failed to create PRD file: ${error.message}`,
-				},
+			console.log(
+				chalk.yellow(
+					`PRD file already exists at ${prdFilePath}, skipping generation.`,
+				),
 			);
-		} catch (error: unknown) {
-			const errorMessage =
-				error instanceof Error ? error.message : String(error);
-			console.error(chalk.red(`Error creating PRD file: ${errorMessage}`));
-			throw error;
+		} else {
+			await mkdir(prdDestination, { recursive: true });
+			await writeFile(prdFilePath, "");
+			console.log(chalk.green(`PRD file created at ${prdFilePath}.`));
 		}
 
-		await execa("task-master", ["init"], { stdio: "inherit" });
+		await runCommandAsync("task-master", ["init"], false, false);
 	}
 
 	/**
 	 * @description - Configures the AI models for task-master AI
 	 */
 	async configAsync() {
-		await execa("task-master", ["models", "--setup"], { stdio: "inherit" });
+		await runCommandAsync("task-master", ["models", "--setup"], true, false);
 	}
 }
