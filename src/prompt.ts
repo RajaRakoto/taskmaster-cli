@@ -121,32 +121,47 @@ export const tmaiGenMenu_prompt = [
 ];
 
 // ==============================
-// Task management menu
+// Task list & navigation menu
 // ==============================
 
-export const tmaiManageMenu_prompt = [
+export const tmaiListNavMenu_prompt = [
 	{
 		type: "list",
-		name: "tmaiManageMenu",
+		name: "tmaiListNavMenu",
 		message: chalk.bgBlue("Choose an operation"),
 		loop: false,
-		pageSize: 30,
+		pageSize: 5,
 		choices: [
-			new inquirer.Separator("=== Display and Navigation ==="),
+			new inquirer.Separator("=== List and Navigation ==="),
 			{
 				name: `${emoji.get("clipboard")} List tasks`,
-				value: "tmai-manage-list",
+				value: "tmai-list",
 			},
 			{
 				name: `${emoji.get("mag_right")} Show task details`,
-				value: "tmai-manage-show",
+				value: "tmai-show",
 			},
 			{
 				name: `${emoji.get("arrow_forward")} Show next task`,
-				value: "tmai-manage-next",
+				value: "tmai-next",
 			},
+		],
+	},
+];
 
-			new inquirer.Separator("=== Adding Tasks ==="),
+// ==============================
+// Adding tasks menu
+// ==============================
+
+export const tmaiAddTasksMenu_prompt = [
+	{
+		type: "list",
+		name: "tmaiAddTasksMenu",
+		message: chalk.bgBlue("Choose an operation"),
+		loop: false,
+		pageSize: 7,
+		choices: [
+			new inquirer.Separator("=== Adding tasks ==="),
 			{
 				name: `${emoji.get("heavy_plus_sign")} Add task with AI`,
 				value: "tmai-manage-add-task-ai",
@@ -163,8 +178,23 @@ export const tmaiManageMenu_prompt = [
 				name: `${emoji.get("baby")} Add manual subtask`,
 				value: "tmai-manage-add-subtask-manual",
 			},
+		],
+	},
+];
 
-			new inquirer.Separator("=== Modifying Tasks ==="),
+// ==============================
+// Modifying tasks menu
+// ==============================
+
+export const tmaiUpdateTasksMenu_prompt = [
+	{
+		type: "list",
+		name: "tmaiUpdateTasksMenu",
+		message: chalk.bgBlue("Choose an operation"),
+		loop: false,
+		pageSize: 7,
+		choices: [
+			new inquirer.Separator("=== Updating tasks ==="),
 			{
 				name: `${emoji.get("pencil2")} Update task`,
 				value: "tmai-manage-update-task",
@@ -177,8 +207,23 @@ export const tmaiManageMenu_prompt = [
 				name: `${emoji.get("memo")} Update subtask`,
 				value: "tmai-manage-update-subtask",
 			},
+		],
+	},
+];
 
-			new inquirer.Separator("=== Deleting Tasks ==="),
+// ==============================
+// Deleting tasks menu
+// ==============================
+
+export const tmaiDeleteTasksMenu_prompt = [
+	{
+		type: "list",
+		name: "tmaiDeleteTasksMenu",
+		message: chalk.bgBlue("Choose an operation"),
+		loop: false,
+		pageSize: 15,
+		choices: [
+			new inquirer.Separator("=== Deleting tasks ==="),
 			{
 				name: `${emoji.get("wastebasket")} Delete task`,
 				value: "tmai-manage-remove-task",
@@ -203,7 +248,22 @@ export const tmaiManageMenu_prompt = [
 				name: `${emoji.get("fire")} Clear all subtasks`,
 				value: "tmai-manage-clear-subtasks-all",
 			},
+		],
+	},
+];
 
+// ==============================
+// Status tracking menu
+// ==============================
+
+export const tmaiStatusTrackingMenu_prompt = [
+	{
+		type: "list",
+		name: "tmaiStatusTrackingMenu",
+		message: chalk.bgBlue("Choose an operation"),
+		loop: false,
+		pageSize: 7,
+		choices: [
 			new inquirer.Separator("=== Status Tracking ==="),
 			{
 				name: `${emoji.get("hourglass")} Mark as pending`,
