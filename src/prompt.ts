@@ -15,7 +15,7 @@ export const mainMenu_prompt = [
     type: "list",
     name: "mainMenu",
     message: chalk.bgBlue("Choose an operation"),
-    loop: false,
+    loop: true,
     pageSize: 15,
     choices: [
       {
@@ -52,6 +52,10 @@ export const mainMenu_prompt = [
             },
           ]
         : []),
+      {
+        name: `${emoji.get("door")} Exit`,
+        value: "exit",
+      },
     ],
   },
 ];
