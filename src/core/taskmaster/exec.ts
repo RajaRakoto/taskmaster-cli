@@ -4,7 +4,7 @@ import path from "node:path";
 import chalk from "chalk";
 
 /* constants */
-import { PRD_PATH } from "@/constants";
+import { PRD_PATH, TASKS_PATH } from "@/constants";
 
 /* core */
 import { TaskMaster } from "@/core/taskmaster/TaskMaster";
@@ -27,7 +27,7 @@ import {
 
 // ===============================
 
-const tmai = new TaskMaster();
+const tmai = new TaskMaster(TASKS_PATH);
 
 /*******  be6e15c7-9970-4578-baf6-d31421004679  *******/
 // TODO: done
@@ -82,12 +82,15 @@ export async function tmaiGenAsync() {
 
 // TODO: in-progress
 export async function tmaiManageAsync() {
+	const tasks = await tmai.getTasksContentAsync();
 	const { tmaiManageMenu } = await inquirer.prompt(tmaiManageMenu_prompt);
 
 	switch (tmaiManageMenu) {
 		case "tmai-listnav": {
 			const { tmaiListNavMenu } = await inquirer.prompt(tmaiListNavMenu_prompt);
-			if (tmaiListNavMenu === "tmai-list") {
+			if (tmaiListNavMenu === "tmai-listquick") {
+				console.log(tasks);
+			} else if (tmaiListNavMenu === "tmai-list") {
 				await tmai.listAsync();
 			} else if (tmaiListNavMenu === "tmai-show") {
 				const { taskId } = await inquirer.prompt({
