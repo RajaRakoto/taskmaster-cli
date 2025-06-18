@@ -71,7 +71,7 @@
 		"npm-proxy:unpublish": "npm unpublish --force --registry http://localhost:4873/ taskmaster-cli",
 		"npm-proxy:republish": "bun run npm-proxy:unpublish && bun run npm-proxy:publish",
 		"nvm": "nvm use",
-    "qtype:tasks": "quicktype .taskmaster/tasks/tasks.json -o src/@types/tasks.d.ts --just-types"
+		"qtype:tasks": "quicktype .taskmaster/tasks/tasks.json -o src/@types/tasks.d.ts --just-types"
 	},
 	"dependencies": {
 		"chalk": "^5.4.1",
