@@ -226,35 +226,34 @@ export class TaskMaster {
 	// TODO: in-progress
 	/**
 	 * @description Lists tasks with optional status filtering and subtask display
+	 * @param quickly List tasks quickly
 	 * @param status Filter tasks by status (todo, in-progress, done, blocked, pending)
 	 * @param withSubtasks Whether to include subtasks in the output
 	 */
 	public async listAsync(
-		status?: string,
-		withSubtasks?: boolean,
+		tasks: I_Tasks,
+		status: string,
+		quickly: boolean,
+		withSubtasks: boolean,
 	): Promise<void> {
-		const validStatuses = ["todo", "in-progress", "done", "blocked", "pending"];
-
-		if (status && !validStatuses.includes(status)) {
-			throw new Error(
-				`Invalid status: ${status}. Valid statuses are: ${validStatuses.join(", ")}`,
-			);
-		}
-
 		const args = ["list"];
 		if (status) args.push(`--status=${status}`);
 		if (withSubtasks) args.push("--with-subtasks");
 
-		const oraOptions = {
-			text: "Listing tasks...",
-			successText: chalk.bgGreen("Tasks listed successfully!"),
-			failText: chalk.bgRed("Failed to list tasks"),
-		};
+		if (quickly) {
+			console.log(tasks);
+		} else {
+			const oraOptions = {
+				text: "Listing tasks...",
+				successText: chalk.bgGreen("Tasks listed successfully!"),
+				failText: chalk.bgRed("Failed to list tasks"),
+			};
 
-		await oraPromise(
-			runCommandAsync("task-master", args, false, false),
-			oraOptions,
-		);
+			await oraPromise(
+				runCommandAsync("task-master", args, false, false),
+				oraOptions,
+			);
+		}
 	}
 
 	// TODO: in-progress
