@@ -186,3 +186,21 @@ export async function runCommandAsync(
 		buffer: false, // Disable output buffering
 	});
 }
+
+/**
+ * @description Read a JSON file
+ * @param filePath The path to the JSON file
+ */
+export async function readJsonFileAsync<T = unknown>(
+	filePath: string,
+): Promise<T> {
+	try {
+		const data = await readFileAsync(filePath, "utf-8");
+		return JSON.parse(data) as T;
+	} catch (error) {
+		if (error instanceof Error) {
+			throw new Error(`[error]: error during reading file: \n${error.message}`);
+		}
+		throw error;
+	}
+}
