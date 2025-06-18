@@ -4,12 +4,18 @@ import { mkdir, writeFile } from "node:fs/promises";
 import inquirer from "inquirer";
 import path from "node:path";
 import chalk from "chalk";
+import fs from "node:fs";
 
 /* extras */
-import { existsAsync, runCommandAsync } from "@/utils/extras";
+import {
+	existsAsync,
+	runCommandAsync,
+	readJsonFileAsync,
+} from "@/utils/extras";
 
 /* types */
 import type { T_PackageManager } from "@/@types/index";
+import type { I_Tasks } from "@/@types/tasks";
 
 // ===============================
 
@@ -20,8 +26,44 @@ import type { T_PackageManager } from "@/@types/index";
  * @class
  */
 export class TaskMaster {
-	constructor() {
+	private _tasksFilePath: string;
+
+	constructor(tasksFilePath: string) {
+		this._tasksFilePath = tasksFilePath;
+
 		console.log(chalk.bgMagenta("TMAI Core initialized !"));
+		if (!fs.existsSync(this._tasksFilePath)) {
+			console.log(
+				chalk.bgYellow(
+					"tasks.json not found. Please install/configure task-master and generate tasks.json from the PRD file first.",
+				),
+			);
+		} else {
+			console.log(
+				chalk.bgGreen(`tasks.json found on "${this._tasksFilePath}"`),
+			);
+		}
+	}
+
+	// ==============================================
+	// Getters and Setters
+	// ==============================================
+
+	public async getTasksContentAsync(): Promise<I_Tasks> {
+		const oraOptions = {
+			text: `Fetching tasks from ${chalk.bold(this._tasksFilePath)}...`,
+			successText: chalk.green("Fetched tasks successfully!"),
+			failText: chalk.red("Failed to retrieve tasks from tasks.json"),
+		};
+
+		return oraPromise(
+			readJsonFileAsync<I_Tasks>(this._tasksFilePath),
+			oraOptions,
+		);
+	}
+
+	public setTasksFilePath(tasksFilePath: string): void {
+		this._tasksFilePath = tasksFilePath;
 	}
 
 	// ==============================================
@@ -30,9 +72,9 @@ export class TaskMaster {
 
 	// TODO: done
 	/**
-	 * @description - Installs or updates task-master AI using the chosen package manager
+	 * @description Installs or updates task-master AI using the chosen package manager
 	 */
-	async installAsync(): Promise<void> {
+	public async installAsync(): Promise<void> {
 		const packageManagerChoices: T_PackageManager[] = ["npm", "pnpm", "bun"];
 
 		const { packageManagerChoice } = await inquirer.prompt<{
@@ -83,11 +125,11 @@ export class TaskMaster {
 
 	// TODO: done
 	/**
-	 * @description - Initializes the task-master AI by creating a PRD file
-	 * @note - This function doesn't use oraPromise as it is not a long-running task
+	 * @description Initializes the task-master AI by creating a PRD file
+	 * @note This function doesn't use oraPromise as it is not a long-running task
 	 * @throws Will throw an error if file operations fail
 	 */
-	async initAsync(): Promise<void> {
+	public async initAsync(): Promise<void> {
 		const prdFilePath = path.join("docs", "PRD.md");
 
 		if (await existsAsync(prdFilePath)) {
@@ -108,9 +150,9 @@ export class TaskMaster {
 
 	// TODO: done
 	/**
-	 * @description - Configures AI models for task-master by running the interactive setup
+	 * @description Configures AI models for task-master by running the interactive setup
 	 */
-	async configAsync(): Promise<void> {
+	public async configAsync(): Promise<void> {
 		const oraOptions = {
 			text: "Configuring AI models...",
 			successText: chalk.bgGreen("AI models configured successfully!"),
@@ -129,10 +171,10 @@ export class TaskMaster {
 
 	// TODO: validate
 	/**
-	 * @description - Parses a PRD file to generate tasks
-	 * @param inputFile - Path to the PRD file
+	 * @description Parses a PRD file to generate tasks
+	 * @param inputFile Path to the PRD file
 	 */
-	async parseAsync(inputFile: string): Promise<void> {
+	public async parseAsync(inputFile: string): Promise<void> {
 		const oraOptions = {
 			text: `Parsing PRD file: ${chalk.bold(inputFile)}...`,
 			successText: chalk.bgGreen("PRD parsed successfully!"),
@@ -152,9 +194,9 @@ export class TaskMaster {
 
 	// TODO: done
 	/**
-	 * @description - Generates task files from parsed data
+	 * @description Generates task files from parsed data
 	 */
-	async genAsync(): Promise<void> {
+	public async genAsync(): Promise<void> {
 		const tasksJsonPath = path.join(".taskmaster", "tasks", "tasks.json");
 
 		if (!(await existsAsync(tasksJsonPath))) {
@@ -183,11 +225,14 @@ export class TaskMaster {
 
 	// TODO: in-progress
 	/**
-	 * @description - Lists tasks with optional status filtering and subtask display
-	 * @param status - Filter tasks by status (todo, in-progress, done, blocked, pending)
-	 * @param withSubtasks - Whether to include subtasks in the output
+	 * @description Lists tasks with optional status filtering and subtask display
+	 * @param status Filter tasks by status (todo, in-progress, done, blocked, pending)
+	 * @param withSubtasks Whether to include subtasks in the output
 	 */
-	async listAsync(status?: string, withSubtasks?: boolean): Promise<void> {
+	public async listAsync(
+		status?: string,
+		withSubtasks?: boolean,
+	): Promise<void> {
 		const validStatuses = ["todo", "in-progress", "done", "blocked", "pending"];
 
 		if (status && !validStatuses.includes(status)) {
@@ -214,10 +259,10 @@ export class TaskMaster {
 
 	// TODO: in-progress
 	/**
-	 * @description - Shows details of a specific task by ID
-	 * @param id - Task ID (integer or hierarchical ID like 1.1, 2.3, etc.)
+	 * @description Shows details of a specific task by ID
+	 * @param id Task ID (integer or hierarchical ID like 1.1, 2.3, etc.)
 	 */
-	async showAsync(id: string): Promise<void> {
+	public async showAsync(id: string): Promise<void> {
 		const oraOptions = {
 			text: `Fetching details for task ${chalk.bold(id)}...`,
 			successText: chalk.bgGreen("Task details retrieved successfully!"),
@@ -231,9 +276,9 @@ export class TaskMaster {
 	}
 	// TODO: in-progress
 	/**
-	 * @description - Shows the next available task to work on
+	 * @description Shows the next available task to work on
 	 */
-	async nextAsync(): Promise<void> {
+	public async nextAsync(): Promise<void> {
 		const oraOptions = {
 			text: "Finding next available task...",
 			successText: chalk.bgGreen("Next task retrieved successfully!"),
