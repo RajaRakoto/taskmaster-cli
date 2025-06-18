@@ -25,15 +25,8 @@ export interface Task {
 	subtasks: Subtask[];
 }
 
-export enum Priority {
-	High = "high",
-	Low = "low",
-	Medium = "medium",
-}
-
-export enum Status {
-	Pending = "pending",
-}
+export type Priority = "high" | "medium" | "low";
+export type Status = "todo" | "in-progress" | "done" | "blocked" | "pending";
 
 export interface Subtask {
 	id: number;
