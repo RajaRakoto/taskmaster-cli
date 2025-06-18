@@ -3,7 +3,6 @@ import * as emoji from "node-emoji";
 import * as path from "node:path";
 import open from "open";
 import util from "node:util";
-import chalk from "chalk";
 import fs from "node:fs";
 import { execa } from "execa";
 
@@ -13,7 +12,7 @@ import { DEV_MODE } from "@/constants";
 // ==============================
 
 export const writeFileAsync = util.promisify(fs.writeFile);
-export const fileExistsAsync = util.promisify(fs.exists);
+export const existsAsync = util.promisify(fs.exists);
 export const readFileAsync = util.promisify(fs.readFile);
 export const readDirAsync = util.promisify(fs.readdir);
 export const realPathAsync = util.promisify(fs.realpath);
@@ -24,7 +23,7 @@ export const rmdirAsync = util.promisify(fs.rm);
  * @description A function that exits the CLI
  */
 export function exitCLI(): void {
-	console.log(`See you soon ${emoji.get("blush")} !`);
+	console.log(`See you soon ${emoji.get("blush")}`);
 	process.exit();
 }
 
@@ -132,7 +131,7 @@ export async function writeToFileAsync(
 	successMessage: string,
 ): Promise<void> {
 	try {
-		const fileExists = await fileExistsAsync(destination);
+		const fileExists = await existsAsync(destination);
 		let finalContent = content;
 
 		if (fileExists) {
@@ -164,24 +163,44 @@ export async function readFromFileAsync(filePath: string): Promise<string> {
 }
 
 /**
- * @description Display success message
- * @param file File name to display
- * @param emojiCode Code emoji to display (framed_picture, white_check_mark ...)
- * @param context Context message to display (minified, resized ...)
+ * @description Run a command with its arguments and inherit stdio
+ * @param command The command to run
+ * @param args The arguments to pass to the command
+ * @param interactiveMode Whether to run the command in interactive mode (inherit stdio)
+ * @param shellMode Whether to run the command in shell mode
  */
-export function successMessage(
-	file: string,
-	emojiCode: string,
-	context: string,
-): string {
-	return chalk.green(`${emoji.get(emojiCode)} ${file} ${context} ... [done]`)
+export async function runCommandAsync(
+	command: string,
+	args: string[],
+	interactiveMode: boolean,
+	shellMode: boolean,
+): Promise<void> {
+	await execa(command, args, {
+		stdio: interactiveMode ? "inherit" : ["pipe", "inherit", "inherit"],
+		input: interactiveMode ? undefined : process.stdin, // Inherit input if in interactive mode
+		shell: shellMode, // Use shell mode if specified
+		env: process.env, // Inherit environment variables
+		cleanup: true, // Cleanup resources after execution
+		preferLocal: false, // Prefer global installation of task-master
+		windowsHide: false, // Hide the console window on MS Windows
+		buffer: false, // Disable output buffering
+	});
 }
 
 /**
- * @description Display error message
- * @param error Error message to display
- * @param context Context message to display (minify, resize ...)
+ * @description Read a JSON file
+ * @param filePath The path to the JSON file
  */
-export function errorMessage(error: Error | unknown, context: string): void {
-	throw new Error(`[error]: ${context} failed: \n${error}`);
+export async function readJsonFileAsync<T = unknown>(
+	filePath: string,
+): Promise<T> {
+	try {
+		const data = await readFileAsync(filePath, "utf-8");
+		return JSON.parse(data) as T;
+	} catch (error) {
+		if (error instanceof Error) {
+			throw new Error(`[error]: error during reading file: \n${error.message}`);
+		}
+		throw error;
+	}
 }

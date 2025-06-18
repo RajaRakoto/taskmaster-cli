@@ -15,6 +15,8 @@
 
 ### 📌 Usage
 
+This project is still in development and not yet ready for use, but you can contribute to its development by making pull requests, reporting issues, and suggesting new features ...
+
 ---
 
 ### 📌 Scripts
@@ -75,8 +77,8 @@
 - 📜 `npm-unpublish` - Forcefully unpublish the cli package from npm.
 - 📜 `npm-reset:registry` - Delete the custom npm registry.
 - 📜 `npm-check:registry` - Get the currently configured registry for npm.
-- 📜 `npm-proxy-set:registry` - Set the npm registry to use a local proxy.
 - 📜 `npm-proxy:start` - Start a Verdaccio server with a local npm proxy.
+- 📜 `npm-proxy:set-registry` - Set the npm registry to use a local proxy.
 - 📜 `npm-proxy:publish` - Publish your npm package via the local proxy.
 - 📜 `npm-proxy:unpublish` - Forcefully unpublish the cli package from the npm registry via the local proxy.
 - 📜 `npm-proxy:republish` - Republish your npm package by first unpublishing it and then publishing it again via the local proxy.
@@ -84,6 +86,10 @@
 **NVM**
 
 - 📜 `nvm` - Manage multiple node.js versions. Easily switch between node versions per project to ensure compatibility.
+
+**Others**
+
+- 📜 `qtype:tasks` - Generate types for tasks.json file.
 
 ---
 

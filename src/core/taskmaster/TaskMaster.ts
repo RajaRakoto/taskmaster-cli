@@ -1,0 +1,293 @@
+/* libs */
+import { oraPromise } from "ora";
+import { mkdir, writeFile } from "node:fs/promises";
+import inquirer from "inquirer";
+import path from "node:path";
+import chalk from "chalk";
+import fs from "node:fs";
+
+/* extras */
+import {
+	existsAsync,
+	runCommandAsync,
+	readJsonFileAsync,
+} from "@/utils/extras";
+
+/* types */
+import type { T_PackageManager } from "@/@types/index";
+import type { I_Tasks } from "@/@types/tasks";
+
+// ===============================
+
+/**
+ * TaskMaster - Core class for managing task-master AI operations
+ * Provides methods to install, initialize, configure, manage, and more ...
+ * Handles user interactions and system operations related to task-master setup.
+ * @class
+ */
+export class TaskMaster {
+	private _tasksFilePath: string;
+
+	constructor(tasksFilePath: string) {
+		this._tasksFilePath = tasksFilePath;
+
+		console.log(chalk.bgMagenta("TMAI Core initialized !"));
+		if (!fs.existsSync(this._tasksFilePath)) {
+			console.log(
+				chalk.bgYellow(
+					"tasks.json not found. Please install/configure task-master and generate tasks.json from the PRD file first.",
+				),
+			);
+		} else {
+			console.log(
+				chalk.bgGreen(`tasks.json found on "${this._tasksFilePath}"`),
+			);
+		}
+	}
+
+	// ==============================================
+	// Getters and Setters
+	// ==============================================
+
+	public async getTasksContentAsync(): Promise<I_Tasks> {
+		const oraOptions = {
+			text: `Fetching tasks from ${chalk.bold(this._tasksFilePath)}...`,
+			successText: chalk.green("Fetched tasks successfully!"),
+			failText: chalk.red("Failed to retrieve tasks from tasks.json"),
+		};
+
+		return oraPromise(
+			readJsonFileAsync<I_Tasks>(this._tasksFilePath),
+			oraOptions,
+		);
+	}
+
+	public setTasksFilePath(tasksFilePath: string): void {
+		this._tasksFilePath = tasksFilePath;
+	}
+
+	// ==============================================
+	// Method for Installation and Configuration
+	// ==============================================
+
+	// TODO: done
+	/**
+	 * @description Installs or updates task-master AI using the chosen package manager
+	 */
+	public async installAsync(): Promise<void> {
+		const packageManagerChoices: T_PackageManager[] = ["npm", "pnpm", "bun"];
+
+		const { packageManagerChoice } = await inquirer.prompt<{
+			packageManagerChoice: T_PackageManager;
+		}>({
+			type: "list",
+			name: "packageManagerChoice",
+			message: "Choose your package manager for installation:",
+			loop: true,
+			pageSize: 4,
+			choices: packageManagerChoices,
+			default: "npm",
+		});
+
+		const oraOptions = {
+			text: `Installing task-master AI with ${chalk.bold(
+				packageManagerChoice,
+			)} ...`,
+			successText: chalk.bgGreen("Task-master AI installed successfully!"),
+			failText: chalk.bgRed(`Failed to install task-master AI with
+      ${packageManagerChoice}.`),
+		};
+
+		await oraPromise(async () => {
+			let command: string;
+			let args: string[] = [];
+
+			switch (packageManagerChoice) {
+				case "npm":
+					command = "npm";
+					args = ["install", "-g", "task-master-ai@latest"];
+					break;
+				case "pnpm":
+					command = "pnpm";
+					args = ["add", "-g", "task-master-ai@latest"];
+					break;
+				case "bun":
+					command = "bun";
+					args = ["add", "-g", "task-master-ai@latest"];
+					break;
+				default:
+					throw new Error("Invalid package manager");
+			}
+
+			await runCommandAsync(command, args, false, false);
+		}, oraOptions);
+	}
+
+	// TODO: done
+	/**
+	 * @description Initializes the task-master AI by creating a PRD file
+	 * @note This function doesn't use oraPromise as it is not a long-running task
+	 * @throws Will throw an error if file operations fail
+	 */
+	public async initAsync(): Promise<void> {
+		const prdFilePath = path.join("docs", "PRD.md");
+
+		if (await existsAsync(prdFilePath)) {
+			console.log(
+				chalk.yellow(
+					`PRD file already exists at ${prdFilePath}, skipping generation.`,
+				),
+			);
+		} else {
+			await mkdir("docs", { recursive: true });
+			await writeFile(prdFilePath, "# Product Requirements Document\n\n");
+			console.log(chalk.bgGreen(`PRD file created at ${prdFilePath}.`));
+		}
+
+		await runCommandAsync("task-master", ["init"], false, false);
+		console.log(chalk.bgGreen("Task-master project initialized successfully!"));
+	}
+
+	// TODO: done
+	/**
+	 * @description Configures AI models for task-master by running the interactive setup
+	 */
+	public async configAsync(): Promise<void> {
+		const oraOptions = {
+			text: "Configuring AI models...",
+			successText: chalk.bgGreen("AI models configured successfully!"),
+			failText: chalk.bgRed("AI model configuration failed"),
+		};
+
+		await oraPromise(
+			runCommandAsync("task-master", ["models", "--setup"], true, false),
+			oraOptions,
+		);
+	}
+
+	// ==============================================
+	// Method for Task Generation
+	// ==============================================
+
+	// TODO: validate
+	/**
+	 * @description Parses a PRD file to generate tasks
+	 * @param inputFile Path to the PRD file
+	 */
+	public async parseAsync(inputFile: string): Promise<void> {
+		const oraOptions = {
+			text: `Parsing PRD file: ${chalk.bold(inputFile)}...`,
+			successText: chalk.bgGreen("PRD parsed successfully!"),
+			failText: chalk.bgRed("Failed to parse PRD file"),
+		};
+
+		await oraPromise(
+			runCommandAsync(
+				"task-master",
+				["parse-prd", `--input=${inputFile}`],
+				false,
+				false,
+			),
+			oraOptions,
+		);
+	}
+
+	// TODO: done
+	/**
+	 * @description Generates task files from parsed data
+	 */
+	public async genAsync(): Promise<void> {
+		const tasksJsonPath = path.join(".taskmaster", "tasks", "tasks.json");
+
+		if (!(await existsAsync(tasksJsonPath))) {
+			console.log(
+				chalk.yellow(
+					`"${tasksJsonPath}" required file not found, aborting generation.`,
+				),
+			);
+		} else {
+			const oraOptions = {
+				text: "Generating task files...",
+				successText: chalk.bgGreen("Task files generated successfully!"),
+				failText: chalk.bgRed("Task file generation failed"),
+			};
+
+			await oraPromise(
+				runCommandAsync("task-master", ["generate"], false, false),
+				oraOptions,
+			);
+		}
+	}
+
+	// ==============================================
+	// Method for Task Listing and Viewing
+	// ==============================================
+
+	// TODO: in-progress
+	/**
+	 * @description Lists tasks with optional status filtering and subtask display
+	 * @param status Filter tasks by status (todo, in-progress, done, blocked, pending)
+	 * @param withSubtasks Whether to include subtasks in the output
+	 */
+	public async listAsync(
+		status?: string,
+		withSubtasks?: boolean,
+	): Promise<void> {
+		const validStatuses = ["todo", "in-progress", "done", "blocked", "pending"];
+
+		if (status && !validStatuses.includes(status)) {
+			throw new Error(
+				`Invalid status: ${status}. Valid statuses are: ${validStatuses.join(", ")}`,
+			);
+		}
+
+		const args = ["list"];
+		if (status) args.push(`--status=${status}`);
+		if (withSubtasks) args.push("--with-subtasks");
+
+		const oraOptions = {
+			text: "Listing tasks...",
+			successText: chalk.bgGreen("Tasks listed successfully!"),
+			failText: chalk.bgRed("Failed to list tasks"),
+		};
+
+		await oraPromise(
+			runCommandAsync("task-master", args, false, false),
+			oraOptions,
+		);
+	}
+
+	// TODO: in-progress
+	/**
+	 * @description Shows details of a specific task by ID
+	 * @param id Task ID (integer or hierarchical ID like 1.1, 2.3, etc.)
+	 */
+	public async showAsync(id: string): Promise<void> {
+		const oraOptions = {
+			text: `Fetching details for task ${chalk.bold(id)}...`,
+			successText: chalk.bgGreen("Task details retrieved successfully!"),
+			failText: chalk.bgRed("Failed to retrieve task details"),
+		};
+
+		await oraPromise(
+			runCommandAsync("task-master", ["show", id], false, false),
+			oraOptions,
+		);
+	}
+	// TODO: in-progress
+	/**
+	 * @description Shows the next available task to work on
+	 */
+	public async nextAsync(): Promise<void> {
+		const oraOptions = {
+			text: "Finding next available task...",
+			successText: chalk.bgGreen("Next task retrieved successfully!"),
+			failText: chalk.bgRed("Failed to determine next task"),
+		};
+
+		await oraPromise(
+			runCommandAsync("task-master", ["next"], false, false),
+			oraOptions,
+		);
+	}
+}
