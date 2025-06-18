@@ -5,6 +5,10 @@ import inquirer from "inquirer";
 import path from "node:path";
 import chalk from "chalk";
 import fs from "node:fs";
+import figures from "figures";
+
+/* constants */
+import { MAX_TITLE_LENGTH } from "@/constants";
 
 /* extras */
 import {
@@ -15,7 +19,7 @@ import {
 
 /* types */
 import type { T_PackageManager } from "@/@types/index";
-import type { I_Tasks } from "@/@types/tasks";
+import type { I_Tasks, Status, Priority } from "@/@types/tasks";
 
 // ===============================
 
@@ -223,6 +227,87 @@ export class TaskMaster {
 	// Method for Task Listing and Viewing
 	// ==============================================
 
+	// TODO: validate
+	/**
+	 * @description Lists tasks in a visually formatted tree structure
+	 * @param tasks Tasks data to render
+	 * @param status Filter tasks by status (comma-separated values)
+	 * @param withSubtasks Whether to include subtasks in the output
+	 */
+	public async listQuickAsync(
+		tasks: I_Tasks,
+		status: string,
+		withSubtasks = true,
+	): Promise<string> {
+		// Helper to truncate text with ellipsis
+		const truncate = (text: string, maxLength: number): string =>
+			text.length <= maxLength ? text : `${text.slice(0, maxLength - 1)}…`;
+
+		// Format status with icons and colors for all statuses
+		const formatStatus = (status: Status): string => {
+			const statusMap = {
+				todo: { icon: figures.circle, color: chalk.gray },
+				"in-progress": { icon: figures.play, color: chalk.yellow },
+				done: { icon: figures.tick, color: chalk.green },
+				blocked: { icon: figures.cross, color: chalk.red },
+				pending: { icon: figures.ellipsis, color: chalk.gray },
+			};
+
+			const config = statusMap[status] || {
+				icon: figures.circle,
+				color: chalk.gray,
+			};
+			return config.color(`${config.icon} ${status}`);
+		};
+
+		// Format priority with colors
+		const formatPriority = (priority: Priority): string => {
+			const colorMap = {
+				high: chalk.red.bold,
+				medium: chalk.yellow.bold,
+				low: chalk.cyan.bold,
+			};
+
+			const colorFn = colorMap[priority] || chalk.white.bold;
+			return colorFn(priority);
+		};
+
+		// Parse status filter
+		const statusFilters = status
+			? status.split(",").map((s) => s.trim() as Status)
+			: null;
+
+		// Build task tree output manually
+		let output = `${chalk.bold.underline("📋 Liste des Tâches")}\n\n`;
+
+		for (const task of tasks.master.tasks) {
+			// Skip task if status filter doesn't match
+			if (statusFilters && !statusFilters.includes(task.status)) {
+				continue;
+			}
+
+			const title = truncate(task.title, MAX_TITLE_LENGTH);
+			output +=
+				`${chalk.bgGreen.bold(`#${task.id}`)} ${chalk.magenta(title)} ` +
+				`[status: ${formatStatus(task.status)}] - ` +
+				`[priority: ${formatPriority(task.priority)}]\n`;
+
+			if (withSubtasks && task.subtasks && task.subtasks.length > 0) {
+				for (let i = 0; i < task.subtasks.length; i++) {
+					const subtask = task.subtasks[i];
+					const subTitle = truncate(subtask.title, MAX_TITLE_LENGTH);
+					const hierarchicalId = `${task.id}.${i + 1}`;
+
+					output +=
+						`  ${chalk.dim("↳")} ${chalk.bold(`#${hierarchicalId}`)} ` +
+						`${chalk.magenta(subTitle)} [status: ${formatStatus(subtask.status)}]\n`;
+				}
+			}
+		}
+
+		return output;
+	}
+
 	// TODO: in-progress
 	/**
 	 * @description Lists tasks with optional status filtering and subtask display
@@ -241,7 +326,7 @@ export class TaskMaster {
 		if (withSubtasks) args.push("--with-subtasks");
 
 		if (quickly) {
-			console.log(tasks);
+			console.log(await this.listQuickAsync(tasks, status, withSubtasks));
 		} else {
 			const oraOptions = {
 				text: "Listing tasks...",
