@@ -1,3 +1,8 @@
+/* types */
+import type { T_TaskStatus } from "@/@types";
+
+// ===============================
+
 // dev
 export const DEV_MODE = true;
 
@@ -5,3 +10,12 @@ export const DEV_MODE = true;
 export const FONT_PATH = "fonts/Standard.flf";
 export const PRD_PATH = DEV_MODE ? "docs/PRD-todo.md" : "docs/PRD.md";
 export const TASKS_PATH = ".taskmaster/tasks/tasks.json";
+
+// tasks
+export const TASKS_STATUSES: T_TaskStatus[] = [
+	"todo",
+	"in-progress",
+	"done",
+	"blocked",
+	"pending",
+];

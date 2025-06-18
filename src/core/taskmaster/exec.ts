@@ -4,7 +4,7 @@ import path from "node:path";
 import chalk from "chalk";
 
 /* constants */
-import { PRD_PATH, TASKS_PATH } from "@/constants";
+import { PRD_PATH, TASKS_PATH, TASKS_STATUSES } from "@/constants";
 
 /* core */
 import { TaskMaster } from "@/core/taskmaster/TaskMaster";
@@ -88,10 +88,38 @@ export async function tmaiManageAsync() {
 	switch (tmaiManageMenu) {
 		case "tmai-listnav": {
 			const { tmaiListNavMenu } = await inquirer.prompt(tmaiListNavMenu_prompt);
-			if (tmaiListNavMenu === "tmai-listquick") {
-				console.log(tasks);
-			} else if (tmaiListNavMenu === "tmai-list") {
-				await tmai.listAsync();
+			if (tmaiListNavMenu === "tmai-list") {
+				const { status: validatedStatus } = await inquirer.prompt([
+					{
+						type: "checkbox",
+						name: "status",
+						message: "Select task statuses:",
+						choices: TASKS_STATUSES.map((status) => ({
+							name: status,
+							value: status,
+						})),
+						validate: (input) => {
+							if (!input.length) return "At least one status is required";
+							return true;
+						},
+						filter: (input) => input.join(","),
+					},
+				]);
+				const { quickly, withSubtasks } = await inquirer.prompt([
+					{
+						type: "confirm",
+						name: "quickly",
+						message: "Show tasks quickly ?",
+						default: true,
+					},
+					{
+						type: "confirm",
+						name: "withSubtasks",
+						message: "Show with subtasks ?",
+						default: true,
+					},
+				]);
+				await tmai.listAsync(tasks, validatedStatus, quickly, withSubtasks);
 			} else if (tmaiListNavMenu === "tmai-show") {
 				const { taskId } = await inquirer.prompt({
 					type: "input",
