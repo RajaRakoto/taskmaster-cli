@@ -28,6 +28,7 @@ export class TaskMaster {
 	// Method for Installation and Configuration
 	// ==============================================
 
+	// TODO: done
 	/**
 	 * @description - Installs or updates task-master AI using the chosen package manager
 	 */
@@ -40,7 +41,7 @@ export class TaskMaster {
 			type: "list",
 			name: "packageManagerChoice",
 			message: "Choose your package manager for installation:",
-			loop: false,
+			loop: true,
 			pageSize: 4,
 			choices: packageManagerChoices,
 			default: "npm",
@@ -80,6 +81,7 @@ export class TaskMaster {
 		}, oraOptions);
 	}
 
+	// TODO: done
 	/**
 	 * @description - Initializes the task-master AI by creating a PRD file
 	 * @note - This function doesn't use oraPromise as it is not a long-running task
@@ -104,6 +106,7 @@ export class TaskMaster {
 		console.log(chalk.bgGreen("Task-master project initialized successfully!"));
 	}
 
+	// TODO: done
 	/**
 	 * @description - Configures AI models for task-master by running the interactive setup
 	 */
@@ -124,6 +127,7 @@ export class TaskMaster {
 	// Method for Task Generation
 	// ==============================================
 
+	// TODO: validate
 	/**
 	 * @description - Parses a PRD file to generate tasks
 	 * @param inputFile - Path to the PRD file
@@ -146,6 +150,7 @@ export class TaskMaster {
 		);
 	}
 
+	// TODO: done
 	/**
 	 * @description - Generates task files from parsed data
 	 */
@@ -170,5 +175,74 @@ export class TaskMaster {
 				oraOptions,
 			);
 		}
+	}
+
+	// ==============================================
+	// Method for Task Listing and Viewing
+	// ==============================================
+
+	// TODO: in-progress
+	/**
+	 * @description - Lists tasks with optional status filtering and subtask display
+	 * @param status - Filter tasks by status (todo, in-progress, done, blocked, pending)
+	 * @param withSubtasks - Whether to include subtasks in the output
+	 */
+	async listAsync(status?: string, withSubtasks?: boolean): Promise<void> {
+		const validStatuses = ["todo", "in-progress", "done", "blocked", "pending"];
+
+		if (status && !validStatuses.includes(status)) {
+			throw new Error(
+				`Invalid status: ${status}. Valid statuses are: ${validStatuses.join(", ")}`,
+			);
+		}
+
+		const args = ["list"];
+		if (status) args.push(`--status=${status}`);
+		if (withSubtasks) args.push("--with-subtasks");
+
+		const oraOptions = {
+			text: "Listing tasks...",
+			successText: chalk.bgGreen("Tasks listed successfully!"),
+			failText: chalk.bgRed("Failed to list tasks"),
+		};
+
+		await oraPromise(
+			runCommandAsync("task-master", args, false, false),
+			oraOptions,
+		);
+	}
+
+	// TODO: in-progress
+	/**
+	 * @description - Shows details of a specific task by ID
+	 * @param id - Task ID (integer or hierarchical ID like 1.1, 2.3, etc.)
+	 */
+	async showAsync(id: string): Promise<void> {
+		const oraOptions = {
+			text: `Fetching details for task ${chalk.bold(id)}...`,
+			successText: chalk.bgGreen("Task details retrieved successfully!"),
+			failText: chalk.bgRed("Failed to retrieve task details"),
+		};
+
+		await oraPromise(
+			runCommandAsync("task-master", ["show", id], false, false),
+			oraOptions,
+		);
+	}
+	// TODO: in-progress
+	/**
+	 * @description - Shows the next available task to work on
+	 */
+	async nextAsync(): Promise<void> {
+		const oraOptions = {
+			text: "Finding next available task...",
+			successText: chalk.bgGreen("Next task retrieved successfully!"),
+			failText: chalk.bgRed("Failed to determine next task"),
+		};
+
+		await oraPromise(
+			runCommandAsync("task-master", ["next"], false, false),
+			oraOptions,
+		);
 	}
 }
