@@ -15,6 +15,8 @@
 
 ### 📌 Usage
 
+This project is still in development and not yet ready for use, but you can contribute to its development by making pull requests, reporting issues, and suggesting new features ...
+
 ---
 
 ### 📌 Scripts
