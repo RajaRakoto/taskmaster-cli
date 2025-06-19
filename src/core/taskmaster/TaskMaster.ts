@@ -184,7 +184,7 @@ export class TaskMaster {
 	// Method for Task Generation
 	// ==============================================
 
-	// TODO: validate
+	// TODO: done
 	/**
 	 * @description Parses a PRD file to generate tasks
 	 * @param inputFile Path to the PRD file
@@ -238,7 +238,7 @@ export class TaskMaster {
 	// Method for Task Listing and Viewing
 	// ==============================================
 
-	// TODO: validate
+	// TODO: done
 	/**
 	 * @description Lists tasks in a visually formatted tree structure
 	 * @param tasks Tasks data to render
@@ -293,29 +293,45 @@ export class TaskMaster {
 		let hasTasks = false;
 
 		for (const task of tasks.master.tasks) {
-			// Skip task if status filter doesn't match
-			if (statusFilters && !statusFilters.includes(task.status)) {
-				continue;
-			}
-			hasTasks = true;
+			let hasMatchingSubtasks = false;
+			const matchingSubtasks = [];
 
-			const title = truncate(task.title, MAX_TITLE_LENGTH);
-			output +=
-				`${chalk.bgGreen.bold(`#${task.id}`)} ${chalk.magenta(title)} ` +
-				`[status: ${formatStatus(task.status)}] - ` +
-				`[priority: ${formatPriority(task.priority)}]\n`;
-
+			// Check subtasks first to see if any match the filter
 			if (withSubtasks && task.subtasks && task.subtasks.length > 0) {
 				for (let i = 0; i < task.subtasks.length; i++) {
 					const subtask = task.subtasks[i];
-					const subTitle = truncate(subtask.title, MAX_TITLE_LENGTH);
-					const hierarchicalId = `${task.id}.${i + 1}`;
+					if (!statusFilters || statusFilters.includes(subtask.status)) {
+						matchingSubtasks.push({ index: i, subtask });
+						hasMatchingSubtasks = true;
+					}
+				}
+			}
 
-					output +=
-						`  ${chalk.dim("↳")} ${chalk.bold(`#${hierarchicalId}`)} ` +
-						`${chalk.magenta(subTitle)} [status: ${formatStatus(
-							subtask.status,
-						)}]\n`;
+			// Show parent if it matches filter OR has matching subtasks
+			const showParent =
+				!statusFilters ||
+				statusFilters.includes(task.status) ||
+				hasMatchingSubtasks;
+
+			if (showParent) {
+				hasTasks = true;
+				const title = truncate(task.title, MAX_TITLE_LENGTH);
+				output +=
+					`${chalk.bgGreen.bold(`#${task.id}`)} ${chalk.magenta(title)} ` +
+					`[status: ${formatStatus(task.status)}] - ` +
+					`[priority: ${formatPriority(task.priority)}]\n`;
+
+				// Only show matching subtasks
+				if (withSubtasks && matchingSubtasks.length > 0) {
+					for (const { index, subtask } of matchingSubtasks) {
+						const subTitle = truncate(subtask.title, MAX_TITLE_LENGTH);
+						const hierarchicalId = `${task.id}.${index + 1}`;
+						output +=
+							`  ${chalk.dim("↳")} ${chalk.bold(`#${hierarchicalId}`)} ` +
+							`${chalk.magenta(subTitle)} [status: ${formatStatus(
+								subtask.status,
+							)}]\n`;
+					}
 				}
 			}
 		}
@@ -327,7 +343,7 @@ export class TaskMaster {
 		return output;
 	}
 
-	// TODO: in-progress
+	// TODO: done
 	/**
 	 * @description Lists tasks with optional status filtering and subtask display
 	 * @param quickly List tasks quickly
@@ -360,7 +376,7 @@ export class TaskMaster {
 		}
 	}
 
-	// TODO: in-progress
+	// TODO: done
 	/**
 	 * @description Shows details of a specific task by ID
 	 * @param id Task ID (integer or hierarchical ID like 1.1, 2.3, etc.)
@@ -377,7 +393,8 @@ export class TaskMaster {
 			oraOptions,
 		);
 	}
-	// TODO: in-progress
+
+	// TODO: done
 	/**
 	 * @description Shows the next available task to work on
 	 */

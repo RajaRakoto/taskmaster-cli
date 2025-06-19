@@ -96,50 +96,6 @@ describe("TaskMaster.listQuickAsync", () => {
 		expect(plainResult).toContain("Subtask 2");
 	});
 
-	test("filters by status", async () => {
-		const tasks: I_Tasks = {
-			master: {
-				tasks: [
-					createTask(1, "Task 1", "done"),
-					createTask(2, "Task 2", "in-progress"),
-					createTask(3, "Task 3", "blocked"),
-				],
-				metadata: {
-					created: new Date(),
-					updated: new Date(),
-					description: "",
-				},
-			},
-		};
-
-		const result = await tmai.listQuickAsync(tasks, "done,blocked", true);
-		const plainResult = stripAnsi(result);
-		expect(plainResult).toContain("Task 1");
-		expect(plainResult).toContain("Task 3");
-		expect(plainResult).not.toContain("Task 2");
-	});
-
-	test("truncates long titles", async () => {
-		const longTitle =
-			"Task with a very long title that exceeds the character limit allowed by the application";
-		const tasks: I_Tasks = {
-			master: {
-				tasks: [createTask(1, longTitle)],
-				metadata: {
-					created: new Date(),
-					updated: new Date(),
-					description: "",
-				},
-			},
-		};
-
-		const result = await tmai.listQuickAsync(tasks, "", true);
-		const plainResult = stripAnsi(result);
-		// Uses ellipsis character '…' to match truncate()
-		expect(plainResult).toContain("…");
-		expect(plainResult.length).toBeLessThan(longTitle.length + 100);
-	});
-
 	test("displays a message when no tasks match", async () => {
 		const tasks: I_Tasks = {
 			master: {
@@ -200,5 +156,75 @@ describe("TaskMaster.listQuickAsync", () => {
 		const result = await tmai.listQuickAsync(tasks, "", true);
 		const plainResult = stripAnsi(result);
 		expect(plainResult).toContain("No tasks to display.");
+	});
+
+	test("filters by status", async () => {
+		const tasks: I_Tasks = {
+			master: {
+				tasks: [
+					createTask(1, "Task 1", "done"),
+					createTask(2, "Task 2", "in-progress"),
+					createTask(3, "Task 3", "blocked"),
+				],
+				metadata: {
+					created: new Date(),
+					updated: new Date(),
+					description: "",
+				},
+			},
+		};
+
+		const result = await tmai.listQuickAsync(tasks, "done,blocked", true);
+		const plainResult = stripAnsi(result);
+		expect(plainResult).toContain("Task 1");
+		expect(plainResult).toContain("Task 3");
+		expect(plainResult).not.toContain("Task 2");
+	});
+
+	test("filters subtasks by status correctly", async () => {
+		const tasks: I_Tasks = {
+			master: {
+				tasks: [
+					createTask(1, "Parent Task", "todo", "medium", [
+						createSubtask(1, "Subtask 1", "done"),
+						createSubtask(2, "Subtask 2", "blocked"),
+						createSubtask(3, "Subtask 3", "in-progress"),
+					]),
+				],
+				metadata: {
+					created: new Date(),
+					updated: new Date(),
+					description: "",
+				},
+			},
+		};
+
+		const result = await tmai.listQuickAsync(tasks, "done,blocked", true);
+		const plainResult = stripAnsi(result);
+		expect(plainResult).toContain("Parent Task");
+		expect(plainResult).toContain("Subtask 1");
+		expect(plainResult).toContain("Subtask 2");
+		expect(plainResult).not.toContain("Subtask 3");
+	});
+
+	test("truncates long titles", async () => {
+		const longTitle =
+			"Task with a very long title that exceeds the character limit allowed by the application";
+		const tasks: I_Tasks = {
+			master: {
+				tasks: [createTask(1, longTitle)],
+				metadata: {
+					created: new Date(),
+					updated: new Date(),
+					description: "",
+				},
+			},
+		};
+
+		const result = await tmai.listQuickAsync(tasks, "", true);
+		const plainResult = stripAnsi(result);
+		// Uses ellipsis character '…' to match truncate()
+		expect(plainResult).toContain("…");
+		expect(plainResult.length).toBeLessThan(longTitle.length + 100);
 	});
 });
