@@ -112,6 +112,20 @@ export async function tmaiGenAsync() {
 		);
 	} else if (choice.tmaiGenDecMenu === "tmai-gen") {
 		await tmai.genAsync();
+	} else if (choice.tmaiGenDecMenu === "tmai-dec") {
+		const { confirmDecomposition } = await inquirer.prompt({
+			type: "confirm",
+			name: "confirmDecomposition",
+			message: chalk.yellow(
+				"Confirm that you want to expand all tasks? This action will decompose every task into smaller subtasks and may increase the total number of tasks to manage.",
+			),
+			default: false,
+		});
+		if (!confirmDecomposition) {
+			console.log("Decomposition of tasks cancelled!");
+			return restartAsync();
+		}
+		await tmai.decomposeAsync();
 	}
 
 	await restartAsync();

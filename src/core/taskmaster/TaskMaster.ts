@@ -184,6 +184,7 @@ export class TaskMaster {
 	// Method for Generation and Decomposition
 	// ==============================================
 
+	// TODO: done
 	/**
 	 * @description Parses a PRD file to generate tasks
 	 * @param inputFilePath Path to the PRD file
@@ -245,6 +246,23 @@ export class TaskMaster {
 				oraOptions,
 			);
 		}
+	}
+
+	// TODO: done
+	/**
+	 * @description Decomposes all tasks using AI
+	 */
+	public async decomposeAsync(): Promise<void> {
+		const oraOptions = {
+			text: "Decomposing tasks ...",
+			successText: chalk.bgGreen("Tasks decomposed successfully!"),
+			failText: chalk.bgRed("Failed to decompose tasks"),
+		};
+
+		await oraPromise(
+			runCommandAsync("task-master", ["expand", "--all"], false, false),
+			oraOptions,
+		);
 	}
 
 	// ==============================================
