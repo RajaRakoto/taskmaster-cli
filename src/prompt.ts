@@ -91,7 +91,7 @@ export const tmaiInitMenu_prompt = [
 	},
 ];
 
-// TODO: in-progress
+// TODO: done
 // ==============================
 // Generation and Decomposition menu
 // ==============================
@@ -123,7 +123,7 @@ export const tmaiGenDecMenu_prompt = [
 	},
 ];
 
-// TODO: validate
+// TODO: done
 // ==============================
 // Task management menu
 // ==============================
