@@ -26,7 +26,15 @@ export interface Task {
 }
 
 export type Priority = "high" | "medium" | "low";
-export type Status = "todo" | "in-progress" | "done" | "blocked" | "pending";
+export type Status =
+	| "pending"
+	| "in-progress"
+	| "done"
+	| "review"
+	| "deferred"
+	| "cancelled"
+	| "todo"
+	| "blocked";
 
 export interface Subtask {
 	id: number;

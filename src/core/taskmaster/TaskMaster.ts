@@ -262,6 +262,9 @@ export class TaskMaster {
 				done: { icon: figures.tick, color: chalk.green },
 				blocked: { icon: figures.cross, color: chalk.red },
 				pending: { icon: figures.ellipsis, color: chalk.gray },
+				review: { icon: figures.star, color: chalk.blue },
+				deferred: { icon: figures.arrowDown, color: chalk.magenta },
+				cancelled: { icon: figures.cross, color: chalk.redBright },
 			};
 
 			const config = statusMap[status] || {

@@ -8,10 +8,13 @@ export const TASKS_PATH = ".taskmaster/tasks/tasks.json";
 
 // tasks
 export const TASKS_STATUSES = [
-	"todo",
+	"pending",
 	"in-progress",
 	"done",
+	"review",
+	"deferred",
+	"cancelled",
+	"todo",
 	"blocked",
-	"pending",
 ];
 export const MAX_TITLE_LENGTH = 50;
