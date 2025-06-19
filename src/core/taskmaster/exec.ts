@@ -104,7 +104,12 @@ export async function tmaiGenAsync() {
 			default: false,
 		});
 
-		await tmai.parseAsync(prdPath, numTasksToGenerate, allowAdvancedResearch, false);
+		await tmai.parseAsync(
+			prdPath,
+			numTasksToGenerate,
+			allowAdvancedResearch,
+			false,
+		);
 	} else if (choice.tmaiGenDecMenu === "tmai-gen") {
 		await tmai.genAsync();
 	}
