@@ -1,10 +1,9 @@
 /* libs */
 import inquirer from "inquirer";
 import path from "node:path";
-import chalk from "chalk";
 
 /* constants */
-import { PRD_PATH, TASKS_PATH, TASKS_STATUSES } from "@/constants";
+import { TASKS_PATH, TASKS_STATUSES } from "@/constants";
 
 /* core */
 import { TaskMaster } from "@/core/taskmaster/TaskMaster";
@@ -13,10 +12,23 @@ import { restartAsync } from "@/core/restart";
 /* utils */
 import { existsAsync } from "@/utils/extras";
 
+/* asks */
+import {
+	askOverwriteConfirmation,
+	askPrdPath,
+	askNumTasksToGenerate,
+	askAdvancedResearchConfirmation,
+	askTaskTag,
+	askDecompositionConfirmation,
+	askStatusSelection,
+	askDisplayOptions,
+	askTaskIdInput,
+} from "@/core/taskmaster/asks";
+
 /* prompt */
 import {
 	tmaiInitMenu_prompt,
-	tmaiGenMenu_prompt,
+	tmaiGenDecMenu_prompt,
 	tmaiManageMenu_prompt,
 	tmaiListNavMenu_prompt,
 	tmaiAddTasksMenu_prompt,
@@ -32,7 +44,6 @@ const tmai = new TaskMaster({
 	isTestMode: false,
 });
 
-/*******  be6e15c7-9970-4578-baf6-d31421004679  *******/
 // TODO: done
 export async function tmaiInitAsync() {
 	const choice = await inquirer.prompt(tmaiInitMenu_prompt);
@@ -50,34 +61,41 @@ export async function tmaiInitAsync() {
 
 // TODO: done
 export async function tmaiGenAsync() {
-	const choice = await inquirer.prompt(tmaiGenMenu_prompt);
+	const choice = await inquirer.prompt(tmaiGenDecMenu_prompt);
 
-	if (choice.tmaiGenMenu === "tmai-parse") {
+	if (choice.tmaiGenDecMenu === "tmai-parse") {
 		const tasksJsonPath = path.join(".taskmaster", "tasks", "tasks.json");
-		const { prdPath } = await inquirer.prompt({
-			type: "input",
-			name: "prdPath",
-			message: "Enter the path to your PRD file:",
-			default: PRD_PATH,
-		});
 
 		if (await existsAsync(tasksJsonPath)) {
-			const { overwrite } = await inquirer.prompt({
-				type: "confirm",
-				name: "overwrite",
-				message: chalk.bgYellow(
-					"tasks.json already exists. Do you want to overwrite it?",
-				),
-			});
-
+			const overwrite = await askOverwriteConfirmation();
 			if (!overwrite) {
 				return restartAsync();
 			}
 		}
 
-		await tmai.parseAsync(prdPath);
-	} else if (choice.tmaiGenMenu === "tmai-gen") {
+		const prdPath = await askPrdPath();
+		const numTasksToGenerate = await askNumTasksToGenerate();
+		const allowAdvancedResearch = await askAdvancedResearchConfirmation();
+		const tag = await askTaskTag();
+
+		await tmai.parseAsync(
+			prdPath,
+			numTasksToGenerate,
+			allowAdvancedResearch,
+			false,
+			tag,
+		);
+	} else if (choice.tmaiGenDecMenu === "tmai-gen") {
 		await tmai.genAsync();
+	} else if (choice.tmaiGenDecMenu === "tmai-dec") {
+		const confirmDecomposition = await askDecompositionConfirmation();
+		if (!confirmDecomposition) {
+			console.log("Decomposition of tasks cancelled!");
+			return restartAsync();
+		}
+
+		const tag = await askTaskTag();
+		await tmai.decomposeAsync(tag);
 	}
 
 	await restartAsync();
@@ -92,52 +110,14 @@ export async function tmaiManageAsync() {
 		case "tmai-listnav": {
 			const { tmaiListNavMenu } = await inquirer.prompt(tmaiListNavMenu_prompt);
 			if (tmaiListNavMenu === "tmai-list") {
-				const { status: validatedStatus } = await inquirer.prompt([
-					{
-						type: "checkbox",
-						name: "status",
-						message: "Select task statuses:",
-						choices: TASKS_STATUSES.map((status) => ({
-							name: status,
-							value: status,
-						})),
-						validate: (input) => {
-							if (!input.length) return "At least one status is required";
-							return true;
-						},
-						filter: (input) => input.join(","),
-					},
-				]);
-				const { quickly, withSubtasks } = await inquirer.prompt([
-					{
-						type: "confirm",
-						name: "quickly",
-						message: "Show tasks quickly ?",
-						default: true,
-					},
-					{
-						type: "confirm",
-						name: "withSubtasks",
-						message: "Show with subtasks ?",
-						default: true,
-					},
-				]);
+				const validatedStatus = await askStatusSelection();
+				const { quickly, withSubtasks } = await askDisplayOptions();
 				await tmai.listAsync(tasks, validatedStatus, quickly, withSubtasks);
 			} else if (tmaiListNavMenu === "tmai-show") {
 				console.log(
 					await tmai.listQuickAsync(tasks, TASKS_STATUSES.join(","), true),
 				);
-				const { taskId } = await inquirer.prompt({
-					type: "input",
-					name: "taskId",
-					message: "Enter the task ID:",
-					validate: (input) => {
-						if (!input || !/^(\d+)(\.\d+)*$/.test(input)) {
-							return "Invalid task ID. Must be an integer or hierarchical ID (e.g. 1, 2.1, 5.1.1)";
-						}
-						return true;
-					},
-				});
+				const taskId = await askTaskIdInput();
 				await tmai.showAsync(taskId);
 			} else if (tmaiListNavMenu === "tmai-next") {
 				await tmai.nextAsync();

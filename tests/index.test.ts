@@ -9,6 +9,11 @@ import type {
 } from "../src/@types/tasks";
 import stripAnsi from "strip-ansi";
 
+const tmai = new TaskMaster({
+	tasksFilePath: "tasks.json",
+	isTestMode: true,
+});
+
 // Helper to create test tasks
 function createTask(
 	id: number,
@@ -46,11 +51,6 @@ function createSubtask(
 }
 
 describe("TaskMaster.listQuickAsync", () => {
-	const tmai = new TaskMaster({
-		tasksFilePath: "tasks.json",
-		isTestMode: true,
-	});
-
 	test("displays a task without subtasks", async () => {
 		const tasks: I_Tasks = {
 			master: {
@@ -141,6 +141,39 @@ describe("TaskMaster.listQuickAsync", () => {
 		expect(plainResult).toContain("[priority: low]");
 	});
 
+	test("displays all statuses correctly", async () => {
+		const statuses: Status[] = [
+			"pending",
+			"in-progress",
+			"done",
+			"review",
+			"deferred",
+			"cancelled",
+			"todo",
+			"blocked",
+		];
+		const tasks: I_Tasks = {
+			master: {
+				tasks: statuses.map((status, index) =>
+					createTask(index + 1, `Task ${status}`, status),
+				),
+				metadata: {
+					created: new Date(),
+					updated: new Date(),
+					description: "",
+				},
+			},
+		};
+
+		const result = await tmai.listQuickAsync(tasks, "", true);
+		const plainResult = stripAnsi(result);
+
+		// Vérifie que chaque statut est affiché correctement
+		for (const status of statuses) {
+			expect(plainResult).toContain(status);
+		}
+	});
+
 	test("displays a message when there are no tasks", async () => {
 		const tasks: I_Tasks = {
 			master: {
@@ -162,9 +195,14 @@ describe("TaskMaster.listQuickAsync", () => {
 		const tasks: I_Tasks = {
 			master: {
 				tasks: [
-					createTask(1, "Task 1", "done"),
-					createTask(2, "Task 2", "in-progress"),
-					createTask(3, "Task 3", "blocked"),
+					createTask(1, "Task done", "done"),
+					createTask(2, "Task in-progress", "in-progress"),
+					createTask(3, "Task blocked", "blocked"),
+					createTask(4, "Task pending", "pending"),
+					createTask(5, "Task review", "review"),
+					createTask(6, "Task deferred", "deferred"),
+					createTask(7, "Task cancelled", "cancelled"),
+					createTask(8, "Task todo", "todo"),
 				],
 				metadata: {
 					created: new Date(),
@@ -174,11 +212,24 @@ describe("TaskMaster.listQuickAsync", () => {
 			},
 		};
 
-		const result = await tmai.listQuickAsync(tasks, "done,blocked", true);
-		const plainResult = stripAnsi(result);
-		expect(plainResult).toContain("Task 1");
-		expect(plainResult).toContain("Task 3");
-		expect(plainResult).not.toContain("Task 2");
+		// Test de plusieurs combinaisons de statuts
+		const result1 = await tmai.listQuickAsync(
+			tasks,
+			"done,blocked,cancelled",
+			true,
+		);
+		const plainResult1 = stripAnsi(result1);
+		expect(plainResult1).toContain("Task done");
+		expect(plainResult1).toContain("Task blocked");
+		expect(plainResult1).toContain("Task cancelled");
+		expect(plainResult1).not.toContain("Task in-progress");
+		expect(plainResult1).not.toContain("Task pending");
+
+		// Test d'un seul statut
+		const result2 = await tmai.listQuickAsync(tasks, "review", true);
+		const plainResult2 = stripAnsi(result2);
+		expect(plainResult2).toContain("Task review");
+		expect(plainResult2).not.toContain("Task done");
 	});
 
 	test("filters subtasks by status correctly", async () => {
@@ -186,9 +237,11 @@ describe("TaskMaster.listQuickAsync", () => {
 			master: {
 				tasks: [
 					createTask(1, "Parent Task", "todo", "medium", [
-						createSubtask(1, "Subtask 1", "done"),
-						createSubtask(2, "Subtask 2", "blocked"),
-						createSubtask(3, "Subtask 3", "in-progress"),
+						createSubtask(1, "Subtask done", "done"),
+						createSubtask(2, "Subtask blocked", "blocked"),
+						createSubtask(3, "Subtask in-progress", "in-progress"),
+						createSubtask(4, "Subtask review", "review"),
+						createSubtask(5, "Subtask cancelled", "cancelled"),
 					]),
 				],
 				metadata: {
@@ -199,12 +252,18 @@ describe("TaskMaster.listQuickAsync", () => {
 			},
 		};
 
-		const result = await tmai.listQuickAsync(tasks, "done,blocked", true);
+		const result = await tmai.listQuickAsync(
+			tasks,
+			"done,blocked,cancelled",
+			true,
+		);
 		const plainResult = stripAnsi(result);
 		expect(plainResult).toContain("Parent Task");
-		expect(plainResult).toContain("Subtask 1");
-		expect(plainResult).toContain("Subtask 2");
-		expect(plainResult).not.toContain("Subtask 3");
+		expect(plainResult).toContain("Subtask done");
+		expect(plainResult).toContain("Subtask blocked");
+		expect(plainResult).toContain("Subtask cancelled");
+		expect(plainResult).not.toContain("Subtask in-progress");
+		expect(plainResult).not.toContain("Subtask review");
 	});
 
 	test("truncates long titles", async () => {

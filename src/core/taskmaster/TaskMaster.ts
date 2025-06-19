@@ -181,28 +181,42 @@ export class TaskMaster {
 	}
 
 	// ==============================================
-	// Method for Task Generation
+	// Method for Generation and Decomposition
 	// ==============================================
 
 	// TODO: done
 	/**
 	 * @description Parses a PRD file to generate tasks
-	 * @param inputFile Path to the PRD file
+	 * @param inputFilePath Path to the PRD file
+	 * @param numTasksToGenerate Number of tasks to generate (default: 10)
+	 * @param allowAdvancedResearch Allow advanced research for task generation
+	 * @param appendToExistingTasks Whether to append to existing tasks
+	 * @param tag tag for the generated tasks
 	 */
-	public async parseAsync(inputFile: string): Promise<void> {
+	public async parseAsync(
+		inputFilePath: string,
+		numTasksToGenerate: number,
+		allowAdvancedResearch: boolean,
+		appendToExistingTasks: boolean,
+		tag: string,
+	): Promise<void> {
 		const oraOptions = {
-			text: `Parsing PRD file: ${chalk.bold(inputFile)}...`,
+			text: `Parsing PRD file: ${chalk.bold(inputFilePath)}...`,
 			successText: chalk.bgGreen("PRD parsed successfully!"),
 			failText: chalk.bgRed("Failed to parse PRD file"),
 		};
 
+		const argv = [
+			"parse-prd",
+			`--input=${inputFilePath}`,
+			`--num-tasks=${numTasksToGenerate}`,
+			allowAdvancedResearch ? "--research" : "",
+			appendToExistingTasks ? "--append" : "",
+			tag ? `--tag=${tag}` : "",
+		].filter(Boolean);
+
 		await oraPromise(
-			runCommandAsync(
-				"task-master",
-				["parse-prd", `--input=${inputFile}`],
-				false,
-				false,
-			),
+			runCommandAsync("task-master", argv, false, false),
 			oraOptions,
 		);
 	}
@@ -234,6 +248,29 @@ export class TaskMaster {
 		}
 	}
 
+	// TODO: done
+	/**
+	 * @description Decomposes all tasks using AI
+	 * @param tag tag for the tasks to decompose
+	 */
+	public async decomposeAsync(tag: string): Promise<void> {
+		const oraOptions = {
+			text: "Decomposing tasks ...",
+			successText: chalk.bgGreen("Tasks decomposed successfully!"),
+			failText: chalk.bgRed("Failed to decompose tasks"),
+		};
+
+		await oraPromise(
+			runCommandAsync(
+				"task-master",
+				["expand", "--all", tag ? `--tag=${tag}` : ""],
+				false,
+				false,
+			),
+			oraOptions,
+		);
+	}
+
 	// ==============================================
 	// Method for Task Listing and Viewing
 	// ==============================================
@@ -262,6 +299,9 @@ export class TaskMaster {
 				done: { icon: figures.tick, color: chalk.green },
 				blocked: { icon: figures.cross, color: chalk.red },
 				pending: { icon: figures.ellipsis, color: chalk.gray },
+				review: { icon: figures.star, color: chalk.blue },
+				deferred: { icon: figures.arrowDown, color: chalk.magenta },
+				cancelled: { icon: figures.cross, color: chalk.redBright },
 			};
 
 			const config = statusMap[status] || {

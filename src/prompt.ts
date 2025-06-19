@@ -25,26 +25,22 @@ export const mainMenu_prompt = [
 			},
 			new inquirer.Separator("―――――――――――――――――――――――――――――――――――"),
 			{
-				name: `${emoji.get("page_facing_up")} Task generation (AI)`,
+				name: `${emoji.get("page_facing_up")} Generation and Decomposition`,
 				value: "tmai-gen",
 			},
 			{
-				name: `${emoji.get("heavy_check_mark")}  Task management (AI)`,
+				name: `${emoji.get("heavy_check_mark")}  Task management`,
 				value: "tmai-manage",
 			},
 			{
-				name: `${emoji.get("link")} Dependencies (AI)`,
+				name: `${emoji.get("link")} Dependencies`,
 				value: "tmai-deps",
 			},
 			{
-				name: `${emoji.get("bar_chart")} Analysis and Decomposition (AI)`,
+				name: `${emoji.get("bar_chart")} Analysis, Report and Documentation`,
 				value: "tmai-analysis",
 			},
 			new inquirer.Separator("―――――――――――――――――――――――――――――――――――"),
-			{
-				name: `${emoji.get("books")} Documentation`,
-				value: "tmai-docs",
-			},
 			...(DEV_MODE
 				? [
 						{
@@ -95,22 +91,22 @@ export const tmaiInitMenu_prompt = [
 	},
 ];
 
-// TODO: done
+// TODO: in-progress
 // ==============================
-// Task generation (AI) menu
+// Generation and Decomposition menu
 // ==============================
 
-export const tmaiGenMenu_prompt = [
+export const tmaiGenDecMenu_prompt = [
 	{
 		type: "list",
-		name: "tmaiGenMenu",
+		name: "tmaiGenDecMenu",
 		message: chalk.bgBlue("Choose an operation"),
 		loop: true,
 		pageSize: 7,
 		choices: [
-			new inquirer.Separator("=== Task generation (AI) ==="),
+			new inquirer.Separator("=== Generation and Decomposition ==="),
 			{
-				name: `${emoji.get("notebook")} Generate tasks from PRD`,
+				name: `${emoji.get("notebook")} Generate tasks from PRD (AI)`,
 				value: "tmai-parse",
 			},
 			{
@@ -119,13 +115,17 @@ export const tmaiGenMenu_prompt = [
 				)} Generate task files (from tasks.json) `,
 				value: "tmai-gen",
 			},
+			{
+				name: `${emoji.get("factory")} Decompose all tasks (AI)`,
+				value: "tmai-dec",
+			},
 		],
 	},
 ];
 
-// TODO: in-progress
+// TODO: validate
 // ==============================
-// Task management (AI) menu
+// Task management menu
 // ==============================
 
 export const tmaiManageMenu_prompt = [
@@ -136,7 +136,7 @@ export const tmaiManageMenu_prompt = [
 		loop: true,
 		pageSize: 10,
 		choices: [
-			new inquirer.Separator("=== Task management (AI) ==="),
+			new inquirer.Separator("=== Task management ==="),
 			{
 				name: `${emoji.get("link")} List and Navigation`,
 				value: "tmai-listnav",
@@ -163,7 +163,7 @@ export const tmaiManageMenu_prompt = [
 
 // TODO: done
 // ==============================
-// Task list & navigation menu
+// Task list and navigation menu
 // ==============================
 
 export const tmaiListNavMenu_prompt = [
@@ -191,7 +191,7 @@ export const tmaiListNavMenu_prompt = [
 	},
 ];
 
-// TODO: pending
+// TODO: in-progress
 // ==============================
 // Adding tasks menu
 // ==============================
@@ -202,24 +202,28 @@ export const tmaiAddTasksMenu_prompt = [
 		name: "tmaiAddTasksMenu",
 		message: chalk.bgBlue("Choose an operation"),
 		loop: true,
-		pageSize: 7,
+		pageSize: 10,
 		choices: [
 			new inquirer.Separator("=== Adding tasks ==="),
 			{
-				name: `${emoji.get("heavy_plus_sign")} Add task with AI`,
-				value: "tmai-manage-add-task-ai",
+				name: `${emoji.get("heavy_plus_sign")} Add task with (AI)`,
+				value: "tmai-addtaskai",
 			},
 			{
-				name: `${emoji.get("heavy_plus_sign")} Add task with dependencies`,
-				value: "tmai-manage-add-task-deps",
+				name: `${emoji.get("heavy_plus_sign")} Add task (manually)`,
+				value: "tmai-addtaskmanual",
 			},
 			{
-				name: `${emoji.get("heavy_plus_sign")} Add existing task as subtask`,
-				value: "tmai-manage-add-subtask-existing",
+				name: `${emoji.get("heavy_plus_sign")} Add tasks from PRD (AI)`,
+				value: "tmai-addtasksprd",
 			},
 			{
-				name: `${emoji.get("heavy_plus_sign")} Add manual subtask`,
-				value: "tmai-manage-add-subtask-manual",
+				name: `${emoji.get("heavy_plus_sign")} Add subtask (AI)`,
+				value: "tmai-addsubtaskai",
+			},
+			{
+				name: `${emoji.get("heavy_plus_sign")} Add subtask (manually)`,
+				value: "tmai-addsubtaskmanual",
 			},
 		],
 	},
@@ -352,7 +356,7 @@ export const tmaiDepsMenu_prompt = [
 		loop: true,
 		pageSize: 7,
 		choices: [
-			new inquirer.Separator("=== Dependencies (AI) ==="),
+			new inquirer.Separator("=== Dependencies ==="),
 			{
 				name: `${emoji.get("paperclip")} Add dependency`,
 				value: "tmai-deps-add",
@@ -377,18 +381,18 @@ export const tmaiDepsMenu_prompt = [
 
 // TODO: pending
 // ==============================
-// Analysis and Decomposition menu
+// Analysis menu
 // ==============================
 
-export const tmaiAnalysisMenu_prompt = [
+export const tmaiAnalysisReportDocs_prompt = [
 	{
 		type: "list",
-		name: "tmaiAnalysisMenu",
+		name: "tmaiAnalysisReportDocs",
 		message: chalk.bgBlue("Choose an operation"),
 		loop: true,
 		pageSize: 7,
 		choices: [
-			new inquirer.Separator("=== Analysis and Decomposition (AI) ==="),
+			new inquirer.Separator("=== Analysis, Report and Documentation ==="),
 			{
 				name: `${emoji.get("bar_chart")} Analyze task complexity`,
 				value: "tmai-analysis-complexity",
@@ -397,32 +401,6 @@ export const tmaiAnalysisMenu_prompt = [
 				name: `${emoji.get("page_with_curl")} Show complexity report`,
 				value: "tmai-analysis-complexity-report",
 			},
-			{
-				name: `${emoji.get("fork_and_knife")} Decompose task`,
-				value: "tmai-analysis-expand",
-			},
-			{
-				name: `${emoji.get("factory")} Decompose all tasks`,
-				value: "tmai-analysis-expand-all",
-			},
-		],
-	},
-];
-
-// TODO: pending
-// ==============================
-// Documentation menu
-// ==============================
-
-export const tmaiDocsMenu_prompt = [
-	{
-		type: "list",
-		name: "tmaiDocsMenu",
-		message: chalk.bgBlue("Choose an operation"),
-		loop: true,
-		pageSize: 7,
-		choices: [
-			new inquirer.Separator("=== Documentation ==="),
 			{
 				name: `${emoji.get("books")} Sync tasks with README.md`,
 				value: "tmai-docs-sync-readme",
