@@ -35,7 +35,7 @@
 		"paths": {
 			"@/*": ["./src/*"]
 		},
-		"types": []
+		"types": ["bun-types"]
 	},
 	"include": ["*.ts", "**/*.ts"],
 	"exclude": ["./node_modules"]
