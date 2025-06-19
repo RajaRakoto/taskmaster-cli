@@ -191,14 +191,14 @@ export class TaskMaster {
 	 * @param numTasksToGenerate Number of tasks to generate (default: 10)
 	 * @param allowAdvancedResearch Allow advanced research for task generation
 	 * @param appendToExistingTasks Whether to append to existing tasks
-	 * @param tag Optional tag for the generated tasks
+	 * @param tag tag for the generated tasks
 	 */
 	public async parseAsync(
 		inputFilePath: string,
 		numTasksToGenerate: number,
 		allowAdvancedResearch: boolean,
 		appendToExistingTasks: boolean,
-		tag?: string,
+		tag: string,
 	): Promise<void> {
 		const oraOptions = {
 			text: `Parsing PRD file: ${chalk.bold(inputFilePath)}...`,
@@ -251,8 +251,9 @@ export class TaskMaster {
 	// TODO: done
 	/**
 	 * @description Decomposes all tasks using AI
+	 * @param tag tag for the tasks to decompose
 	 */
-	public async decomposeAsync(): Promise<void> {
+	public async decomposeAsync(tag: string): Promise<void> {
 		const oraOptions = {
 			text: "Decomposing tasks ...",
 			successText: chalk.bgGreen("Tasks decomposed successfully!"),
@@ -260,7 +261,12 @@ export class TaskMaster {
 		};
 
 		await oraPromise(
-			runCommandAsync("task-master", ["expand", "--all"], false, false),
+			runCommandAsync(
+				"task-master",
+				["expand", "--all", tag ? `--tag=${tag}` : ""],
+				false,
+				false,
+			),
 			oraOptions,
 		);
 	}
