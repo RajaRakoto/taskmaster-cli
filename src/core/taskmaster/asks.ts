@@ -3,7 +3,25 @@ import inquirer from "inquirer";
 import chalk from "chalk";
 
 /* constants */
-import { PRD_PATH, TASKS_STATUSES } from "@/constants";
+import {
+	DEFAULT_STATUS,
+	DEFAULT_SUBTASKS_TO_GENERATE,
+	DEFAULT_TAG,
+	DEFAULT_TASKS_TO_GENERATE,
+	MAX_DESCRIPTION_LENGTH,
+	MAX_DETAILS_LENGTH,
+	MAX_PARENT_ID,
+	MAX_PROMPT_LENGTH,
+	MAX_SUBTASKS_TO_GENERATE,
+	MAX_TASKS_TO_GENERATE,
+	MAX_TITLE_LENGTH,
+	MIN_PARENT_ID,
+	MIN_SUBTASKS_TO_GENERATE,
+	MIN_TASKS_TO_GENERATE,
+	PRD_PATH,
+	TASKS_PRIORITIES,
+	TASKS_STATUSES,
+} from "@/constants";
 
 // ===============================
 
@@ -50,11 +68,15 @@ export async function askNumTasksToGenerate() {
 		type: "number",
 		name: "numTasksToGenerate",
 		message: "Enter the number of tasks to generate:",
-		default: 10,
+		default: DEFAULT_TASKS_TO_GENERATE,
 		validate: (input) => {
 			const num = Number(input);
-			if (Number.isNaN(num) || num < 3 || num > 30) {
-				return "Please enter a valid number between 3 and 30";
+			if (
+				Number.isNaN(num) ||
+				num < MIN_TASKS_TO_GENERATE ||
+				num > MAX_TASKS_TO_GENERATE
+			) {
+				return `Please enter a valid number between ${MIN_TASKS_TO_GENERATE} and ${MAX_TASKS_TO_GENERATE}`;
 			}
 			return true;
 		},
@@ -69,7 +91,7 @@ export async function askAdvancedResearchConfirmation() {
 	const { allowAdvancedResearch } = await inquirer.prompt({
 		type: "confirm",
 		name: "allowAdvancedResearch",
-		message: "Allow advanced research for task generation ?",
+		message: "Allow advanced research for task generation?",
 		default: false,
 	});
 	return allowAdvancedResearch;
@@ -83,7 +105,7 @@ export async function askTaskTag() {
 		type: "input",
 		name: "tag",
 		message: "Enter a tag for the tasks:",
-		default: "master",
+		default: DEFAULT_TAG,
 		validate: (input) => {
 			const regex = /^[a-z0_9_]+$/;
 			if (!regex.test(input)) {
@@ -170,4 +192,186 @@ export async function askTaskIdInput() {
 		},
 	});
 	return taskId;
+}
+
+/**
+ * @description Asks the user for the task creation prompt
+ */
+export async function askTaskPrompt() {
+	const { prompt } = await inquirer.prompt({
+		type: "input",
+		name: "prompt",
+		message: "Enter prompt:",
+		validate: (input) => {
+			if (!input || input.trim().length < MAX_PROMPT_LENGTH) {
+				return `Please enter a detailed task description (at least ${MAX_PROMPT_LENGTH} characters)`;
+			}
+			return true;
+		},
+	});
+	return prompt;
+}
+
+/**
+ * @description Asks the user for manual task parameters
+ */
+export async function askTaskManualParams() {
+	return await inquirer.prompt([
+		{
+			type: "input",
+			name: "title",
+			message: "Enter task title:",
+			validate: (input) => {
+				if (!input || input.trim().length < MAX_TITLE_LENGTH) {
+					return `Title must be at least ${MAX_TITLE_LENGTH} characters`;
+				}
+				return true;
+			},
+		},
+		{
+			type: "input",
+			name: "description",
+			message: "Enter task description:",
+			validate: (input) => {
+				if (!input || input.trim().length < MAX_DESCRIPTION_LENGTH) {
+					return `Description must be at least ${MAX_DESCRIPTION_LENGTH} characters`;
+				}
+				return true;
+			},
+		},
+		{
+			type: "input",
+			name: "details",
+			message: "Enter implementation details:",
+			validate: (input) => {
+				if (!input || input.trim().length < MAX_DETAILS_LENGTH) {
+					return `Details must be at least ${MAX_DETAILS_LENGTH} characters`;
+				}
+				return true;
+			},
+		},
+		{
+			type: "list",
+			name: "priority",
+			message: "Select task priority:",
+			choices: TASKS_PRIORITIES,
+		},
+		{
+			type: "input",
+			name: "dependencies",
+			message: "Enter dependency IDs (comma separated):",
+			filter: (input) => input.replace(/\s+/g, ""),
+			validate: (input) => {
+				if (input && !/^(\d+,)*\d+$/.test(input)) {
+					return "Invalid dependency format. Use comma-separated numbers (e.g: 1,2,3.1,1.3)";
+				}
+				return true;
+			},
+		},
+	]);
+}
+
+/**
+ * @description Asks the user for the parent task ID
+ */
+export async function askSubtaskParentId() {
+	const { parentId } = await inquirer.prompt({
+		type: "number",
+		name: "parentId",
+		message: "Enter parent task ID:",
+		validate: (input) => {
+			if (
+				Number.isNaN(input) ||
+				input < MIN_PARENT_ID ||
+				input > MAX_PARENT_ID
+			) {
+				return `Please enter a number between ${MIN_PARENT_ID} and ${MAX_PARENT_ID}`;
+			}
+			return true;
+		},
+	});
+	return parentId;
+}
+
+/**
+ * @description Asks the user for the number of subtasks to generate
+ */
+export async function askNumSubtasks() {
+	const { num } = await inquirer.prompt({
+		type: "number",
+		name: "num",
+		message: "Number of subtasks to generate:",
+		default: DEFAULT_SUBTASKS_TO_GENERATE,
+		validate: (input) => {
+			if (
+				Number.isNaN(input) ||
+				input < MIN_SUBTASKS_TO_GENERATE ||
+				input > MAX_SUBTASKS_TO_GENERATE
+			) {
+				return `Please enter a number between ${MIN_SUBTASKS_TO_GENERATE} and ${MAX_SUBTASKS_TO_GENERATE}`;
+			}
+			return true;
+		},
+	});
+	return num;
+}
+
+/**
+ * @description Asks the user for manual subtask parameters
+ */
+export async function askSubtaskManualParams() {
+	return await inquirer.prompt([
+		{
+			type: "input",
+			name: "title",
+			message: "Enter subtask title:",
+			validate: (input) => {
+				if (!input || input.trim().length < MAX_TITLE_LENGTH) {
+					return `Title must be at least ${MAX_TITLE_LENGTH} characters`;
+				}
+				return true;
+			},
+		},
+		{
+			type: "input",
+			name: "description",
+			message: "Enter subtask description:",
+			validate: (input) => {
+				if (!input || input.trim().length < MAX_DESCRIPTION_LENGTH) {
+					return `Description must be at least ${MAX_DESCRIPTION_LENGTH} characters`;
+				}
+				return true;
+			},
+		},
+		{
+			type: "input",
+			name: "details",
+			message: "Enter implementation details:",
+			validate: (input) => {
+				if (!input || input.trim().length < MAX_DETAILS_LENGTH) {
+					return `Details must be at least ${MAX_DETAILS_LENGTH} characters`;
+				}
+				return true;
+			},
+		},
+		{
+			type: "input",
+			name: "dependencies",
+			message: "Enter dependency IDs (comma separated):",
+			filter: (input) => input.replace(/\s+/g, ""),
+			validate: (input) => {
+				if (input && !/^(\d+,)*\d+$/.test(input)) {
+					return "Invalid dependency format. Use comma-separated numbers (e.g: 1,2,3)";
+				}
+				return true;
+			},
+		},
+		{
+			type: "list",
+			name: "status",
+			message: "Select subtask status:",
+			choices: TASKS_STATUSES,
+			default: DEFAULT_STATUS,
+		},
+	]);
 }
