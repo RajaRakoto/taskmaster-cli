@@ -25,26 +25,22 @@ export const mainMenu_prompt = [
 			},
 			new inquirer.Separator("―――――――――――――――――――――――――――――――――――"),
 			{
-				name: `${emoji.get("page_facing_up")} Task generation (AI)`,
+				name: `${emoji.get("page_facing_up")} Generation and Decomposition`,
 				value: "tmai-gen",
 			},
 			{
-				name: `${emoji.get("heavy_check_mark")}  Task management (AI)`,
+				name: `${emoji.get("heavy_check_mark")}  Task management`,
 				value: "tmai-manage",
 			},
 			{
-				name: `${emoji.get("link")} Dependencies (AI)`,
+				name: `${emoji.get("link")} Dependencies`,
 				value: "tmai-deps",
 			},
 			{
-				name: `${emoji.get("bar_chart")} Analysis and Decomposition (AI)`,
+				name: `${emoji.get("bar_chart")} Analysis, Report and Documentation`,
 				value: "tmai-analysis",
 			},
 			new inquirer.Separator("―――――――――――――――――――――――――――――――――――"),
-			{
-				name: `${emoji.get("books")} Documentation`,
-				value: "tmai-docs",
-			},
 			...(DEV_MODE
 				? [
 						{
@@ -97,7 +93,7 @@ export const tmaiInitMenu_prompt = [
 
 // TODO: in-progress
 // ==============================
-// Task generation and Decomposition menu
+// Generation and Decomposition menu
 // ==============================
 
 export const tmaiGenDecMenu_prompt = [
@@ -108,7 +104,7 @@ export const tmaiGenDecMenu_prompt = [
 		loop: true,
 		pageSize: 7,
 		choices: [
-			new inquirer.Separator("=== Task generation and Decomposition ==="),
+			new inquirer.Separator("=== Generation and Decomposition ==="),
 			{
 				name: `${emoji.get("notebook")} Generate tasks from PRD (AI)`,
 				value: "tmai-parse",
@@ -146,11 +142,11 @@ export const tmaiManageMenu_prompt = [
 				value: "tmai-listnav",
 			},
 			{
-				name: `${emoji.get("heavy_plus_sign")} Add tasks (AI)`,
+				name: `${emoji.get("heavy_plus_sign")} Add tasks`,
 				value: "tmai-addtasks",
 			},
 			{
-				name: `${emoji.get("pencil2")}  Update tasks (AI)`,
+				name: `${emoji.get("pencil2")}  Update tasks`,
 				value: "tmai-updatetasks",
 			},
 			{
