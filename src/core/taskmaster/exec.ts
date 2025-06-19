@@ -16,7 +16,7 @@ import { existsAsync } from "@/utils/extras";
 /* prompt */
 import {
 	tmaiInitMenu_prompt,
-	tmaiGenMenu_prompt,
+	tmaiGenDecMenu_prompt,
 	tmaiManageMenu_prompt,
 	tmaiListNavMenu_prompt,
 	tmaiAddTasksMenu_prompt,
@@ -50,9 +50,9 @@ export async function tmaiInitAsync() {
 
 // TODO: done
 export async function tmaiGenAsync() {
-	const choice = await inquirer.prompt(tmaiGenMenu_prompt);
+	const choice = await inquirer.prompt(tmaiGenDecMenu_prompt);
 
-	if (choice.tmaiGenMenu === "tmai-parse") {
+	if (choice.tmaiGenDecMenu === "tmai-parse") {
 		const tasksJsonPath = path.join(".taskmaster", "tasks", "tasks.json");
 		const { prdPath } = await inquirer.prompt({
 			type: "input",
@@ -76,7 +76,7 @@ export async function tmaiGenAsync() {
 		}
 
 		await tmai.parseAsync(prdPath);
-	} else if (choice.tmaiGenMenu === "tmai-gen") {
+	} else if (choice.tmaiGenDecMenu === "tmai-gen") {
 		await tmai.genAsync();
 	}
 
