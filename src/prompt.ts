@@ -161,7 +161,7 @@ export const tmaiManageMenu_prompt = [
 	},
 ];
 
-// TODO: in-progress
+// TODO: done
 // ==============================
 // Task list & navigation menu
 // ==============================

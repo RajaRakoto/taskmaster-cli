@@ -184,7 +184,7 @@ export class TaskMaster {
 	// Method for Task Generation
 	// ==============================================
 
-	// TODO: validate
+	// TODO: done
 	/**
 	 * @description Parses a PRD file to generate tasks
 	 * @param inputFile Path to the PRD file
@@ -238,7 +238,7 @@ export class TaskMaster {
 	// Method for Task Listing and Viewing
 	// ==============================================
 
-	// TODO: validate
+	// TODO: done
 	/**
 	 * @description Lists tasks in a visually formatted tree structure
 	 * @param tasks Tasks data to render
@@ -343,7 +343,7 @@ export class TaskMaster {
 		return output;
 	}
 
-	// TODO: in-progress
+	// TODO: done
 	/**
 	 * @description Lists tasks with optional status filtering and subtask display
 	 * @param quickly List tasks quickly
@@ -376,7 +376,7 @@ export class TaskMaster {
 		}
 	}
 
-	// TODO: in-progress
+	// TODO: done
 	/**
 	 * @description Shows details of a specific task by ID
 	 * @param id Task ID (integer or hierarchical ID like 1.1, 2.3, etc.)
@@ -393,7 +393,8 @@ export class TaskMaster {
 			oraOptions,
 		);
 	}
-	// TODO: in-progress
+
+	// TODO: done
 	/**
 	 * @description Shows the next available task to work on
 	 */
