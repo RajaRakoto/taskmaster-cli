@@ -27,7 +27,10 @@ import {
 
 // ===============================
 
-const tmai = new TaskMaster(TASKS_PATH);
+const tmai = new TaskMaster({
+	tasksFilePath: TASKS_PATH,
+	isTestMode: false,
+});
 
 /*******  be6e15c7-9970-4578-baf6-d31421004679  *******/
 // TODO: done
