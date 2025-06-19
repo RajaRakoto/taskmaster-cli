@@ -54,12 +54,6 @@ export async function tmaiGenAsync() {
 
 	if (choice.tmaiGenDecMenu === "tmai-parse") {
 		const tasksJsonPath = path.join(".taskmaster", "tasks", "tasks.json");
-		const { prdPath } = await inquirer.prompt({
-			type: "input",
-			name: "prdPath",
-			message: "Enter the path to your PRD file:",
-			default: PRD_PATH,
-		});
 
 		if (await existsAsync(tasksJsonPath)) {
 			const { overwrite } = await inquirer.prompt({
@@ -75,7 +69,42 @@ export async function tmaiGenAsync() {
 			}
 		}
 
-		await tmai.parseAsync(prdPath);
+		const { prdPath } = await inquirer.prompt({
+			type: "input",
+			name: "prdPath",
+			message: "Enter the path to your PRD file:",
+			default: PRD_PATH,
+			validate: (input) => {
+				const extension = path.extname(input).toLowerCase();
+				if (extension !== ".txt" && extension !== ".md") {
+					return "Please enter a valid PRD file with .txt or .md extension";
+				}
+				return true;
+			},
+		});
+
+		const { numTasksToGenerate } = await inquirer.prompt({
+			type: "number",
+			name: "numTasksToGenerate",
+			message: "Enter the number of tasks to generate:",
+			validate: (input) => {
+				const num = Number(input);
+				if (Number.isNaN(num) || num < 3 || num > 30) {
+					return "Please enter a valid number between 3 and 30";
+				}
+				return true;
+			},
+			default: 10,
+		});
+
+		const { allowAdvancedResearch } = await inquirer.prompt({
+			type: "confirm",
+			name: "allowAdvancedResearch",
+			message: "Allow advanced research for task generation ?",
+			default: false,
+		});
+
+		await tmai.parseAsync(prdPath, numTasksToGenerate, allowAdvancedResearch, false);
 	} else if (choice.tmaiGenDecMenu === "tmai-gen") {
 		await tmai.genAsync();
 	}
