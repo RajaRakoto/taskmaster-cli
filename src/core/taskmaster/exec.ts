@@ -124,6 +124,7 @@ export async function tmaiManageAsync() {
 				]);
 				await tmai.listAsync(tasks, validatedStatus, quickly, withSubtasks);
 			} else if (tmaiListNavMenu === "tmai-show") {
+				console.log(await tmai.listQuickAsync(tasks, TASKS_STATUSES.join(","), true));
 				const { taskId } = await inquirer.prompt({
 					type: "input",
 					name: "taskId",
