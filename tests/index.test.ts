@@ -9,6 +9,11 @@ import type {
 } from "../src/@types/tasks";
 import stripAnsi from "strip-ansi";
 
+const tmai = new TaskMaster({
+	tasksFilePath: "tasks.json",
+	isTestMode: true,
+});
+
 // Helper to create test tasks
 function createTask(
 	id: number,
@@ -46,11 +51,6 @@ function createSubtask(
 }
 
 describe("TaskMaster.listQuickAsync", () => {
-	const tmai = new TaskMaster({
-		tasksFilePath: "tasks.json",
-		isTestMode: true,
-	});
-
 	test("displays a task without subtasks", async () => {
 		const tasks: I_Tasks = {
 			master: {
