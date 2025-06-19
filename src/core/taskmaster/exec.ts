@@ -75,9 +75,9 @@ export async function tmaiGenAsync() {
 			message: "Enter the path to your PRD file:",
 			default: PRD_PATH,
 			validate: (input) => {
-				const extension = path.extname(input).toLowerCase();
-				if (extension !== ".txt" && extension !== ".md") {
-					return "Please enter a valid PRD file with .txt or .md extension";
+				const regex = /^[\w\s/]+(?:\.(?:txt|md))$/;
+				if (!regex.test(input)) {
+					return "Please enter a valid PRD file with .txt or .md extension and without special characters, except for /";
 				}
 				return true;
 			},
@@ -104,11 +104,26 @@ export async function tmaiGenAsync() {
 			default: false,
 		});
 
+		const { tag } = await inquirer.prompt({
+			type: "input",
+			name: "tag",
+			message: "Enter a tag for the tasks:",
+			default: "master",
+			validate: (input) => {
+				const regex = /^[a-z0-9_]+$/;
+				if (!regex.test(input)) {
+					return "Please enter a valid tag with only lowercase letters, numbers, and underscores (_).";
+				}
+				return true;
+			},
+		});
+
 		await tmai.parseAsync(
 			prdPath,
 			numTasksToGenerate,
 			allowAdvancedResearch,
 			false,
+			tag,
 		);
 	} else if (choice.tmaiGenDecMenu === "tmai-gen") {
 		await tmai.genAsync();
@@ -125,6 +140,7 @@ export async function tmaiGenAsync() {
 			console.log("Decomposition of tasks cancelled!");
 			return restartAsync();
 		}
+
 		await tmai.decomposeAsync();
 	}
 
