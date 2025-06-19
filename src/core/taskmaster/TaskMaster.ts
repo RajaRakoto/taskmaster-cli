@@ -31,21 +31,32 @@ import type { I_Tasks, Status, Priority } from "@/@types/tasks";
  */
 export class TaskMaster {
 	private _tasksFilePath: string;
+	private _isTestMode: boolean;
 
-	constructor(tasksFilePath: string) {
+	constructor({
+		tasksFilePath,
+		isTestMode,
+	}: {
+		tasksFilePath: string;
+		isTestMode: boolean;
+	}) {
 		this._tasksFilePath = tasksFilePath;
+		this._isTestMode = isTestMode;
 
-		console.log(chalk.bgMagenta("TMAI Core initialized !"));
-		if (!fs.existsSync(this._tasksFilePath)) {
-			console.log(
-				chalk.bgYellow(
-					"tasks.json not found. Please install/configure task-master and generate tasks.json from the PRD file first.",
-				),
-			);
-		} else {
-			console.log(
-				chalk.bgGreen(`tasks.json found on "${this._tasksFilePath}"`),
-			);
+		console.info(chalk.bgMagenta("TaskMaster AI Core initialized"));
+
+		if (!this._isTestMode) {
+			if (!fs.existsSync(this._tasksFilePath)) {
+				console.warn(
+					chalk.bgYellow(
+						"tasks.json not found. Please set up TaskMaster and generate tasks.json from the PRD file.",
+					),
+				);
+			} else {
+				console.info(
+					chalk.bgGreen(`Found tasks.json at "${this._tasksFilePath}"`),
+				);
+			}
 		}
 	}
 
@@ -278,13 +289,15 @@ export class TaskMaster {
 			: null;
 
 		// Build task tree output manually
-		let output = `${chalk.bold.underline("📋 Liste des Tâches")}\n\n`;
+		let output = `\n${chalk.bold.underline("TASKS LIST")}\n`;
+		let hasTasks = false;
 
 		for (const task of tasks.master.tasks) {
 			// Skip task if status filter doesn't match
 			if (statusFilters && !statusFilters.includes(task.status)) {
 				continue;
 			}
+			hasTasks = true;
 
 			const title = truncate(task.title, MAX_TITLE_LENGTH);
 			output +=
@@ -300,9 +313,15 @@ export class TaskMaster {
 
 					output +=
 						`  ${chalk.dim("↳")} ${chalk.bold(`#${hierarchicalId}`)} ` +
-						`${chalk.magenta(subTitle)} [status: ${formatStatus(subtask.status)}]\n`;
+						`${chalk.magenta(subTitle)} [status: ${formatStatus(
+							subtask.status,
+						)}]\n`;
 				}
 			}
+		}
+
+		if (!hasTasks) {
+			output += chalk.yellow("No tasks to display.\n");
 		}
 
 		return output;
