@@ -181,28 +181,41 @@ export class TaskMaster {
 	}
 
 	// ==============================================
-	// Method for Task Generation
+	// Method for Generation and Decomposition
 	// ==============================================
 
-	// TODO: done
 	/**
 	 * @description Parses a PRD file to generate tasks
-	 * @param inputFile Path to the PRD file
+	 * @param inputFilePath Path to the PRD file
+	 * @param numTasksToGenerate Number of tasks to generate (default: 10)
+	 * @param allowAdvancedResearch Allow advanced research for task generation
+	 * @param appendToExistingTasks Whether to append to existing tasks
+	 * @param tag Optional tag for the generated tasks
 	 */
-	public async parseAsync(inputFile: string): Promise<void> {
+	public async parseAsync(
+		inputFilePath: string,
+		numTasksToGenerate: number,
+		allowAdvancedResearch: boolean,
+		appendToExistingTasks: boolean,
+		tag?: string,
+	): Promise<void> {
 		const oraOptions = {
-			text: `Parsing PRD file: ${chalk.bold(inputFile)}...`,
+			text: `Parsing PRD file: ${chalk.bold(inputFilePath)}...`,
 			successText: chalk.bgGreen("PRD parsed successfully!"),
 			failText: chalk.bgRed("Failed to parse PRD file"),
 		};
 
+		const argv = [
+			"parse-prd",
+			`--input=${inputFilePath}`,
+			`--num-tasks=${numTasksToGenerate}`,
+			allowAdvancedResearch ? "--research" : "",
+			appendToExistingTasks ? "--append" : "",
+			tag ? `--tag=${tag}` : "",
+		].filter(Boolean);
+
 		await oraPromise(
-			runCommandAsync(
-				"task-master",
-				["parse-prd", `--input=${inputFile}`],
-				false,
-				false,
-			),
+			runCommandAsync("task-master", argv, false, false),
 			oraOptions,
 		);
 	}
