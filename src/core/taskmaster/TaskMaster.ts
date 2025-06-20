@@ -450,4 +450,157 @@ export class TaskMaster {
 			oraOptions,
 		);
 	}
+
+	// ==============================================
+	// Method for Task Addition
+	// ==============================================
+
+	// TODO: validate
+	/**
+	 * @description Adds a new task using AI
+	 * @param prompt Description of the task to create
+	 * @param allowAdvancedResearch Use research capabilities
+	 * @param tag Tag context for the task
+	 */
+	public async addTaskByAIAsync(
+		prompt: string,
+		allowAdvancedResearch: boolean,
+		tag: string,
+	): Promise<void> {
+		const oraOptions = {
+			text: `Adding AI-generated task: "${chalk.bold(prompt)}"...`,
+			successText: chalk.bgGreen("Task added successfully!"),
+			failText: chalk.bgRed("Failed to add AI-generated task"),
+		};
+
+		const args = [
+			"add-task",
+			`--prompt=${prompt}`,
+			allowAdvancedResearch ? "--research" : "",
+			tag ? `--tag=${tag}` : "",
+		].filter(Boolean);
+
+		await oraPromise(
+			runCommandAsync("task-master", args, false, false),
+			oraOptions,
+		);
+	}
+
+	// TODO: validate
+	/**
+	 * @description Adds a new task manually
+	 * @param title Task title
+	 * @param description Task description
+	 * @param details Implementation details
+	 * @param priority Task priority level (low, medium, high)
+	 * @param status Task status (pending, in-progress, done, review, deferred, cancelled, todo, blocked)
+	 * @param dependencies Comma-separated dependency IDs (1,2,3)
+	 * @param tag Tag context for the task
+	 */
+	public async addTaskManuallyAsync(
+		title: string,
+		description: string,
+		details: string,
+		priority: Priority,
+		status: Status,
+		dependencies: string,
+		tag: string,
+	): Promise<void> {
+		const oraOptions = {
+			text: `Adding manual task: "${chalk.bold(title)}"...`,
+			successText: chalk.bgGreen("Task added successfully!"),
+			failText: chalk.bgRed("Failed to add manual task"),
+		};
+
+		const args = [
+			"add-task",
+			`--title="${title}"`,
+			`--description="${description}"`,
+			`--details="${details}"`,
+			`--priority=${priority}`,
+			`--status=${status}`,
+			dependencies ? `--dependencies=${dependencies}` : "",
+			tag ? `--tag=${tag}` : "",
+		].filter(Boolean);
+
+		await oraPromise(
+			runCommandAsync("task-master", args, false, false),
+			oraOptions,
+		);
+	}
+
+	// TODO: validate
+	/**
+	 * @description Adds subtasks using AI
+	 * @param parentId Parent task ID
+	 * @param numTasksToGenerate Number of subtasks to generate
+	 * @param allowAdvancedResearch Use research capabilities
+	 */
+	public async addSubtasksByAIAsync(
+		parentId: string,
+		numTasksToGenerate: number,
+		allowAdvancedResearch: boolean,
+	): Promise<void> {
+		const oraOptions = {
+			text: `Adding AI-generated subtasks to task ${chalk.bold(parentId)}...`,
+			successText: chalk.bgGreen("Subtasks added successfully!"),
+			failText: chalk.bgRed("Failed to add AI-generated subtasks"),
+		};
+
+		const args = [
+			"expand",
+			`--id=${parentId}`,
+			`--num=${numTasksToGenerate}`,
+			allowAdvancedResearch ? "--research" : "",
+		].filter(Boolean);
+
+		await oraPromise(
+			runCommandAsync("task-master", args, false, false),
+			oraOptions,
+		);
+	}
+
+	// TODO: validate
+	/**
+	 * @description Adds a subtask manually
+	 * @param parentId Parent task ID
+	 * @param title Subtask title
+	 * @param description Subtask description
+	 * @param details Implementation details
+	 * @param priority Subtask priority level (low, medium, high)
+	 * @param status Subtask status (pending, in-progress, done, review, deferred, cancelled, todo, blocked)
+	 * @param dependencies Comma-separated dependency IDs
+	 * @note This methode does not use tag context as subtasks are usually tied to their parent task
+	 */
+	public async addSubtaskManuallyAsync(
+		parentId: string,
+		title: string,
+		description: string,
+		details: string,
+		priority: Priority,
+		status: Status,
+		dependencies: string,
+	): Promise<void> {
+		const oraOptions = {
+			text: `Adding manual subtask to task ${chalk.bold(parentId)}...`,
+			successText: chalk.bgGreen("Subtask added successfully!"),
+			failText: chalk.bgRed("Failed to add manual subtask"),
+		};
+
+		const args = [
+			"add-subtask",
+			`--id=${parentId}`,
+			`--title="${title}"`,
+			`--description="${description}"`,
+			`--details="${details}"`,
+			`--priority=${priority}`,
+			`--status=${status}`,
+			dependencies ? `--dependencies=${dependencies}` : "",
+		].filter(Boolean);
+
+		await oraPromise(
+			runCommandAsync("task-master", args, false, false),
+			oraOptions,
+		);
+	}
 }
