@@ -3,7 +3,7 @@ import inquirer from "inquirer";
 import path from "node:path";
 
 /* constants */
-import { TASKS_PATH, TASKS_STATUSES } from "@/constants";
+import { MAIN_COMMAND, TASKS_PATH, TASKS_STATUSES } from "@/constants";
 
 /* core */
 import { TaskMaster } from "@/core/taskmaster/TaskMaster";
@@ -45,6 +45,7 @@ import {
 // ===============================
 
 const tmai = new TaskMaster({
+	mainCommand: MAIN_COMMAND,
 	tasksFilePath: TASKS_PATH,
 	isTestMode: false,
 });
@@ -135,55 +136,78 @@ export async function tmaiManageAsync() {
 			);
 			const tag = await askTaskTag();
 
-			if (tmaiAddTasksMenu === "tmai-addtaskai") {
-				const prompt = await askTaskPrompt();
-				const research = await askAdvancedResearchConfirmation();
-				await tmai.addTaskByAIAsync(prompt, research, tag);
-			} else if (tmaiAddTasksMenu === "tmai-addtaskmanual") {
-				const { title, description, details, priority, status, dependencies } =
-					await askTaskManualParams();
-				await tmai.addTaskManuallyAsync(
-					title,
-					description,
-					details,
-					priority,
-					status,
-					dependencies,
-					tag,
-				);
-			} else if (tmaiAddTasksMenu === "tmai-addtasksprd") {
-				const prdPath = await askPrdPath();
-				const numTasksToGenerate = await askNumTasksToGenerate();
-				const allowAdvancedResearch = await askAdvancedResearchConfirmation();
-				await tmai.parseAsync(
-					prdPath,
-					numTasksToGenerate,
-					allowAdvancedResearch,
-					true,
-					tag,
-				);
-			} else if (tmaiAddTasksMenu === "tmai-addsubtaskai") {
-				const parentId = await askSubtaskParentId();
-				const numTasksToGenerate = await askNumSubtasks();
-				const allowAdvancedResearch = await askAdvancedResearchConfirmation();
-				await tmai.addSubtasksByAIAsync(
-					parentId,
-					numTasksToGenerate,
-					allowAdvancedResearch,
-				);
-			} else if (tmaiAddTasksMenu === "tmai-addsubtaskmanual") {
-				const parentId = await askSubtaskParentId();
-				const { title, description, details, priority, status, dependencies } =
-					await askSubtaskManualParams();
-				await tmai.addSubtaskManuallyAsync(
-					parentId,
-					title,
-					description,
-					details,
-					priority,
-					status,
-					dependencies,
-				);
+			switch (tmaiAddTasksMenu) {
+				case "tmai-addtaskai": {
+					const prompt = await askTaskPrompt();
+					const research = await askAdvancedResearchConfirmation();
+					await tmai.addTaskByAIAsync(prompt, research, tag);
+					break;
+				}
+				case "tmai-addtaskmanual": {
+					const {
+						title,
+						description,
+						details,
+						priority,
+						status,
+						dependencies,
+					} = await askTaskManualParams();
+					await tmai.addTaskManuallyAsync(
+						title,
+						description,
+						details,
+						priority,
+						status,
+						dependencies,
+						tag,
+					);
+					break;
+				}
+				case "tmai-addtasksprd": {
+					const prdPath = await askPrdPath();
+					const numTasksToGenerate = await askNumTasksToGenerate();
+					const research = await askAdvancedResearchConfirmation();
+					await tmai.parseAsync(
+						prdPath,
+						numTasksToGenerate,
+						research,
+						true,
+						tag,
+					);
+					break;
+				}
+				case "tmai-addsubtaskai": {
+					const parentId = await askSubtaskParentId();
+					const numTasksToGenerate = await askNumSubtasks();
+					const research = await askAdvancedResearchConfirmation();
+					await tmai.addSubtasksByAIAsync(
+						parentId,
+						numTasksToGenerate,
+						research,
+					);
+					break;
+				}
+				case "tmai-addsubtaskmanual": {
+					const parentId = await askSubtaskParentId();
+					const {
+						title,
+						description,
+						details,
+						priority,
+						status,
+						dependencies,
+					} = await askSubtaskManualParams();
+					await tmai.addSubtaskManuallyAsync(
+						parentId,
+						title,
+						description,
+						details,
+						priority,
+						status,
+						dependencies,
+					);
+					break;
+				}
 			}
 			break;
 		}
