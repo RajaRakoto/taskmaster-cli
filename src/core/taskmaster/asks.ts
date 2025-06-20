@@ -91,7 +91,7 @@ export async function askAdvancedResearchConfirmation() {
 	const { allowAdvancedResearch } = await inquirer.prompt({
 		type: "confirm",
 		name: "allowAdvancedResearch",
-		message: "Allow advanced research for task generation?",
+		message: "Allow advanced research for task generation ?",
 		default: false,
 	});
 	return allowAdvancedResearch;
@@ -257,6 +257,13 @@ export async function askTaskManualParams() {
 			choices: TASKS_PRIORITIES,
 		},
 		{
+			type: "list",
+			name: "status",
+			message: "Select task status:",
+			choices: TASKS_STATUSES,
+			default: DEFAULT_STATUS,
+		},
+		{
 			type: "input",
 			name: "dependencies",
 			message: "Enter dependency IDs (comma separated):",
@@ -355,6 +362,19 @@ export async function askSubtaskManualParams() {
 			},
 		},
 		{
+			type: "list",
+			name: "priority",
+			message: "Select subtask priority:",
+			choices: TASKS_PRIORITIES,
+		},
+		{
+			type: "list",
+			name: "status",
+			message: "Select subtask status:",
+			choices: TASKS_STATUSES,
+			default: DEFAULT_STATUS,
+		},
+		{
 			type: "input",
 			name: "dependencies",
 			message: "Enter dependency IDs (comma separated):",
@@ -365,13 +385,6 @@ export async function askSubtaskManualParams() {
 				}
 				return true;
 			},
-		},
-		{
-			type: "list",
-			name: "status",
-			message: "Select subtask status:",
-			choices: TASKS_STATUSES,
-			default: DEFAULT_STATUS,
 		},
 	]);
 }
