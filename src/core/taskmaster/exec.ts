@@ -23,6 +23,11 @@ import {
 	askStatusSelection,
 	askDisplayOptions,
 	askTaskIdInput,
+	askTaskPrompt,
+	askTaskManualParams,
+	askSubtaskParentId,
+	askNumSubtasks,
+	askSubtaskManualParams,
 } from "@/core/taskmaster/asks";
 
 /* prompt */
@@ -128,8 +133,57 @@ export async function tmaiManageAsync() {
 			const { tmaiAddTasksMenu } = await inquirer.prompt(
 				tmaiAddTasksMenu_prompt,
 			);
-			if (tmaiAddTasksMenu === "tmai-addtasks") {
-				console.log("Executing task addition...");
+			const tag = await askTaskTag();
+
+			if (tmaiAddTasksMenu === "tmai-addtaskai") {
+				const prompt = await askTaskPrompt();
+				const research = await askAdvancedResearchConfirmation();
+				await tmai.addTaskByAIAsync(prompt, research, tag);
+			} else if (tmaiAddTasksMenu === "tmai-addtaskmanual") {
+				const { title, description, details, priority, status, dependencies } =
+					await askTaskManualParams();
+				await tmai.addTaskManuallyAsync(
+					title,
+					description,
+					details,
+					priority,
+					status,
+					dependencies,
+					tag,
+				);
+			} else if (tmaiAddTasksMenu === "tmai-addtasksprd") {
+				const prdPath = await askPrdPath();
+				const numTasksToGenerate = await askNumTasksToGenerate();
+				const allowAdvancedResearch = await askAdvancedResearchConfirmation();
+				await tmai.parseAsync(
+					prdPath,
+					numTasksToGenerate,
+					allowAdvancedResearch,
+					true,
+					tag,
+				);
+			} else if (tmaiAddTasksMenu === "tmai-addsubtaskai") {
+				const parentId = await askSubtaskParentId();
+				const numTasksToGenerate = await askNumSubtasks();
+				const allowAdvancedResearch = await askAdvancedResearchConfirmation();
+				await tmai.addSubtasksByAIAsync(
+					parentId,
+					numTasksToGenerate,
+					allowAdvancedResearch,
+				);
+			} else if (tmaiAddTasksMenu === "tmai-addsubtaskmanual") {
+				const parentId = await askSubtaskParentId();
+				const { title, description, details, priority, status, dependencies } =
+					await askSubtaskManualParams();
+				await tmai.addSubtaskManuallyAsync(
+					parentId,
+					title,
+					description,
+					details,
+					priority,
+					status,
+					dependencies,
+				);
 			}
 			break;
 		}
