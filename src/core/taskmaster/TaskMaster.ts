@@ -704,5 +704,11 @@ export class TaskMaster {
 				}, oraOptions);
 			}
 		}
+
+		const allFilesCleared = TASKS_FILES.every(
+			(filePath) => !fs.existsSync(filePath),
+		);
+
+		if (allFilesCleared) console.log(chalk.green("All task-related files are cleared!"));
 	}
 }
