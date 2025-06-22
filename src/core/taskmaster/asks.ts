@@ -91,7 +91,7 @@ export async function askAdvancedResearchConfirmation() {
 	const { allowAdvancedResearch } = await inquirer.prompt({
 		type: "confirm",
 		name: "allowAdvancedResearch",
-		message: "Allow advanced research for task generation ?",
+		message: "Allow advanced research for task generation?",
 		default: false,
 	});
 	return allowAdvancedResearch;
@@ -163,13 +163,13 @@ export async function askDisplayOptions() {
 		{
 			type: "confirm",
 			name: "quickly",
-			message: "Show tasks quickly ?",
+			message: "Show tasks quickly?",
 			default: true,
 		},
 		{
 			type: "confirm",
 			name: "withSubtasks",
-			message: "Show with subtasks ?",
+			message: "Show with subtasks?",
 			default: true,
 		},
 	]);

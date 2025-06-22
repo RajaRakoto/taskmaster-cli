@@ -99,6 +99,8 @@ export class TaskMaster {
 	 * @param failText Failure message
 	 * @param command Main command to execute
 	 * @param args Command arguments
+	 * @note Escapes command arguments to prevent shell injection
+	 * Handles both quotes and dollar signs which could be dangerous in shell commands
 	 */
 	private async executeCommandAsync(
 		text: string,
@@ -108,8 +110,8 @@ export class TaskMaster {
 		args: string[] = [],
 	): Promise<void> {
 		// Escape the arguments to prevent injections
-		const escapedArgs = args.map(arg =>
-			`"${arg.replace(/"/g, '\\"').replace(/\$/g, '\\$')}"`
+		const escapedArgs = args.map(
+			(arg) => `"${arg.replace(/"/g, '\\"').replace(/\$/g, "\\$")}"`,
 		);
 
 		const oraOptions = {
@@ -118,7 +120,10 @@ export class TaskMaster {
 			failText: chalk.bgRed(failText),
 		};
 
-		await oraPromise(runCommandAsync(command, escapedArgs, false, false), oraOptions);
+		await oraPromise(
+			runCommandAsync(command, escapedArgs, false, false),
+			oraOptions,
+		);
 	}
 
 	// ==============================================
