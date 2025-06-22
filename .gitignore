@@ -71,6 +71,7 @@ typings
 .env.local
 
 # output
+*.zip
 *.tgz
 
 # serverless
