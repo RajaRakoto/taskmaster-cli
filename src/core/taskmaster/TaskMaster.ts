@@ -1,11 +1,12 @@
 /* libs */
 import { oraPromise } from "ora";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, writeFile, rm } from "node:fs/promises";
 import inquirer from "inquirer";
 import path from "node:path";
 import chalk from "chalk";
 import fs from "node:fs";
 import figures from "figures";
+import compressing from "compressing";
 
 /* constants */
 import {
@@ -14,6 +15,9 @@ import {
 	PACKAGE_MANAGERS,
 	TASKMASTER_INIT_MSG,
 	TASKS_FILE_WARN,
+	TASKS_BCK_DEST_PATH,
+	TASKS_SRC_PATH,
+	TASKS_FILES,
 } from "@/constants";
 
 /* extras */
@@ -594,5 +598,111 @@ export class TaskMaster {
 				dependencies ? `--dependencies=${dependencies}` : "",
 			].filter(Boolean),
 		);
+	}
+
+	// ==============================================
+	// Backup, Restore and Clear Methods
+	// ==============================================
+
+	// TODO: done
+	/**
+	 * @description Creates a backup of the .taskmaster directory
+	 * @param slot Slot number (1-3) for the backup
+	 */
+	public async backupAsync(slot: string): Promise<void> {
+		const backupPath = path.join(TASKS_BCK_DEST_PATH, `slot_${slot}.zip`);
+		const backupDir = path.dirname(backupPath);
+
+		if (!fs.existsSync(backupDir)) {
+			await mkdir(backupDir, { recursive: true });
+		}
+
+		// Vérifier si le répertoire source existe
+		if (!fs.existsSync(TASKS_SRC_PATH)) {
+			console.warn(
+				chalk.yellow(
+					`Source directory ${TASKS_SRC_PATH} does not exist. Skipping backup.`,
+				),
+			);
+			return;
+		}
+
+		const oraOptions = {
+			text: `Creating backup in slot ${slot}...`,
+			successText: chalk.bgGreen(
+				`Backup created successfully in slot ${slot}!`,
+			),
+			failText: chalk.bgRed(`Failed to create backup in slot ${slot}`),
+		};
+
+		await oraPromise(async () => {
+			await compressing.zip.compressDir(TASKS_SRC_PATH, backupPath);
+		}, oraOptions);
+	}
+
+	// TODO: done
+	/**
+	 * @description Restores a backup from the specified slot
+	 * @param slot Slot number (1-3) to restore from
+	 */
+	public async restoreAsync(slot: string): Promise<void> {
+		const backupPath = path.join(TASKS_BCK_DEST_PATH, `slot_${slot}.zip`);
+
+		if (!fs.existsSync(backupPath)) {
+			console.warn(
+				chalk.yellow(`No backup found in slot ${slot}. Skipping restore.`),
+			);
+			return;
+		}
+
+		const oraOptions = {
+			text: `Restoring backup from slot ${slot}...`,
+			successText: chalk.bgGreen(
+				`Backup restored successfully from slot ${slot}!`,
+			),
+			failText: chalk.bgRed(`Failed to restore backup from slot ${slot}`),
+		};
+
+		await oraPromise(async () => {
+			if (fs.existsSync(TASKS_SRC_PATH)) {
+				await rm(TASKS_SRC_PATH, { recursive: true, force: true });
+			}
+
+			const parentDir = path.dirname(TASKS_SRC_PATH);
+			if (!fs.existsSync(parentDir)) {
+				await mkdir(parentDir, { recursive: true });
+			}
+
+			await compressing.zip.uncompress(backupPath, parentDir);
+		}, oraOptions);
+	}
+
+	// TODO: done
+	/**
+	 * @description Clears all task-related files and directories
+	 */
+	public async clearTasksAsync(): Promise<void> {
+		for (const filePath of TASKS_FILES) {
+			if (!fs.existsSync(filePath)) continue;
+
+			const { confirm } = await inquirer.prompt({
+				type: "confirm",
+				name: "confirm",
+				message: chalk.red(`Delete ${filePath}?`),
+				default: false,
+			});
+
+			if (confirm) {
+				const oraOptions = {
+					text: `Deleting ${filePath}...`,
+					successText: chalk.bgGreen(`${filePath} deleted successfully!`),
+					failText: chalk.bgRed(`Failed to delete ${filePath}`),
+				};
+
+				await oraPromise(async () => {
+					await rm(filePath, { recursive: true, force: true });
+				}, oraOptions);
+			}
+		}
 	}
 }

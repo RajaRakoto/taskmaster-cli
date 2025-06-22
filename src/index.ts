@@ -7,6 +7,7 @@ import {
 	tmaiInitAsync,
 	tmaiGenAsync,
 	tmaiManageAsync,
+	tmaiBackupRestoreClearAsync,
 } from "@/core/taskmaster/exec";
 
 /* utils */
@@ -57,6 +58,9 @@ export async function taskmasterCLI(): Promise<void> {
 			break;
 		case "tmai-dev":
 			console.log("TM operations for development ...");
+			break;
+		case "tmai-bckrestore":
+			await tmaiBackupRestoreClearAsync();
 			break;
 		case "exit":
 			exitCLI();

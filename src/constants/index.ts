@@ -5,6 +5,8 @@ export const DEV_MODE = true;
 export const FONT_PATH = "fonts/Standard.flf";
 export const PRD_PATH = DEV_MODE ? "docs/PRD-todo.md" : "docs/PRD.md";
 export const TASKS_PATH = ".taskmaster/tasks/tasks.json";
+export const TASKS_SRC_PATH = ".taskmaster";
+export const TASKS_BCK_DEST_PATH = "backups/tmai-backup";
 
 // tasks
 export const MAIN_COMMAND = "task-master";
@@ -18,6 +20,13 @@ export const TASKS_STATUSES = [
 	"cancelled",
 	"todo",
 	"blocked",
+];
+export const TASKS_FILES = [
+	"windsurfrules",
+	".cursor",
+	".roo",
+	".roomodes",
+	".taskmaster",
 ];
 export const DEFAULT_TAG = "master";
 export const DEFAULT_STATUS = "pending";

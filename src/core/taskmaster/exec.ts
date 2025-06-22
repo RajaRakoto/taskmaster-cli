@@ -28,7 +28,10 @@ import {
 	askSubtaskParentId,
 	askNumSubtasks,
 	askSubtaskManualParams,
+	askBackupSlot,
 } from "@/core/taskmaster/asks";
+
+import chalk from "chalk";
 
 /* prompt */
 import {
@@ -40,6 +43,7 @@ import {
 	tmaiUpdateTasksMenu_prompt,
 	tmaiDeleteTasksMenu_prompt,
 	tmaiStatusTrackingMenu_prompt,
+	tmaiBackupRestoreClearClear_prompt,
 } from "@/prompt";
 
 // ===============================
@@ -236,6 +240,47 @@ export async function tmaiManageAsync() {
 			if (tmaiStatusTrackingMenu === "tmai-statustracking") {
 				console.log("Executing status tracking...");
 			}
+			break;
+		}
+		default:
+			console.log("Invalid option selected.");
+	}
+
+	await restartAsync();
+}
+
+// TODO: done
+export async function tmaiBackupRestoreClearAsync() {
+	const { tmaiBackupRestoreClearMenu } = await inquirer.prompt(
+		tmaiBackupRestoreClearClear_prompt,
+	);
+
+	switch (tmaiBackupRestoreClearMenu) {
+		case "tmai-backup": {
+			const slot = await askBackupSlot();
+			await tmai.backupAsync(slot);
+			break;
+		}
+		case "tmai-restore": {
+			const slot = await askBackupSlot();
+			const { confirm } = await inquirer.prompt({
+				type: "confirm",
+				name: "confirm",
+				message: chalk.yellow(
+					`Are you sure you want to restore slot ${slot}? This will overwrite current data.`,
+				),
+				default: false,
+			});
+
+			if (confirm) {
+				await tmai.restoreAsync(slot);
+			} else {
+				console.log("Restore operation cancelled!");
+			}
+			break;
+		}
+		case "tmai-clear": {
+			await tmai.clearTasksAsync();
 			break;
 		}
 		default:

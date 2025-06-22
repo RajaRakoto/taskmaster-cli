@@ -1,6 +1,9 @@
 /* libs */
 import inquirer from "inquirer";
 import chalk from "chalk";
+import path from "node:path";
+import * as emoji from "node-emoji";
+import fs from "node:fs";
 
 /* constants */
 import {
@@ -21,7 +24,11 @@ import {
 	PRD_PATH,
 	TASKS_PRIORITIES,
 	TASKS_STATUSES,
+	TASKS_BCK_DEST_PATH,
 } from "@/constants";
+
+/* utils */
+import { existsAsync } from "@/utils/extras";
 
 // ===============================
 
@@ -326,6 +333,47 @@ export async function askNumSubtasks() {
 /**
  * @description Asks the user for manual subtask parameters
  */
+export async function askBackupSlot() {
+	const slots = [1, 2, 3];
+	const slotChoices = [];
+
+	for (const slot of slots) {
+		const backupPath = path.join(TASKS_BCK_DEST_PATH, `slot_${slot}.zip`);
+		const exists = await existsAsync(backupPath);
+
+		let slotInfo = "";
+		if (exists) {
+			const stats = fs.statSync(backupPath);
+			const date = new Date(stats.mtime);
+			const formattedDate = date.toLocaleDateString("fr-FR", {
+				day: "2-digit",
+				month: "2-digit",
+				year: "numeric",
+				hour: "2-digit",
+				minute: "2-digit",
+				second: "2-digit",
+			});
+			slotInfo = `${emoji.get("floppy_disk")} ${formattedDate}`;
+		} else {
+			slotInfo = `${emoji.get("open_file_folder")} Empty`;
+		}
+
+		slotChoices.push({
+			name: `Slot ${slot}: ${slotInfo}`,
+			value: slot.toString(),
+		});
+	}
+
+	const { selectedSlot } = await inquirer.prompt({
+		type: "list",
+		name: "selectedSlot",
+		message: "Choisissez un slot de sauvegarde :",
+		choices: slotChoices,
+	});
+
+	return selectedSlot;
+}
+
 export async function askSubtaskManualParams() {
 	return await inquirer.prompt([
 		{

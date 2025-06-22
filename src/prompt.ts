@@ -41,6 +41,10 @@ export const mainMenu_prompt = [
 				value: "tmai-analysis",
 			},
 			new inquirer.Separator("―――――――――――――――――――――――――――――――――――"),
+			{
+				name: `${emoji.get("floppy_disk")} Backup, Restore and Clear`,
+				value: "tmai-bckrestore",
+			},
 			...(DEV_MODE
 				? [
 						{
@@ -387,7 +391,7 @@ export const tmaiDepsMenu_prompt = [
 export const tmaiAnalysisReportDocs_prompt = [
 	{
 		type: "list",
-		name: "tmaiAnalysisReportDocs",
+		name: "tmaiAnalysisReportDocsMenu",
 		message: chalk.bgBlue("Choose an operation"),
 		loop: true,
 		pageSize: 7,
@@ -404,6 +408,38 @@ export const tmaiAnalysisReportDocs_prompt = [
 			{
 				name: `${emoji.get("books")} Sync tasks with README.md`,
 				value: "tmai-docs-sync-readme",
+			},
+		],
+	},
+];
+
+// TODO: done
+// ==============================
+// Backup, Restore and Clear menu
+// ==============================
+
+export const tmaiBackupRestoreClearClear_prompt = [
+	{
+		type: "list",
+		name: "tmaiBackupRestoreClearMenu",
+		message: chalk.bgBlue("Choose an operation"),
+		loop: true,
+		pageSize: 5,
+		choices: [
+			new inquirer.Separator("=== Backup, Restore and Clear ==="),
+			{
+				name: chalk.blue(`${emoji.get("floppy_disk")} Backup tasks`),
+				value: "tmai-backup",
+			},
+			{
+				name: chalk.yellow(
+					`${emoji.get("arrows_counterclockwise")} Restore tasks`,
+				),
+				value: "tmai-restore",
+			},
+			{
+				name: chalk.red(`${emoji.get("boom")} Clear all current tasks`),
+				value: "tmai-clear",
 			},
 		],
 	},
