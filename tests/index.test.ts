@@ -1,15 +1,20 @@
+/* libs */
 import { describe, expect, test } from "bun:test";
-import { TaskMaster } from "../src/core/taskmaster/TaskMaster";
-import type {
-	I_Tasks,
-	Task,
-	Subtask,
-	Priority,
-	Status,
-} from "../src/@types/tasks";
 import stripAnsi from "strip-ansi";
 
+/* constants */
+import { MAIN_COMMAND, MAX_TITLE_TRUNC_LENGTH } from "@/constants";
+
+/* core */
+import { TaskMaster } from "@/core/taskmaster/TaskMaster";
+
+/* types */
+import type { I_Tasks, Task, Subtask, Priority, Status } from "@/@types/tasks";
+
+// ================================
+
 const tmai = new TaskMaster({
+	mainCommand: MAIN_COMMAND,
 	tasksFilePath: "tasks.json",
 	isTestMode: true,
 });
@@ -168,7 +173,6 @@ describe("TaskMaster.listQuickAsync", () => {
 		const result = await tmai.listQuickAsync(tasks, "", true);
 		const plainResult = stripAnsi(result);
 
-		// Vérifie que chaque statut est affiché correctement
 		for (const status of statuses) {
 			expect(plainResult).toContain(status);
 		}
@@ -212,7 +216,6 @@ describe("TaskMaster.listQuickAsync", () => {
 			},
 		};
 
-		// Test de plusieurs combinaisons de statuts
 		const result1 = await tmai.listQuickAsync(
 			tasks,
 			"done,blocked,cancelled",
@@ -224,8 +227,6 @@ describe("TaskMaster.listQuickAsync", () => {
 		expect(plainResult1).toContain("Task cancelled");
 		expect(plainResult1).not.toContain("Task in-progress");
 		expect(plainResult1).not.toContain("Task pending");
-
-		// Test d'un seul statut
 		const result2 = await tmai.listQuickAsync(tasks, "review", true);
 		const plainResult2 = stripAnsi(result2);
 		expect(plainResult2).toContain("Task review");
@@ -266,9 +267,12 @@ describe("TaskMaster.listQuickAsync", () => {
 		expect(plainResult).not.toContain("Subtask review");
 	});
 
-	test("truncates long titles", async () => {
+	test(`truncates long titles to ${MAX_TITLE_TRUNC_LENGTH} characters`, async () => {
 		const longTitle =
-			"Task with a very long title that exceeds the character limit allowed by the application";
+			"This is a very long task title that is definitely longer than forty characters, I promise!";
+
+		expect(longTitle.length).toBeGreaterThan(MAX_TITLE_TRUNC_LENGTH);
+
 		const tasks: I_Tasks = {
 			master: {
 				tasks: [createTask(1, longTitle)],
@@ -282,8 +286,21 @@ describe("TaskMaster.listQuickAsync", () => {
 
 		const result = await tmai.listQuickAsync(tasks, "", true);
 		const plainResult = stripAnsi(result);
-		// Uses ellipsis character '…' to match truncate()
-		expect(plainResult).toContain("…");
-		expect(plainResult.length).toBeLessThan(longTitle.length + 100);
+
+		const taskLine = plainResult
+			.split("\n")
+			.find((line) => line.includes("#1"));
+		expect(taskLine).toBeDefined();
+
+		if (taskLine) {
+			const match = taskLine.match(/#1 (.+?) \[status:/);
+			expect(match).not.toBeNull();
+
+			if (match) {
+				const titlePart = match[1];
+				expect(titlePart.length).toBe(MAX_TITLE_TRUNC_LENGTH);
+				expect(titlePart.endsWith("…")).toBe(true);
+			}
+		}
 	});
 });

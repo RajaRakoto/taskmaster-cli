@@ -1,14 +1,24 @@
 /* libs */
 import { oraPromise } from "ora";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, writeFile, rm } from "node:fs/promises";
 import inquirer from "inquirer";
 import path from "node:path";
 import chalk from "chalk";
 import fs from "node:fs";
 import figures from "figures";
+import compressing from "compressing";
 
 /* constants */
-import { MAX_TITLE_LENGTH } from "@/constants";
+import {
+	MAX_TITLE_TRUNC_LENGTH,
+	STATUS_CONFIG,
+	PACKAGE_MANAGERS,
+	TASKMASTER_INIT_MSG,
+	TASKS_FILE_WARN,
+	TASKS_BCK_DEST_PATH,
+	TASKS_SRC_PATH,
+	TASKS_FILES,
+} from "@/constants";
 
 /* extras */
 import {
@@ -30,28 +40,28 @@ import type { I_Tasks, Status, Priority } from "@/@types/tasks";
  * @class
  */
 export class TaskMaster {
+	private _mainCommand: string;
 	private _tasksFilePath: string;
 	private _isTestMode: boolean;
 
 	constructor({
+		mainCommand,
 		tasksFilePath,
 		isTestMode,
 	}: {
+		mainCommand: string;
 		tasksFilePath: string;
 		isTestMode: boolean;
 	}) {
+		this._mainCommand = mainCommand;
 		this._tasksFilePath = tasksFilePath;
 		this._isTestMode = isTestMode;
 
-		console.info(chalk.bgMagenta("TaskMaster AI Core initialized"));
+		console.info(chalk.bgMagenta(TASKMASTER_INIT_MSG));
 
 		if (!this._isTestMode) {
 			if (!fs.existsSync(this._tasksFilePath)) {
-				console.warn(
-					chalk.bgYellow(
-						"tasks.json not found. Please set up TaskMaster and generate tasks.json from the PRD file.",
-					),
-				);
+				console.warn(chalk.bgYellow(TASKS_FILE_WARN(this._tasksFilePath)));
 			} else {
 				console.info(
 					chalk.bgGreen(`Found tasks.json at "${this._tasksFilePath}"`),
@@ -82,6 +92,45 @@ export class TaskMaster {
 	}
 
 	// ==============================================
+	// Helpers
+	// ==============================================
+
+	// TODO: validate
+	/**
+	 * @description Helper method to execute commands with consistent ora handling
+	 * @param text Loading text for ora spinner
+	 * @param successText Success message
+	 * @param failText Failure message
+	 * @param command Main command to execute
+	 * @param args Command arguments
+	 * @note Escapes command arguments to prevent shell injection
+	 * Handles both quotes and dollar signs which could be dangerous in shell commands
+	 */
+	private async executeCommandAsync(
+		text: string,
+		successText: string,
+		failText: string,
+		command: string,
+		args: string[] = [],
+	): Promise<void> {
+		// Escape the arguments to prevent injections
+		const escapedArgs = args.map(
+			(arg) => `"${arg.replace(/"/g, '\\"').replace(/\$/g, "\\$")}"`,
+		);
+
+		const oraOptions = {
+			text: text,
+			successText: chalk.bgGreen(successText),
+			failText: chalk.bgRed(failText),
+		};
+
+		await oraPromise(
+			runCommandAsync(command, escapedArgs, false, false),
+			oraOptions,
+		);
+	}
+
+	// ==============================================
 	// Method for Installation and Configuration
 	// ==============================================
 
@@ -90,7 +139,9 @@ export class TaskMaster {
 	 * @description Installs or updates task-master AI using the chosen package manager
 	 */
 	public async installAsync(): Promise<void> {
-		const packageManagerChoices: T_PackageManager[] = ["npm", "pnpm", "bun"];
+		const packageManagerChoices: T_PackageManager[] = [
+			...PACKAGE_MANAGERS,
+		] as T_PackageManager[];
 
 		const { packageManagerChoice } = await inquirer.prompt<{
 			packageManagerChoice: T_PackageManager;
@@ -159,7 +210,7 @@ export class TaskMaster {
 			console.log(chalk.bgGreen(`PRD file created at ${prdFilePath}.`));
 		}
 
-		await runCommandAsync("task-master", ["init"], false, false);
+		await runCommandAsync(this._mainCommand, ["init"], false, false);
 		console.log(chalk.bgGreen("Task-master project initialized successfully!"));
 	}
 
@@ -168,15 +219,12 @@ export class TaskMaster {
 	 * @description Configures AI models for task-master by running the interactive setup
 	 */
 	public async configAsync(): Promise<void> {
-		const oraOptions = {
-			text: "Configuring AI models...",
-			successText: chalk.bgGreen("AI models configured successfully!"),
-			failText: chalk.bgRed("AI model configuration failed"),
-		};
-
-		await oraPromise(
-			runCommandAsync("task-master", ["models", "--setup"], true, false),
-			oraOptions,
+		await this.executeCommandAsync(
+			"Configuring AI models...",
+			"AI models configured successfully!",
+			"AI model configuration failed",
+			this._mainCommand,
+			["models", "--setup"],
 		);
 	}
 
@@ -200,24 +248,19 @@ export class TaskMaster {
 		appendToExistingTasks: boolean,
 		tag: string,
 	): Promise<void> {
-		const oraOptions = {
-			text: `Parsing PRD file: ${chalk.bold(inputFilePath)}...`,
-			successText: chalk.bgGreen("PRD parsed successfully!"),
-			failText: chalk.bgRed("Failed to parse PRD file"),
-		};
-
-		const argv = [
-			"parse-prd",
-			`--input=${inputFilePath}`,
-			`--num-tasks=${numTasksToGenerate}`,
-			allowAdvancedResearch ? "--research" : "",
-			appendToExistingTasks ? "--append" : "",
-			tag ? `--tag=${tag}` : "",
-		].filter(Boolean);
-
-		await oraPromise(
-			runCommandAsync("task-master", argv, false, false),
-			oraOptions,
+		await this.executeCommandAsync(
+			`Parsing PRD file: ${chalk.bold(inputFilePath)}...`,
+			"PRD parsed successfully!",
+			"Failed to parse PRD file",
+			this._mainCommand,
+			[
+				"parse-prd",
+				`--input=${inputFilePath}`,
+				`--num-tasks=${numTasksToGenerate}`,
+				allowAdvancedResearch ? "--research" : "",
+				appendToExistingTasks ? "--append" : "",
+				tag ? `--tag=${tag}` : "",
+			].filter(Boolean),
 		);
 	}
 
@@ -235,15 +278,12 @@ export class TaskMaster {
 				),
 			);
 		} else {
-			const oraOptions = {
-				text: "Generating task files...",
-				successText: chalk.bgGreen("Task files generated successfully!"),
-				failText: chalk.bgRed("Task file generation failed"),
-			};
-
-			await oraPromise(
-				runCommandAsync("task-master", ["generate"], false, false),
-				oraOptions,
+			await this.executeCommandAsync(
+				"Generating task files...",
+				"Task files generated successfully!",
+				"Task file generation failed",
+				this._mainCommand,
+				["generate"],
 			);
 		}
 	}
@@ -254,20 +294,12 @@ export class TaskMaster {
 	 * @param tag tag for the tasks to decompose
 	 */
 	public async decomposeAsync(tag: string): Promise<void> {
-		const oraOptions = {
-			text: "Decomposing tasks ...",
-			successText: chalk.bgGreen("Tasks decomposed successfully!"),
-			failText: chalk.bgRed("Failed to decompose tasks"),
-		};
-
-		await oraPromise(
-			runCommandAsync(
-				"task-master",
-				["expand", "--all", tag ? `--tag=${tag}` : ""],
-				false,
-				false,
-			),
-			oraOptions,
+		await this.executeCommandAsync(
+			"Decomposing tasks ...",
+			"Tasks decomposed successfully!",
+			"Failed to decompose tasks",
+			this._mainCommand,
+			["expand", "--all", tag ? `--tag=${tag}` : ""].filter(Boolean),
 		);
 	}
 
@@ -287,28 +319,21 @@ export class TaskMaster {
 		status: string,
 		withSubtasks = true,
 	): Promise<string> {
-		// Helper to truncate text with ellipsis
-		const truncate = (text: string, maxLength: number): string =>
-			text.length <= maxLength ? text : `${text.slice(0, maxLength - 1)}…`;
+		// Helper to truncate text with ellipsis at MAX_TITLE_LENGTH characters
+		const truncate = (text: string, maxLength: number): string => {
+			if (text.length <= maxLength) return text;
+			return `${text.slice(0, maxLength - 1)}…`;
+		};
 
 		// Format status with icons and colors for all statuses
 		const formatStatus = (status: Status): string => {
-			const statusMap = {
-				todo: { icon: figures.circle, color: chalk.gray },
-				"in-progress": { icon: figures.play, color: chalk.yellow },
-				done: { icon: figures.tick, color: chalk.green },
-				blocked: { icon: figures.cross, color: chalk.red },
-				pending: { icon: figures.ellipsis, color: chalk.gray },
-				review: { icon: figures.star, color: chalk.blue },
-				deferred: { icon: figures.arrowDown, color: chalk.magenta },
-				cancelled: { icon: figures.cross, color: chalk.redBright },
-			};
-
-			const config = statusMap[status] || {
+			const config = STATUS_CONFIG[status] || {
 				icon: figures.circle,
 				color: chalk.gray,
 			};
-			return config.color(`${config.icon} ${status}`);
+			const colorFn =
+				typeof config.color === "function" ? config.color : chalk.gray;
+			return colorFn(`${config.icon} ${status}`);
 		};
 
 		// Format priority with colors
@@ -355,7 +380,7 @@ export class TaskMaster {
 
 			if (showParent) {
 				hasTasks = true;
-				const title = truncate(task.title, MAX_TITLE_LENGTH);
+				const title = truncate(task.title, MAX_TITLE_TRUNC_LENGTH);
 				output +=
 					`${chalk.bgGreen.bold(`#${task.id}`)} ${chalk.magenta(title)} ` +
 					`[status: ${formatStatus(task.status)}] - ` +
@@ -364,7 +389,7 @@ export class TaskMaster {
 				// Only show matching subtasks
 				if (withSubtasks && matchingSubtasks.length > 0) {
 					for (const { index, subtask } of matchingSubtasks) {
-						const subTitle = truncate(subtask.title, MAX_TITLE_LENGTH);
+						const subTitle = truncate(subtask.title, MAX_TITLE_TRUNC_LENGTH);
 						const hierarchicalId = `${task.id}.${index + 1}`;
 						output +=
 							`  ${chalk.dim("↳")} ${chalk.bold(`#${hierarchicalId}`)} ` +
@@ -403,15 +428,12 @@ export class TaskMaster {
 		if (quickly) {
 			console.log(await this.listQuickAsync(tasks, status, withSubtasks));
 		} else {
-			const oraOptions = {
-				text: "Listing tasks...",
-				successText: chalk.bgGreen("Tasks listed successfully!"),
-				failText: chalk.bgRed("Failed to list tasks"),
-			};
-
-			await oraPromise(
-				runCommandAsync("task-master", args, false, false),
-				oraOptions,
+			await this.executeCommandAsync(
+				"Listing tasks...",
+				"Tasks listed successfully!",
+				"Failed to list tasks",
+				this._mainCommand,
+				args,
 			);
 		}
 	}
@@ -422,15 +444,12 @@ export class TaskMaster {
 	 * @param id Task ID (integer or hierarchical ID like 1.1, 2.3, etc.)
 	 */
 	public async showAsync(id: string): Promise<void> {
-		const oraOptions = {
-			text: `Fetching details for task ${chalk.bold(id)}...`,
-			successText: chalk.bgGreen("Task details retrieved successfully!"),
-			failText: chalk.bgRed("Failed to retrieve task details"),
-		};
-
-		await oraPromise(
-			runCommandAsync("task-master", ["show", id], false, false),
-			oraOptions,
+		await this.executeCommandAsync(
+			`Fetching details for task ${chalk.bold(id)}...`,
+			"Task details retrieved successfully!",
+			"Failed to retrieve task details",
+			this._mainCommand,
+			["show", id],
 		);
 	}
 
@@ -439,15 +458,251 @@ export class TaskMaster {
 	 * @description Shows the next available task to work on
 	 */
 	public async nextAsync(): Promise<void> {
+		await this.executeCommandAsync(
+			"Finding next available task...",
+			"Next task retrieved successfully!",
+			"Failed to determine next task",
+			this._mainCommand,
+			["next"],
+		);
+	}
+
+	// ==============================================
+	// Method for Task Addition
+	// ==============================================
+
+	// TODO: validate
+	/**
+	 * @description Adds a new task using AI
+	 * @param prompt Description of the task to create
+	 * @param allowAdvancedResearch Use research capabilities
+	 * @param tag Tag context for the task
+	 */
+	public async addTaskByAIAsync(
+		prompt: string,
+		allowAdvancedResearch: boolean,
+		tag: string,
+	): Promise<void> {
+		await this.executeCommandAsync(
+			`Adding AI-generated task: "${chalk.bold(prompt)}"...`,
+			"Task added successfully!",
+			"Failed to add AI-generated task",
+			this._mainCommand,
+			[
+				"add-task",
+				`--prompt=${prompt}`,
+				allowAdvancedResearch ? "--research" : "",
+				tag ? `--tag=${tag}` : "",
+			].filter(Boolean),
+		);
+	}
+
+	// TODO: validate
+	/**
+	 * @description Adds a new task manually
+	 * @param title Task title
+	 * @param description Task description
+	 * @param details Implementation details
+	 * @param priority Task priority level (low, medium, high)
+	 * @param status Task status (pending, in-progress, done, review, deferred, cancelled, todo, blocked)
+	 * @param dependencies Comma-separated dependency IDs (1,2,3)
+	 * @param tag Tag context for the task
+	 */
+	public async addTaskManuallyAsync(
+		title: string,
+		description: string,
+		details: string,
+		priority: Priority,
+		status: Status,
+		dependencies: string,
+		tag: string,
+	): Promise<void> {
+		await this.executeCommandAsync(
+			`Adding manual task: "${chalk.bold(title)}"...`,
+			"Task added successfully!",
+			"Failed to add manual task",
+			this._mainCommand,
+			[
+				"add-task",
+				`--title="${title}"`,
+				`--description="${description}"`,
+				`--details="${details}"`,
+				`--priority=${priority}`,
+				`--status=${status}`,
+				dependencies ? `--dependencies=${dependencies}` : "",
+				tag ? `--tag=${tag}` : "",
+			].filter(Boolean),
+		);
+	}
+
+	// TODO: validate
+	/**
+	 * @description Adds subtasks using AI
+	 * @param parentId Parent task ID
+	 * @param numTasksToGenerate Number of subtasks to generate
+	 * @param allowAdvancedResearch Use research capabilities
+	 */
+	public async addSubtasksByAIAsync(
+		parentId: string,
+		numTasksToGenerate: number,
+		allowAdvancedResearch: boolean,
+	): Promise<void> {
+		await this.executeCommandAsync(
+			`Adding AI-generated subtasks to task ${chalk.bold(parentId)}...`,
+			"Subtasks added successfully!",
+			"Failed to add AI-generated subtasks",
+			this._mainCommand,
+			[
+				"expand",
+				`--id=${parentId}`,
+				`--num=${numTasksToGenerate}`,
+				allowAdvancedResearch ? "--research" : "",
+			].filter(Boolean),
+		);
+	}
+
+	// TODO: validate
+	/**
+	 * @description Adds a subtask manually
+	 * @param parentId Parent task ID
+	 * @param title Subtask title
+	 * @param description Subtask description
+	 * @param details Implementation details
+	 * @param priority Subtask priority level (low, medium, high)
+	 * @param status Subtask status (pending, in-progress, done, review, deferred, cancelled, todo, blocked)
+	 * @param dependencies Comma-separated dependency IDs
+	 * @note This methode does not use tag context as subtasks are usually tied to their parent task
+	 */
+	public async addSubtaskManuallyAsync(
+		parentId: string,
+		title: string,
+		description: string,
+		details: string,
+		priority: Priority,
+		status: Status,
+		dependencies: string,
+	): Promise<void> {
+		await this.executeCommandAsync(
+			`Adding manual subtask to task ${chalk.bold(parentId)}...`,
+			"Subtask added successfully!",
+			"Failed to add manual subtask",
+			this._mainCommand,
+			[
+				"add-subtask",
+				`--id=${parentId}`,
+				`--title="${title}"`,
+				`--description="${description}"`,
+				`--details="${details}"`,
+				`--priority=${priority}`,
+				`--status=${status}`,
+				dependencies ? `--dependencies=${dependencies}` : "",
+			].filter(Boolean),
+		);
+	}
+
+	// ==============================================
+	// Backup, Restore and Clear Methods
+	// ==============================================
+
+	// TODO: done
+	/**
+	 * @description Creates a backup of the .taskmaster directory
+	 * @param slot Slot number (1-3) for the backup
+	 */
+	public async backupAsync(slot: string): Promise<void> {
+		const backupPath = path.join(TASKS_BCK_DEST_PATH, `slot_${slot}.zip`);
+		const backupDir = path.dirname(backupPath);
+
+		if (!fs.existsSync(backupDir)) {
+			await mkdir(backupDir, { recursive: true });
+		}
+
+		// Vérifier si le répertoire source existe
+		if (!fs.existsSync(TASKS_SRC_PATH)) {
+			console.warn(
+				chalk.yellow(
+					`Source directory ${TASKS_SRC_PATH} does not exist. Skipping backup.`,
+				),
+			);
+			return;
+		}
+
 		const oraOptions = {
-			text: "Finding next available task...",
-			successText: chalk.bgGreen("Next task retrieved successfully!"),
-			failText: chalk.bgRed("Failed to determine next task"),
+			text: `Creating backup in slot ${slot}...`,
+			successText: chalk.bgGreen(
+				`Backup created successfully in slot ${slot}!`,
+			),
+			failText: chalk.bgRed(`Failed to create backup in slot ${slot}`),
 		};
 
-		await oraPromise(
-			runCommandAsync("task-master", ["next"], false, false),
-			oraOptions,
-		);
+		await oraPromise(async () => {
+			await compressing.zip.compressDir(TASKS_SRC_PATH, backupPath);
+		}, oraOptions);
+	}
+
+	// TODO: done
+	/**
+	 * @description Restores a backup from the specified slot
+	 * @param slot Slot number (1-3) to restore from
+	 */
+	public async restoreAsync(slot: string): Promise<void> {
+		const backupPath = path.join(TASKS_BCK_DEST_PATH, `slot_${slot}.zip`);
+
+		if (!fs.existsSync(backupPath)) {
+			console.warn(
+				chalk.yellow(`No backup found in slot ${slot}. Skipping restore.`),
+			);
+			return;
+		}
+
+		const oraOptions = {
+			text: `Restoring backup from slot ${slot}...`,
+			successText: chalk.bgGreen(
+				`Backup restored successfully from slot ${slot}!`,
+			),
+			failText: chalk.bgRed(`Failed to restore backup from slot ${slot}`),
+		};
+
+		await oraPromise(async () => {
+			if (fs.existsSync(TASKS_SRC_PATH)) {
+				await rm(TASKS_SRC_PATH, { recursive: true, force: true });
+			}
+
+			const parentDir = path.dirname(TASKS_SRC_PATH);
+			if (!fs.existsSync(parentDir)) {
+				await mkdir(parentDir, { recursive: true });
+			}
+
+			await compressing.zip.uncompress(backupPath, parentDir);
+		}, oraOptions);
+	}
+
+	// TODO: done
+	/**
+	 * @description Clears all task-related files and directories
+	 */
+	public async clearTasksAsync(): Promise<void> {
+		for (const filePath of TASKS_FILES) {
+			if (!fs.existsSync(filePath)) continue;
+
+			const { confirm } = await inquirer.prompt({
+				type: "confirm",
+				name: "confirm",
+				message: chalk.red(`Delete ${filePath}?`),
+				default: false,
+			});
+
+			if (confirm) {
+				const oraOptions = {
+					text: `Deleting ${filePath}...`,
+					successText: chalk.bgGreen(`${filePath} deleted successfully!`),
+					failText: chalk.bgRed(`Failed to delete ${filePath}`),
+				};
+
+				await oraPromise(async () => {
+					await rm(filePath, { recursive: true, force: true });
+				}, oraOptions);
+			}
+		}
 	}
 }

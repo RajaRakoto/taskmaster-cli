@@ -3,7 +3,7 @@ import inquirer from "inquirer";
 import path from "node:path";
 
 /* constants */
-import { TASKS_PATH, TASKS_STATUSES } from "@/constants";
+import { MAIN_COMMAND, TASKS_PATH, TASKS_STATUSES } from "@/constants";
 
 /* core */
 import { TaskMaster } from "@/core/taskmaster/TaskMaster";
@@ -23,7 +23,15 @@ import {
 	askStatusSelection,
 	askDisplayOptions,
 	askTaskIdInput,
+	askTaskPrompt,
+	askTaskManualParams,
+	askSubtaskParentId,
+	askNumSubtasks,
+	askSubtaskManualParams,
+	askBackupSlot,
 } from "@/core/taskmaster/asks";
+
+import chalk from "chalk";
 
 /* prompt */
 import {
@@ -35,11 +43,13 @@ import {
 	tmaiUpdateTasksMenu_prompt,
 	tmaiDeleteTasksMenu_prompt,
 	tmaiStatusTrackingMenu_prompt,
+	tmaiBackupRestoreClearClear_prompt,
 } from "@/prompt";
 
 // ===============================
 
 const tmai = new TaskMaster({
+	mainCommand: MAIN_COMMAND,
 	tasksFilePath: TASKS_PATH,
 	isTestMode: false,
 });
@@ -128,8 +138,80 @@ export async function tmaiManageAsync() {
 			const { tmaiAddTasksMenu } = await inquirer.prompt(
 				tmaiAddTasksMenu_prompt,
 			);
-			if (tmaiAddTasksMenu === "tmai-addtasks") {
-				console.log("Executing task addition...");
+			const tag = await askTaskTag();
+
+			switch (tmaiAddTasksMenu) {
+				case "tmai-addtaskai": {
+					const prompt = await askTaskPrompt();
+					const research = await askAdvancedResearchConfirmation();
+					await tmai.addTaskByAIAsync(prompt, research, tag);
+					break;
+				}
+				case "tmai-addtaskmanual": {
+					const {
+						title,
+						description,
+						details,
+						priority,
+						status,
+						dependencies,
+					} = await askTaskManualParams();
+					await tmai.addTaskManuallyAsync(
+						title,
+						description,
+						details,
+						priority,
+						status,
+						dependencies,
+						tag,
+					);
+					break;
+				}
+				case "tmai-addtasksprd": {
+					const prdPath = await askPrdPath();
+					const numTasksToGenerate = await askNumTasksToGenerate();
+					const research = await askAdvancedResearchConfirmation();
+					await tmai.parseAsync(
+						prdPath,
+						numTasksToGenerate,
+						research,
+						true,
+						tag,
+					);
+					break;
+				}
+				case "tmai-addsubtaskai": {
+					const parentId = await askSubtaskParentId();
+					const numTasksToGenerate = await askNumSubtasks();
+					const research = await askAdvancedResearchConfirmation();
+					await tmai.addSubtasksByAIAsync(
+						parentId,
+						numTasksToGenerate,
+						research,
+					);
+					break;
+				}
+				case "tmai-addsubtaskmanual": {
+					const parentId = await askSubtaskParentId();
+					const {
+						title,
+						description,
+						details,
+						priority,
+						status,
+						dependencies,
+					} = await askSubtaskManualParams();
+					await tmai.addSubtaskManuallyAsync(
+						parentId,
+						title,
+						description,
+						details,
+						priority,
+						status,
+						dependencies,
+					);
+					break;
+				}
 			}
 			break;
 		}
@@ -158,6 +240,47 @@ export async function tmaiManageAsync() {
 			if (tmaiStatusTrackingMenu === "tmai-statustracking") {
 				console.log("Executing status tracking...");
 			}
+			break;
+		}
+		default:
+			console.log("Invalid option selected.");
+	}
+
+	await restartAsync();
+}
+
+// TODO: done
+export async function tmaiBackupRestoreClearAsync() {
+	const { tmaiBackupRestoreClearMenu } = await inquirer.prompt(
+		tmaiBackupRestoreClearClear_prompt,
+	);
+
+	switch (tmaiBackupRestoreClearMenu) {
+		case "tmai-backup": {
+			const slot = await askBackupSlot();
+			await tmai.backupAsync(slot);
+			break;
+		}
+		case "tmai-restore": {
+			const slot = await askBackupSlot();
+			const { confirm } = await inquirer.prompt({
+				type: "confirm",
+				name: "confirm",
+				message: chalk.yellow(
+					`Are you sure you want to restore slot ${slot}? This will overwrite current data.`,
+				),
+				default: false,
+			});
+
+			if (confirm) {
+				await tmai.restoreAsync(slot);
+			} else {
+				console.log("Restore operation cancelled!");
+			}
+			break;
+		}
+		case "tmai-clear": {
+			await tmai.clearTasksAsync();
 			break;
 		}
 		default:
