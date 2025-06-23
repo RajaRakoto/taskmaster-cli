@@ -57,9 +57,9 @@ export async function askPrdPath() {
 		message: "Enter the path to your PRD file:",
 		default: PRD_PATH,
 		validate: (input) => {
-			const regex = /^[\w\s/]+(?:\.(?:txt|md))$/;
+			const regex = /^[\w\s/_-]+(?:\.(?:txt|md))$/;
 			if (!regex.test(input)) {
-				return "Please enter a valid PRD file with .txt or .md extension and without special characters, except for /";
+				return "Please enter a valid PRD file with .txt or .md extension and without special characters, except for /, -, and _";
 			}
 			return true;
 		},

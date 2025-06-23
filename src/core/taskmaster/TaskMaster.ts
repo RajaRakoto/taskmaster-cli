@@ -114,8 +114,8 @@ export class TaskMaster {
 		args: string[] = [],
 	): Promise<void> {
 		// Escape the arguments to prevent injections
-		const escapedArgs = args.map(
-			(arg) => `"${arg.replace(/"/g, '\\"').replace(/\$/g, "\\$")}"`,
+		const escapedArgs = args.map((arg) =>
+			arg.replace(/"/g, '\\"').replace(/\$/g, "\\$"),
 		);
 
 		const oraOptions = {
@@ -709,6 +709,7 @@ export class TaskMaster {
 			(filePath) => !fs.existsSync(filePath),
 		);
 
-		if (allFilesCleared) console.log(chalk.green("All task-related files are cleared!"));
+		if (allFilesCleared)
+			console.log(chalk.green("All task-related files are cleared!"));
 	}
 }
