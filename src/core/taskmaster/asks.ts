@@ -391,34 +391,5 @@ export async function askSubtaskManualParams() {
 				return true;
 			},
 		},
-		{
-			type: "input",
-			name: "details",
-			message: "Enter implementation details:",
-			validate: (input) => {
-				if (!input || input.trim().length > MAX_DETAILS_LENGTH) {
-					return `Details must be at least ${MAX_DETAILS_LENGTH} characters`;
-				}
-				return true;
-			},
-		},
-		{
-			type: "list",
-			name: "priority",
-			message: "Select subtask priority:",
-			choices: TASKS_PRIORITIES,
-		},
-		{
-			type: "input",
-			name: "dependencies",
-			message: "Enter dependency IDs (comma separated):",
-			filter: (input) => input.replace(/\s+/g, ""),
-			validate: (input) => {
-				if (input && !/^(\d+,)*\d+$/.test(input)) {
-					return "Invalid dependency format. Use comma-separated numbers (e.g: 1,2,3)";
-				}
-				return true;
-			},
-		},
 	]);
 }

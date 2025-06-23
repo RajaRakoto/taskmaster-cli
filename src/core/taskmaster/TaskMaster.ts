@@ -564,18 +564,11 @@ export class TaskMaster {
 	 * @param parentId Parent task ID
 	 * @param title Subtask title
 	 * @param description Subtask description
-	 * @param details Implementation details
-	 * @param priority Subtask priority level (low, medium, high)
-	 * @param dependencies Comma-separated dependency IDs
-	 * @note This methode does not use tag context as subtasks are usually tied to their parent task
 	 */
 	public async addSubtaskManuallyAsync(
 		parentId: number,
 		title: string,
 		description: string,
-		details: string,
-		priority: Priority,
-		dependencies: string,
 	): Promise<void> {
 		await this.executeCommandAsync(
 			`Adding manual subtask to task ${chalk.bold(parentId)}...`,
@@ -587,9 +580,6 @@ export class TaskMaster {
 				`--parent=${parentId}`,
 				`--title="${title}"`,
 				`--description="${description}"`,
-				`--details="${details}"`,
-				`--priority=${priority}`,
-				dependencies ? `--dependencies=${dependencies}` : "",
 			].filter(Boolean),
 		);
 	}

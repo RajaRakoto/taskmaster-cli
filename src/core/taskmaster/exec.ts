@@ -192,16 +192,8 @@ export async function tmaiManageAsync() {
 						await tmai.listQuickAsync(tasks, TASKS_STATUSES.join(","), true),
 					);
 					const parentId = await askSubtaskParentId(tasks.master.tasks.length);
-					const { title, description, details, priority, dependencies } =
-						await askSubtaskManualParams();
-					await tmai.addSubtaskManuallyAsync(
-						parentId,
-						title,
-						description,
-						details,
-						priority,
-						dependencies,
-					);
+					const { title, description } = await askSubtaskManualParams();
+					await tmai.addSubtaskManuallyAsync(parentId, title, description);
 					break;
 				}
 			}
