@@ -540,7 +540,7 @@ export class TaskMaster {
 	 * @param allowAdvancedResearch Use research capabilities
 	 */
 	public async addSubtasksByAIAsync(
-		parentId: string,
+		parentId: number,
 		numTasksToGenerate: number,
 		allowAdvancedResearch: boolean,
 	): Promise<void> {
@@ -570,7 +570,7 @@ export class TaskMaster {
 	 * @note This methode does not use tag context as subtasks are usually tied to their parent task
 	 */
 	public async addSubtaskManuallyAsync(
-		parentId: string,
+		parentId: number,
 		title: string,
 		description: string,
 		details: string,
@@ -584,7 +584,7 @@ export class TaskMaster {
 			this._mainCommand,
 			[
 				"add-subtask",
-				`--id=${parentId}`,
+				`--parent=${parentId}`,
 				`--title="${title}"`,
 				`--description="${description}"`,
 				`--details="${details}"`,

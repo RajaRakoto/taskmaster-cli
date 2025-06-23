@@ -53,6 +53,7 @@ const tmai = new TaskMaster({
 	tasksFilePath: TASKS_PATH,
 	isTestMode: false,
 });
+const tasks = await tmai.getTasksContentAsync();
 
 // TODO: done
 export async function tmaiInitAsync() {
@@ -113,7 +114,6 @@ export async function tmaiGenAsync() {
 
 // TODO: in-progress
 export async function tmaiManageAsync() {
-	const tasks = await tmai.getTasksContentAsync();
 	const { tmaiManageMenu } = await inquirer.prompt(tmaiManageMenu_prompt);
 
 	switch (tmaiManageMenu) {
@@ -148,13 +148,8 @@ export async function tmaiManageAsync() {
 					break;
 				}
 				case "tmai-addtaskmanual": {
-					const {
-						title,
-						description,
-						details,
-						priority,
-						dependencies,
-					} = await askTaskManualParams();
+					const { title, description, details, priority, dependencies } =
+						await askTaskManualParams();
 					await tmai.addTaskManuallyAsync(
 						title,
 						description,
@@ -179,7 +174,10 @@ export async function tmaiManageAsync() {
 					break;
 				}
 				case "tmai-addsubtaskai": {
-					const parentId = await askSubtaskParentId();
+					console.log(
+						await tmai.listQuickAsync(tasks, TASKS_STATUSES.join(","), true),
+					);
+					const parentId = await askSubtaskParentId(tasks.master.tasks.length);
 					const numTasksToGenerate = await askNumSubtasks();
 					const research = await askAdvancedResearchConfirmation();
 					await tmai.addSubtasksByAIAsync(
@@ -190,14 +188,12 @@ export async function tmaiManageAsync() {
 					break;
 				}
 				case "tmai-addsubtaskmanual": {
-					const parentId = await askSubtaskParentId();
-					const {
-						title,
-						description,
-						details,
-						priority,
-						dependencies,
-					} = await askSubtaskManualParams();
+					console.log(
+						await tmai.listQuickAsync(tasks, TASKS_STATUSES.join(","), true),
+					);
+					const parentId = await askSubtaskParentId(tasks.master.tasks.length);
+					const { title, description, details, priority, dependencies } =
+						await askSubtaskManualParams();
 					await tmai.addSubtaskManuallyAsync(
 						parentId,
 						title,

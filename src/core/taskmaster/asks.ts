@@ -12,7 +12,6 @@ import {
 	DEFAULT_TASKS_TO_GENERATE,
 	MAX_DESCRIPTION_LENGTH,
 	MAX_DETAILS_LENGTH,
-	MAX_PARENT_ID,
 	MAX_PROMPT_LENGTH,
 	MAX_SUBTASKS_TO_GENERATE,
 	MAX_TASKS_TO_GENERATE,
@@ -280,23 +279,25 @@ export async function askTaskManualParams() {
 /**
  * @description Asks the user for the parent task ID
  */
-export async function askSubtaskParentId() {
+export async function askSubtaskParentId(tasksLength: number) {
 	const { parentId } = await inquirer.prompt({
-		type: "number",
+		type: "input",
 		name: "parentId",
 		message: "Enter parent task ID:",
 		validate: (input) => {
+			const num = Number(input);
 			if (
-				Number.isNaN(input) ||
-				input < MIN_PARENT_ID ||
-				input > MAX_PARENT_ID
+				Number.isNaN(num) ||
+				!Number.isInteger(num) ||
+				num < MIN_PARENT_ID ||
+				num > tasksLength
 			) {
-				return `Please enter a number between ${MIN_PARENT_ID} and ${MAX_PARENT_ID}`;
+				return `Please enter a valid integer between ${MIN_PARENT_ID} and ${tasksLength}`;
 			}
 			return true;
 		},
 	});
-	return parentId;
+	return Number(parentId);
 }
 
 /**
