@@ -53,7 +53,6 @@ const tmai = new TaskMaster({
 	tasksFilePath: TASKS_PATH,
 	isTestMode: false,
 });
-const tasks = await tmai.getTasksContentAsync();
 
 // TODO: done
 export async function tmaiInitAsync() {
@@ -114,6 +113,7 @@ export async function tmaiGenAsync() {
 
 // TODO: in-progress
 export async function tmaiManageAsync() {
+	const tasks = await tmai.getTasksContentAsync();
 	const { tmaiManageMenu } = await inquirer.prompt(tmaiManageMenu_prompt);
 
 	switch (tmaiManageMenu) {
