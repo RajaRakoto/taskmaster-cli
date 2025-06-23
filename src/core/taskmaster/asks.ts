@@ -7,7 +7,6 @@ import fs from "node:fs";
 
 /* constants */
 import {
-	DEFAULT_STATUS,
 	DEFAULT_SUBTASKS_TO_GENERATE,
 	DEFAULT_TAG,
 	DEFAULT_TASKS_TO_GENERATE,
@@ -210,8 +209,8 @@ export async function askTaskPrompt() {
 		name: "prompt",
 		message: "Enter prompt:",
 		validate: (input) => {
-			if (!input || input.trim().length < MAX_PROMPT_LENGTH) {
-				return `Please enter a detailed task description (at least ${MAX_PROMPT_LENGTH} characters)`;
+			if (!input || input.trim().length > MAX_PROMPT_LENGTH) {
+				return `Prompt must be at least ${MAX_PROMPT_LENGTH} characters`;
 			}
 			return true;
 		},
@@ -229,7 +228,7 @@ export async function askTaskManualParams() {
 			name: "title",
 			message: "Enter task title:",
 			validate: (input) => {
-				if (!input || input.trim().length < MAX_TITLE_LENGTH) {
+				if (!input || input.trim().length > MAX_TITLE_LENGTH) {
 					return `Title must be at least ${MAX_TITLE_LENGTH} characters`;
 				}
 				return true;
@@ -240,7 +239,7 @@ export async function askTaskManualParams() {
 			name: "description",
 			message: "Enter task description:",
 			validate: (input) => {
-				if (!input || input.trim().length < MAX_DESCRIPTION_LENGTH) {
+				if (!input || input.trim().length > MAX_DESCRIPTION_LENGTH) {
 					return `Description must be at least ${MAX_DESCRIPTION_LENGTH} characters`;
 				}
 				return true;
@@ -251,7 +250,7 @@ export async function askTaskManualParams() {
 			name: "details",
 			message: "Enter implementation details:",
 			validate: (input) => {
-				if (!input || input.trim().length < MAX_DETAILS_LENGTH) {
+				if (!input || input.trim().length > MAX_DETAILS_LENGTH) {
 					return `Details must be at least ${MAX_DETAILS_LENGTH} characters`;
 				}
 				return true;
@@ -264,20 +263,13 @@ export async function askTaskManualParams() {
 			choices: TASKS_PRIORITIES,
 		},
 		{
-			type: "list",
-			name: "status",
-			message: "Select task status:",
-			choices: TASKS_STATUSES,
-			default: DEFAULT_STATUS,
-		},
-		{
 			type: "input",
 			name: "dependencies",
 			message: "Enter dependency IDs (comma separated):",
 			filter: (input) => input.replace(/\s+/g, ""),
 			validate: (input) => {
 				if (input && !/^(\d+,)*\d+$/.test(input)) {
-					return "Invalid dependency format. Use comma-separated numbers (e.g: 1,2,3.1,1.3)";
+					return "Invalid dependency format. Use comma-separated numbers (e.g: 1,2,3)";
 				}
 				return true;
 			},
@@ -381,7 +373,7 @@ export async function askSubtaskManualParams() {
 			name: "title",
 			message: "Enter subtask title:",
 			validate: (input) => {
-				if (!input || input.trim().length < MAX_TITLE_LENGTH) {
+				if (!input || input.trim().length > MAX_TITLE_LENGTH) {
 					return `Title must be at least ${MAX_TITLE_LENGTH} characters`;
 				}
 				return true;
@@ -392,7 +384,7 @@ export async function askSubtaskManualParams() {
 			name: "description",
 			message: "Enter subtask description:",
 			validate: (input) => {
-				if (!input || input.trim().length < MAX_DESCRIPTION_LENGTH) {
+				if (!input || input.trim().length > MAX_DESCRIPTION_LENGTH) {
 					return `Description must be at least ${MAX_DESCRIPTION_LENGTH} characters`;
 				}
 				return true;
@@ -403,7 +395,7 @@ export async function askSubtaskManualParams() {
 			name: "details",
 			message: "Enter implementation details:",
 			validate: (input) => {
-				if (!input || input.trim().length < MAX_DETAILS_LENGTH) {
+				if (!input || input.trim().length > MAX_DETAILS_LENGTH) {
 					return `Details must be at least ${MAX_DETAILS_LENGTH} characters`;
 				}
 				return true;
@@ -414,13 +406,6 @@ export async function askSubtaskManualParams() {
 			name: "priority",
 			message: "Select subtask priority:",
 			choices: TASKS_PRIORITIES,
-		},
-		{
-			type: "list",
-			name: "status",
-			message: "Select subtask status:",
-			choices: TASKS_STATUSES,
-			default: DEFAULT_STATUS,
 		},
 		{
 			type: "input",

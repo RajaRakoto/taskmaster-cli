@@ -504,7 +504,6 @@ export class TaskMaster {
 	 * @param description Task description
 	 * @param details Implementation details
 	 * @param priority Task priority level (low, medium, high)
-	 * @param status Task status (pending, in-progress, done, review, deferred, cancelled, todo, blocked)
 	 * @param dependencies Comma-separated dependency IDs (1,2,3)
 	 * @param tag Tag context for the task
 	 */
@@ -513,7 +512,6 @@ export class TaskMaster {
 		description: string,
 		details: string,
 		priority: Priority,
-		status: Status,
 		dependencies: string,
 		tag: string,
 	): Promise<void> {
@@ -528,7 +526,6 @@ export class TaskMaster {
 				`--description="${description}"`,
 				`--details="${details}"`,
 				`--priority=${priority}`,
-				`--status=${status}`,
 				dependencies ? `--dependencies=${dependencies}` : "",
 				tag ? `--tag=${tag}` : "",
 			].filter(Boolean),
@@ -569,7 +566,6 @@ export class TaskMaster {
 	 * @param description Subtask description
 	 * @param details Implementation details
 	 * @param priority Subtask priority level (low, medium, high)
-	 * @param status Subtask status (pending, in-progress, done, review, deferred, cancelled, todo, blocked)
 	 * @param dependencies Comma-separated dependency IDs
 	 * @note This methode does not use tag context as subtasks are usually tied to their parent task
 	 */
@@ -579,7 +575,6 @@ export class TaskMaster {
 		description: string,
 		details: string,
 		priority: Priority,
-		status: Status,
 		dependencies: string,
 	): Promise<void> {
 		await this.executeCommandAsync(
@@ -594,7 +589,6 @@ export class TaskMaster {
 				`--description="${description}"`,
 				`--details="${details}"`,
 				`--priority=${priority}`,
-				`--status=${status}`,
 				dependencies ? `--dependencies=${dependencies}` : "",
 			].filter(Boolean),
 		);

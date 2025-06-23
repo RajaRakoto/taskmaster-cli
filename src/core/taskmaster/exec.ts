@@ -153,7 +153,6 @@ export async function tmaiManageAsync() {
 						description,
 						details,
 						priority,
-						status,
 						dependencies,
 					} = await askTaskManualParams();
 					await tmai.addTaskManuallyAsync(
@@ -161,7 +160,6 @@ export async function tmaiManageAsync() {
 						description,
 						details,
 						priority,
-						status,
 						dependencies,
 						tag,
 					);
@@ -198,7 +196,6 @@ export async function tmaiManageAsync() {
 						description,
 						details,
 						priority,
-						status,
 						dependencies,
 					} = await askSubtaskManualParams();
 					await tmai.addSubtaskManuallyAsync(
@@ -207,7 +204,6 @@ export async function tmaiManageAsync() {
 						description,
 						details,
 						priority,
-						status,
 						dependencies,
 					);
 					break;
