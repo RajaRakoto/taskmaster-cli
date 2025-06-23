@@ -42,7 +42,6 @@ export const MAX_DESCRIPTION_LENGTH = 250;
 export const MAX_DETAILS_LENGTH = 500;
 export const MAX_PROMPT_LENGTH = 1024;
 export const MIN_PARENT_ID = 1;
-export const MAX_PARENT_ID = 50;
 
 // status configuration
 export const STATUS_CONFIG = {
