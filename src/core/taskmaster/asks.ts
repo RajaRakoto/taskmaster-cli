@@ -218,65 +218,6 @@ export async function askTaskPrompt() {
 }
 
 /**
- * @description Asks the user for manual task parameters
- */
-export async function askTaskManualParams() {
-	return await inquirer.prompt([
-		{
-			type: "input",
-			name: "title",
-			message: "Enter task title:",
-			validate: (input) => {
-				if (!input || input.trim().length > MAX_TITLE_LENGTH) {
-					return `Title must be at least ${MAX_TITLE_LENGTH} characters`;
-				}
-				return true;
-			},
-		},
-		{
-			type: "input",
-			name: "description",
-			message: "Enter task description:",
-			validate: (input) => {
-				if (!input || input.trim().length > MAX_DESCRIPTION_LENGTH) {
-					return `Description must be at least ${MAX_DESCRIPTION_LENGTH} characters`;
-				}
-				return true;
-			},
-		},
-		{
-			type: "input",
-			name: "details",
-			message: "Enter implementation details:",
-			validate: (input) => {
-				if (!input || input.trim().length > MAX_DETAILS_LENGTH) {
-					return `Details must be at least ${MAX_DETAILS_LENGTH} characters`;
-				}
-				return true;
-			},
-		},
-		{
-			type: "list",
-			name: "priority",
-			message: "Select task priority:",
-			choices: TASKS_PRIORITIES,
-		},
-		{
-			type: "input",
-			name: "dependencies",
-			message: "Enter dependency IDs (comma separated):",
-			filter: (input) => input.replace(/\s+/g, ""),
-			validate: (input) => {
-				if (input && !/^(\d+,)*\d+$/.test(input)) {
-					return "Invalid dependency format. Use comma-separated numbers (e.g: 1,2,3)";
-				}
-				return true;
-			},
-		},
-	]);
-}
-
-/**
  * @description Asks the user for the parent task ID
  */
 export async function askSubtaskParentId(tasksLength: number) {

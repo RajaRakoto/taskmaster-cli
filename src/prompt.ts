@@ -214,10 +214,6 @@ export const tmaiAddTasksMenu_prompt = [
 				value: "tmai-addtaskai",
 			},
 			{
-				name: `${emoji.get("heavy_plus_sign")} Add task (manually)`,
-				value: "tmai-addtaskmanual",
-			},
-			{
 				name: `${emoji.get("heavy_plus_sign")} Add tasks from PRD (AI)`,
 				value: "tmai-addtasksprd",
 			},

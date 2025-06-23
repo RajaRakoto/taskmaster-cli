@@ -24,7 +24,6 @@ import {
 	askDisplayOptions,
 	askTaskIdInput,
 	askTaskPrompt,
-	askTaskManualParams,
 	askSubtaskParentId,
 	askNumSubtasks,
 	askSubtaskManualParams,
@@ -145,19 +144,6 @@ export async function tmaiManageAsync() {
 					const prompt = await askTaskPrompt();
 					const research = await askAdvancedResearchConfirmation();
 					await tmai.addTaskByAIAsync(prompt, research, tag);
-					break;
-				}
-				case "tmai-addtaskmanual": {
-					const { title, description, details, priority, dependencies } =
-						await askTaskManualParams();
-					await tmai.addTaskManuallyAsync(
-						title,
-						description,
-						details,
-						priority,
-						dependencies,
-						tag,
-					);
 					break;
 				}
 				case "tmai-addtasksprd": {

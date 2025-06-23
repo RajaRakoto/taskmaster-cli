@@ -499,41 +499,6 @@ export class TaskMaster {
 
 	// TODO: validate
 	/**
-	 * @description Adds a new task manually
-	 * @param title Task title
-	 * @param description Task description
-	 * @param details Implementation details
-	 * @param priority Task priority level (low, medium, high)
-	 * @param dependencies Comma-separated dependency IDs (1,2,3)
-	 * @param tag Tag context for the task
-	 */
-	public async addTaskManuallyAsync(
-		title: string,
-		description: string,
-		details: string,
-		priority: Priority,
-		dependencies: string,
-		tag: string,
-	): Promise<void> {
-		await this.executeCommandAsync(
-			`Adding manual task: "${chalk.bold(title)}"...`,
-			"Task added successfully!",
-			"Failed to add manual task",
-			this._mainCommand,
-			[
-				"add-task",
-				`--title="${title}"`,
-				`--description="${description}"`,
-				`--details="${details}"`,
-				`--priority=${priority}`,
-				dependencies ? `--dependencies=${dependencies}` : "",
-				tag ? `--tag=${tag}` : "",
-			].filter(Boolean),
-		);
-	}
-
-	// TODO: validate
-	/**
 	 * @description Adds subtasks using AI
 	 * @param parentId Parent task ID
 	 * @param numTasksToGenerate Number of subtasks to generate
