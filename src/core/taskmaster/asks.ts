@@ -190,7 +190,6 @@ export async function askTaskId(tasksLength: number): Promise<number> {
 		type: "number",
 		name: "parentId",
 		message: "Enter task ID:",
-		default: 1,
 		validate: (input) => {
 			const num = Number(input);
 			if (
