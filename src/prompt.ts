@@ -244,19 +244,19 @@ export const tmaiUpdateTasksMenu_prompt = [
 		choices: [
 			new inquirer.Separator("=== Updating tasks ==="),
 			{
-				name: `${emoji.get("pencil2")} Update task (AI)`,
+				name: `${emoji.get("pencil2")}  Update task (AI)`,
 				value: "tmai-updatetaskai",
 			},
 			{
-				name: `${emoji.get("arrows_counterclockwise")} Update multiple tasks (AI)`,
+				name: `${emoji.get("pencil2")}  Update multiple tasks (AI)`,
 				value: "tmai-updatemultipletasksai",
 			},
 			{
-				name: `${emoji.get("memo")} Update subtask (AI)`,
+				name: `${emoji.get("pencil2")}  Update subtask (AI)`,
 				value: "tmai-updatesubtaskai",
 			},
 			{
-				name: `${emoji.get("memo")} Convert task to subtask`,
+				name: `${emoji.get("pencil2")}  Convert task to subtask`,
 				value: "tmai-converttasktosubtask",
 			},
 		],
