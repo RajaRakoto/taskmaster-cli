@@ -7,13 +7,10 @@ import fs from "node:fs";
 
 /* constants */
 import {
-	DEFAULT_STATUS,
 	DEFAULT_SUBTASKS_TO_GENERATE,
 	DEFAULT_TAG,
 	DEFAULT_TASKS_TO_GENERATE,
 	MAX_DESCRIPTION_LENGTH,
-	MAX_DETAILS_LENGTH,
-	MAX_PARENT_ID,
 	MAX_PROMPT_LENGTH,
 	MAX_SUBTASKS_TO_GENERATE,
 	MAX_TASKS_TO_GENERATE,
@@ -22,7 +19,6 @@ import {
 	MIN_SUBTASKS_TO_GENERATE,
 	MIN_TASKS_TO_GENERATE,
 	PRD_PATH,
-	TASKS_PRIORITIES,
 	TASKS_STATUSES,
 	TASKS_BCK_DEST_PATH,
 } from "@/constants";
@@ -35,7 +31,7 @@ import { existsAsync } from "@/utils/extras";
 /**
  * @description Asks the user for confirmation to overwrite the existing tasks.json file.
  */
-export async function askOverwriteConfirmation() {
+export async function askOverwriteConfirmation(): Promise<boolean> {
 	const { overwrite } = await inquirer.prompt({
 		type: "confirm",
 		name: "overwrite",
@@ -50,16 +46,16 @@ export async function askOverwriteConfirmation() {
 /**
  * @description Asks the user for the path to their PRD file.
  */
-export async function askPrdPath() {
+export async function askPrdPath(): Promise<string> {
 	const { prdPath } = await inquirer.prompt({
 		type: "input",
 		name: "prdPath",
 		message: "Enter the path to your PRD file:",
 		default: PRD_PATH,
 		validate: (input) => {
-			const regex = /^[\w\s/]+(?:\.(?:txt|md))$/;
+			const regex = /^[\w\s/_-]+(?:\.(?:txt|md))$/;
 			if (!regex.test(input)) {
-				return "Please enter a valid PRD file with .txt or .md extension and without special characters, except for /";
+				return "Please enter a valid PRD file with .txt or .md extension and without special characters, except for /, -, and _";
 			}
 			return true;
 		},
@@ -70,7 +66,7 @@ export async function askPrdPath() {
 /**
  * @description Asks the user for the number of tasks to generate.
  */
-export async function askNumTasksToGenerate() {
+export async function askNumTasksToGenerate(): Promise<number> {
 	const { numTasksToGenerate } = await inquirer.prompt({
 		type: "number",
 		name: "numTasksToGenerate",
@@ -88,13 +84,13 @@ export async function askNumTasksToGenerate() {
 			return true;
 		},
 	});
-	return numTasksToGenerate;
+	return Number(numTasksToGenerate);
 }
 
 /**
  * @description Asks the user for confirmation to allow advanced research for task generation (using AI).
  */
-export async function askAdvancedResearchConfirmation() {
+export async function askAdvancedResearchConfirmation(): Promise<boolean> {
 	const { allowAdvancedResearch } = await inquirer.prompt({
 		type: "confirm",
 		name: "allowAdvancedResearch",
@@ -107,7 +103,7 @@ export async function askAdvancedResearchConfirmation() {
 /**
  * @description Asks the user to enter a tag for the tasks.
  */
-export async function askTaskTag() {
+export async function askTaskTag(): Promise<string> {
 	const { tag } = await inquirer.prompt({
 		type: "input",
 		name: "tag",
@@ -127,7 +123,7 @@ export async function askTaskTag() {
 /**
  * @description Asks the user for confirmation to decompose all tasks.
  */
-export async function askDecompositionConfirmation() {
+export async function askDecompositionConfirmation(): Promise<boolean> {
 	const { confirmDecomposition } = await inquirer.prompt({
 		type: "confirm",
 		name: "confirmDecomposition",
@@ -142,7 +138,7 @@ export async function askDecompositionConfirmation() {
 /**
  * @description Asks the user to select task statuses.
  */
-export async function askStatusSelection() {
+export async function askStatusSelection(): Promise<string> {
 	const { status: validatedStatus } = await inquirer.prompt([
 		{
 			type: "checkbox",
@@ -165,7 +161,10 @@ export async function askStatusSelection() {
 /**
  * @description Asks the user for display options when listing tasks.
  */
-export async function askDisplayOptions() {
+export async function askDisplayOptions(): Promise<{
+	quickly: boolean;
+	withSubtasks: boolean;
+}> {
 	const { quickly, withSubtasks } = await inquirer.prompt([
 		{
 			type: "confirm",
@@ -184,16 +183,41 @@ export async function askDisplayOptions() {
 }
 
 /**
- * @description Asks the user to enter a tag for the tasks.
+ * @description Asks the user for the parent task ID
  */
-export async function askTaskIdInput() {
+export async function askTaskId(tasksLength: number): Promise<number> {
+	const { parentId } = await inquirer.prompt({
+		type: "input",
+		name: "parentId",
+		message: "Enter task ID:",
+		validate: (input: string) => {
+			const num = Number.parseInt(input, 10);
+			if (
+				Number.isNaN(num) ||
+				!Number.isInteger(Number(input)) ||
+				num < MIN_PARENT_ID ||
+				num > tasksLength
+			) {
+				return `Please enter a valid integer between ${MIN_PARENT_ID} and ${tasksLength}`;
+			}
+
+			return true;
+		},
+	});
+	return Number(parentId);
+}
+
+/**
+ * @description Asks the user to enter subtask ID
+ */
+export async function askHierarchicalTaskId(): Promise<string> {
 	const { taskId } = await inquirer.prompt({
 		type: "input",
 		name: "taskId",
-		message: "Enter the task ID:",
+		message: "Enter the hierarchical task ID:",
 		validate: (input) => {
-			if (!input || !/^(\d+)(\.\d+)*$/.test(input)) {
-				return "Invalid task ID. Must be an integer or hierarchical ID (e.g. 1, 2.1, 5.1.1)";
+			if (!input || !/^(\d+(\.\d+)*\.\d+)$/.test(input)) {
+				return "Invalid subtask ID. Must be a hierarchical ID (e.g: 1.1, 2.1.1)";
 			}
 			return true;
 		},
@@ -204,14 +228,14 @@ export async function askTaskIdInput() {
 /**
  * @description Asks the user for the task creation prompt
  */
-export async function askTaskPrompt() {
+export async function askTaskPrompt(): Promise<string> {
 	const { prompt } = await inquirer.prompt({
 		type: "input",
 		name: "prompt",
 		message: "Enter prompt:",
 		validate: (input) => {
-			if (!input || input.trim().length < MAX_PROMPT_LENGTH) {
-				return `Please enter a detailed task description (at least ${MAX_PROMPT_LENGTH} characters)`;
+			if (!input || input.trim().length > MAX_PROMPT_LENGTH) {
+				return `Prompt must be at least ${MAX_PROMPT_LENGTH} characters`;
 			}
 			return true;
 		},
@@ -220,97 +244,9 @@ export async function askTaskPrompt() {
 }
 
 /**
- * @description Asks the user for manual task parameters
- */
-export async function askTaskManualParams() {
-	return await inquirer.prompt([
-		{
-			type: "input",
-			name: "title",
-			message: "Enter task title:",
-			validate: (input) => {
-				if (!input || input.trim().length < MAX_TITLE_LENGTH) {
-					return `Title must be at least ${MAX_TITLE_LENGTH} characters`;
-				}
-				return true;
-			},
-		},
-		{
-			type: "input",
-			name: "description",
-			message: "Enter task description:",
-			validate: (input) => {
-				if (!input || input.trim().length < MAX_DESCRIPTION_LENGTH) {
-					return `Description must be at least ${MAX_DESCRIPTION_LENGTH} characters`;
-				}
-				return true;
-			},
-		},
-		{
-			type: "input",
-			name: "details",
-			message: "Enter implementation details:",
-			validate: (input) => {
-				if (!input || input.trim().length < MAX_DETAILS_LENGTH) {
-					return `Details must be at least ${MAX_DETAILS_LENGTH} characters`;
-				}
-				return true;
-			},
-		},
-		{
-			type: "list",
-			name: "priority",
-			message: "Select task priority:",
-			choices: TASKS_PRIORITIES,
-		},
-		{
-			type: "list",
-			name: "status",
-			message: "Select task status:",
-			choices: TASKS_STATUSES,
-			default: DEFAULT_STATUS,
-		},
-		{
-			type: "input",
-			name: "dependencies",
-			message: "Enter dependency IDs (comma separated):",
-			filter: (input) => input.replace(/\s+/g, ""),
-			validate: (input) => {
-				if (input && !/^(\d+,)*\d+$/.test(input)) {
-					return "Invalid dependency format. Use comma-separated numbers (e.g: 1,2,3.1,1.3)";
-				}
-				return true;
-			},
-		},
-	]);
-}
-
-/**
- * @description Asks the user for the parent task ID
- */
-export async function askSubtaskParentId() {
-	const { parentId } = await inquirer.prompt({
-		type: "number",
-		name: "parentId",
-		message: "Enter parent task ID:",
-		validate: (input) => {
-			if (
-				Number.isNaN(input) ||
-				input < MIN_PARENT_ID ||
-				input > MAX_PARENT_ID
-			) {
-				return `Please enter a number between ${MIN_PARENT_ID} and ${MAX_PARENT_ID}`;
-			}
-			return true;
-		},
-	});
-	return parentId;
-}
-
-/**
  * @description Asks the user for the number of subtasks to generate
  */
-export async function askNumSubtasks() {
+export async function askNumSubtasks(): Promise<number> {
 	const { num } = await inquirer.prompt({
 		type: "number",
 		name: "num",
@@ -327,13 +263,13 @@ export async function askNumSubtasks() {
 			return true;
 		},
 	});
-	return num;
+	return Number(num);
 }
 
 /**
  * @description Asks the user for manual subtask parameters
  */
-export async function askBackupSlot() {
+export async function askBackupSlot(): Promise<string> {
 	const slots = [1, 2, 3];
 	const slotChoices = [];
 
@@ -374,14 +310,17 @@ export async function askBackupSlot() {
 	return selectedSlot;
 }
 
-export async function askSubtaskManualParams() {
+export async function askSubtaskManualParams(): Promise<{
+	title: string;
+	description: string;
+}> {
 	return await inquirer.prompt([
 		{
 			type: "input",
 			name: "title",
 			message: "Enter subtask title:",
 			validate: (input) => {
-				if (!input || input.trim().length < MAX_TITLE_LENGTH) {
+				if (!input || input.trim().length > MAX_TITLE_LENGTH) {
 					return `Title must be at least ${MAX_TITLE_LENGTH} characters`;
 				}
 				return true;
@@ -392,44 +331,8 @@ export async function askSubtaskManualParams() {
 			name: "description",
 			message: "Enter subtask description:",
 			validate: (input) => {
-				if (!input || input.trim().length < MAX_DESCRIPTION_LENGTH) {
+				if (!input || input.trim().length > MAX_DESCRIPTION_LENGTH) {
 					return `Description must be at least ${MAX_DESCRIPTION_LENGTH} characters`;
-				}
-				return true;
-			},
-		},
-		{
-			type: "input",
-			name: "details",
-			message: "Enter implementation details:",
-			validate: (input) => {
-				if (!input || input.trim().length < MAX_DETAILS_LENGTH) {
-					return `Details must be at least ${MAX_DETAILS_LENGTH} characters`;
-				}
-				return true;
-			},
-		},
-		{
-			type: "list",
-			name: "priority",
-			message: "Select subtask priority:",
-			choices: TASKS_PRIORITIES,
-		},
-		{
-			type: "list",
-			name: "status",
-			message: "Select subtask status:",
-			choices: TASKS_STATUSES,
-			default: DEFAULT_STATUS,
-		},
-		{
-			type: "input",
-			name: "dependencies",
-			message: "Enter dependency IDs (comma separated):",
-			filter: (input) => input.replace(/\s+/g, ""),
-			validate: (input) => {
-				if (input && !/^(\d+,)*\d+$/.test(input)) {
-					return "Invalid dependency format. Use comma-separated numbers (e.g: 1,2,3)";
 				}
 				return true;
 			},

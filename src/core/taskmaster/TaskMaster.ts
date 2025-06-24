@@ -77,8 +77,8 @@ export class TaskMaster {
 	public async getTasksContentAsync(): Promise<I_Tasks> {
 		const oraOptions = {
 			text: `Fetching tasks from ${chalk.bold(this._tasksFilePath)}...`,
-			successText: chalk.green("Fetched tasks successfully!"),
-			failText: chalk.red("Failed to retrieve tasks from tasks.json"),
+			successText: chalk.bgGreen("Fetched tasks successfully!"),
+			failText: chalk.bgRed("Failed to retrieve tasks from tasks.json"),
 		};
 
 		return oraPromise(
@@ -95,7 +95,7 @@ export class TaskMaster {
 	// Helpers
 	// ==============================================
 
-	// TODO: validate
+	// TODO: done
 	/**
 	 * @description Helper method to execute commands with consistent ora handling
 	 * @param text Loading text for ora spinner
@@ -114,8 +114,8 @@ export class TaskMaster {
 		args: string[] = [],
 	): Promise<void> {
 		// Escape the arguments to prevent injections
-		const escapedArgs = args.map(
-			(arg) => `"${arg.replace(/"/g, '\\"').replace(/\$/g, "\\$")}"`,
+		const escapedArgs = args.map((arg) =>
+			arg.replace(/"/g, '\\"').replace(/\$/g, "\\$"),
 		);
 
 		const oraOptions = {
@@ -128,6 +128,93 @@ export class TaskMaster {
 			runCommandAsync(command, escapedArgs, false, false),
 			oraOptions,
 		);
+	}
+
+	// TODO: done
+	/**
+	 * @description Fixes the format of the tasks.json file if necessary
+	 * by encapsulating the 'tasks' and 'metadata' keys under a 'master' key
+	 */
+	private async fixTasksFileFormatAsync(): Promise<void> {
+		const oraOptions = {
+			text: "Verifying tasks.json file format...",
+			successText: chalk.bgGreen("tasks.json format validated successfully!"),
+			failText: chalk.bgRed("Failed to validate tasks.json format"),
+		};
+
+		await oraPromise(async () => {
+			const currentContent = await readJsonFileAsync<Record<string, unknown>>(
+				this._tasksFilePath,
+			);
+
+			interface MasterStructure {
+				tasks?: unknown;
+				metadata?: unknown;
+			}
+
+			let tasksToSave: unknown[] | null = null;
+			let metadataToSave: object | null = null;
+			let masterKey: string | null = null;
+
+			if (currentContent.master) {
+				const masterData = currentContent.master as MasterStructure;
+				if (
+					Array.isArray(masterData.tasks) &&
+					typeof masterData.metadata === "object"
+				) {
+					masterKey = "master";
+					tasksToSave = masterData.tasks;
+					metadataToSave = masterData.metadata;
+				}
+			}
+
+			if (!masterKey) {
+				for (const key of Object.keys(currentContent)) {
+					const value = currentContent[key];
+					if (typeof value === "object" && !Array.isArray(value)) {
+						const data = value as MasterStructure;
+						if (
+							Array.isArray(data.tasks) &&
+							typeof data.metadata === "object"
+						) {
+							masterKey = key;
+							tasksToSave = data.tasks;
+							metadataToSave = data.metadata;
+							break;
+						}
+					}
+				}
+			}
+
+			if (!masterKey) {
+				if (
+					Array.isArray(currentContent?.tasks) &&
+					typeof currentContent?.metadata === "object"
+				) {
+					tasksToSave = currentContent.tasks;
+					metadataToSave = currentContent.metadata;
+				}
+			}
+
+			if (tasksToSave !== null && metadataToSave !== null) {
+				const correctedContent = {
+					master: {
+						tasks: tasksToSave,
+						metadata: metadataToSave,
+					},
+				};
+
+				await writeFile(
+					this._tasksFilePath,
+					JSON.stringify(correctedContent, null, 2),
+				);
+				return;
+			}
+
+			throw new Error(
+				"Invalid tasks.json format. Could not find valid tasks and metadata to correct the file.",
+			);
+		}, oraOptions);
 	}
 
 	// ==============================================
@@ -471,7 +558,7 @@ export class TaskMaster {
 	// Method for Task Addition
 	// ==============================================
 
-	// TODO: validate
+	// TODO: done
 	/**
 	 * @description Adds a new task using AI
 	 * @param prompt Description of the task to create
@@ -497,45 +584,7 @@ export class TaskMaster {
 		);
 	}
 
-	// TODO: validate
-	/**
-	 * @description Adds a new task manually
-	 * @param title Task title
-	 * @param description Task description
-	 * @param details Implementation details
-	 * @param priority Task priority level (low, medium, high)
-	 * @param status Task status (pending, in-progress, done, review, deferred, cancelled, todo, blocked)
-	 * @param dependencies Comma-separated dependency IDs (1,2,3)
-	 * @param tag Tag context for the task
-	 */
-	public async addTaskManuallyAsync(
-		title: string,
-		description: string,
-		details: string,
-		priority: Priority,
-		status: Status,
-		dependencies: string,
-		tag: string,
-	): Promise<void> {
-		await this.executeCommandAsync(
-			`Adding manual task: "${chalk.bold(title)}"...`,
-			"Task added successfully!",
-			"Failed to add manual task",
-			this._mainCommand,
-			[
-				"add-task",
-				`--title="${title}"`,
-				`--description="${description}"`,
-				`--details="${details}"`,
-				`--priority=${priority}`,
-				`--status=${status}`,
-				dependencies ? `--dependencies=${dependencies}` : "",
-				tag ? `--tag=${tag}` : "",
-			].filter(Boolean),
-		);
-	}
-
-	// TODO: validate
+	// TODO: done
 	/**
 	 * @description Adds subtasks using AI
 	 * @param parentId Parent task ID
@@ -543,7 +592,7 @@ export class TaskMaster {
 	 * @param allowAdvancedResearch Use research capabilities
 	 */
 	public async addSubtasksByAIAsync(
-		parentId: string,
+		parentId: number,
 		numTasksToGenerate: number,
 		allowAdvancedResearch: boolean,
 	): Promise<void> {
@@ -561,26 +610,17 @@ export class TaskMaster {
 		);
 	}
 
-	// TODO: validate
+	// TODO: done
 	/**
 	 * @description Adds a subtask manually
 	 * @param parentId Parent task ID
 	 * @param title Subtask title
 	 * @param description Subtask description
-	 * @param details Implementation details
-	 * @param priority Subtask priority level (low, medium, high)
-	 * @param status Subtask status (pending, in-progress, done, review, deferred, cancelled, todo, blocked)
-	 * @param dependencies Comma-separated dependency IDs
-	 * @note This methode does not use tag context as subtasks are usually tied to their parent task
 	 */
 	public async addSubtaskManuallyAsync(
-		parentId: string,
+		parentId: number,
 		title: string,
 		description: string,
-		details: string,
-		priority: Priority,
-		status: Status,
-		dependencies: string,
 	): Promise<void> {
 		await this.executeCommandAsync(
 			`Adding manual subtask to task ${chalk.bold(parentId)}...`,
@@ -589,14 +629,120 @@ export class TaskMaster {
 			this._mainCommand,
 			[
 				"add-subtask",
-				`--id=${parentId}`,
-				`--title="${title}"`,
-				`--description="${description}"`,
-				`--details="${details}"`,
-				`--priority=${priority}`,
-				`--status=${status}`,
-				dependencies ? `--dependencies=${dependencies}` : "",
+				`--parent=${parentId}`,
+				`--title=${title}`,
+				`--description=${description}`,
 			].filter(Boolean),
+		);
+	}
+
+	// ==============================================
+	// Updating Methods
+	// ==============================================
+
+	// TODO: validate
+	/**
+	 * @description Modifies a task using AI
+	 * @param id ID of the task to modify
+	 * @param prompt Modification prompt
+	 * @param allowAdvancedResearch Use advanced research
+	 * @param tag Context tag
+	 */
+	public async updateTaskByAIAsync(
+		id: number,
+		prompt: string,
+		allowAdvancedResearch: boolean,
+		tag: string,
+	): Promise<void> {
+		await this.executeCommandAsync(
+			`Modifying task ${id} with AI...`,
+			`Task ${id} modified successfully!`,
+			`Failed to modify task ${id}`,
+			this._mainCommand,
+			[
+				"update-task",
+				`--id=${id}`,
+				`--prompt=${prompt}`,
+				allowAdvancedResearch ? "--research" : "",
+				tag ? `--tag=${tag}` : "",
+			].filter(Boolean),
+		);
+	}
+
+	// TODO: validate
+	/**
+	 * @description Updates multiple tasks using AI from a starting ID
+	 * @param startingId Starting ID for the update
+	 * @param prompt Global modification prompt
+	 * @param allowAdvancedResearch Use advanced research
+	 * @param tag Context tag
+	 */
+	public async updateMultipleTasksByAIAsync(
+		startingId: number,
+		prompt: string,
+		allowAdvancedResearch: boolean,
+		tag: string,
+	): Promise<void> {
+		await this.executeCommandAsync(
+			`Updating tasks from ${startingId} with AI...`,
+			"Tasks updated successfully!",
+			"Failed to update tasks",
+			this._mainCommand,
+			[
+				"update",
+				`--from=${startingId}`,
+				`--prompt=${prompt}`,
+				allowAdvancedResearch ? "--research" : "",
+				tag ? `--tag=${tag}` : "",
+			].filter(Boolean),
+		);
+	}
+
+	// TODO: validate
+	/**
+	 * @description Modifies a subtask using AI
+	 * @param hierarchicalId Hierarchical ID of the subtask
+	 * @param prompt Modification prompt
+	 * @param allowAdvancedResearch Use advanced research
+	 * @param tag Context tag
+	 */
+	public async updateSubtaskByAIAsync(
+		hierarchicalId: string,
+		prompt: string,
+		allowAdvancedResearch: boolean,
+		tag: string,
+	): Promise<void> {
+		await this.executeCommandAsync(
+			`Modifying subtask ${hierarchicalId} with AI...`,
+			`Subtask ${hierarchicalId} modified successfully!`,
+			`Failed to modify subtask ${hierarchicalId}`,
+			this._mainCommand,
+			[
+				"update-subtask",
+				`--id=${hierarchicalId}`,
+				`--prompt=${prompt}`,
+				allowAdvancedResearch ? "--research" : "",
+				tag ? `--tag=${tag}` : "",
+			].filter(Boolean),
+		);
+	}
+
+	// TODO: validate
+	/**
+	 * @description Converts an existing task to a subtask
+	 * @param subtaskId ID of the task to convert into a subtask
+	 * @param parentId ID of the task to which the converted task should be added as a subtask
+	 */
+	public async convertTaskToSubtaskAsync(
+		subtaskId: number,
+		parentId: number,
+	): Promise<void> {
+		await this.executeCommandAsync(
+			`Converting task ${subtaskId} to subtask of ${parentId}...`,
+			`Task ${subtaskId} converted to subtask successfully!`,
+			`Failed to convert task ${subtaskId} to subtask`,
+			this._mainCommand,
+			["add-subtask", `--parent=${parentId}`, `--task-id=${subtaskId}`],
 		);
 	}
 
@@ -704,5 +850,12 @@ export class TaskMaster {
 				}, oraOptions);
 			}
 		}
+
+		const allFilesCleared = TASKS_FILES.every(
+			(filePath) => !fs.existsSync(filePath),
+		);
+
+		if (allFilesCleared)
+			console.log(chalk.green("All task-related files are cleared!"));
 	}
 }
