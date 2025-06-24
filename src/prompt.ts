@@ -195,7 +195,7 @@ export const tmaiListNavMenu_prompt = [
 	},
 ];
 
-// TODO: in-progress
+// TODO: done
 // ==============================
 // Adding tasks menu
 // ==============================
@@ -210,7 +210,7 @@ export const tmaiAddTasksMenu_prompt = [
 		choices: [
 			new inquirer.Separator("=== Adding tasks ==="),
 			{
-				name: `${emoji.get("heavy_plus_sign")} Add task with (AI)`,
+				name: `${emoji.get("heavy_plus_sign")} Add task (AI)`,
 				value: "tmai-addtaskai",
 			},
 			{
@@ -229,7 +229,7 @@ export const tmaiAddTasksMenu_prompt = [
 	},
 ];
 
-// TODO: pending
+// TODO: in-progress
 // ==============================
 // Modifying tasks menu
 // ==============================
@@ -244,16 +244,20 @@ export const tmaiUpdateTasksMenu_prompt = [
 		choices: [
 			new inquirer.Separator("=== Updating tasks ==="),
 			{
-				name: `${emoji.get("pencil2")} Update task`,
-				value: "tmai-manage-update-task",
+				name: `${emoji.get("pencil2")} Update task (AI)`,
+				value: "tmai-updatetaskai",
 			},
 			{
-				name: `${emoji.get("arrows_counterclockwise")} Update multiple tasks`,
-				value: "tmai-manage-update-multiple",
+				name: `${emoji.get("arrows_counterclockwise")} Update multiple tasks (AI)`,
+				value: "tmai-updatemultipletaskai",
 			},
 			{
-				name: `${emoji.get("memo")} Update subtask`,
-				value: "tmai-manage-update-subtask",
+				name: `${emoji.get("memo")} Update subtask (AI)`,
+				value: "tmai-updatesubtaskai",
+			},
+			{
+				name: `${emoji.get("memo")} Convert task to subtask`,
+				value: "tmai-converttasktosubtask",
 			},
 		],
 	},
