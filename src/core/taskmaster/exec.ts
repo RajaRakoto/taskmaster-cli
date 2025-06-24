@@ -111,7 +111,7 @@ export async function tmaiGenAsync() {
 
 // TODO: in-progress
 export async function tmaiManageAsync() {
-	const tasks = await tmai.getTasksContentAsync();
+	let tasks = await tmai.getTasksContentAsync();
 	const { tmaiManageMenu } = await inquirer.prompt(tmaiManageMenu_prompt);
 
 	switch (tmaiManageMenu) {
@@ -143,6 +143,10 @@ export async function tmaiManageAsync() {
 					const prompt = await askTaskPrompt();
 					const research = await askAdvancedResearchConfirmation();
 					await tmai.addTaskByAIAsync(prompt, research, tag);
+					tasks = await tmai.getTasksContentAsync();
+					console.log(
+						await tmai.listQuickAsync(tasks, TASKS_STATUSES.join(","), false),
+					);
 					break;
 				}
 				case "tmai-addtasksprd": {
@@ -155,6 +159,10 @@ export async function tmaiManageAsync() {
 						research,
 						true,
 						tag,
+					);
+					tasks = await tmai.getTasksContentAsync();
+					console.log(
+						await tmai.listQuickAsync(tasks, TASKS_STATUSES.join(","), true),
 					);
 					break;
 				}
@@ -170,6 +178,10 @@ export async function tmaiManageAsync() {
 						numTasksToGenerate,
 						research,
 					);
+					tasks = await tmai.getTasksContentAsync();
+					console.log(
+						await tmai.listQuickAsync(tasks, TASKS_STATUSES.join(","), true),
+					);
 					break;
 				}
 				case "tmai-addsubtaskmanual": {
@@ -179,6 +191,10 @@ export async function tmaiManageAsync() {
 					const parentId = await askTaskId(tasks.master.tasks.length);
 					const { title, description } = await askSubtaskManualParams();
 					await tmai.addSubtaskManuallyAsync(parentId, title, description);
+					tasks = await tmai.getTasksContentAsync();
+					console.log(
+						await tmai.listQuickAsync(tasks, TASKS_STATUSES.join(","), true),
+					);
 					break;
 				}
 			}
@@ -199,6 +215,7 @@ export async function tmaiManageAsync() {
 					const prompt = await askTaskPrompt();
 					const research = await askAdvancedResearchConfirmation();
 					await tmai.updateTaskByAIAsync(parentId, prompt, research, tag);
+					tasks = await tmai.getTasksContentAsync();
 					console.log(
 						await tmai.listQuickAsync(tasks, TASKS_STATUSES.join(","), false),
 					);
@@ -217,6 +234,7 @@ export async function tmaiManageAsync() {
 						research,
 						tag,
 					);
+					tasks = await tmai.getTasksContentAsync();
 					console.log(
 						await tmai.listQuickAsync(tasks, TASKS_STATUSES.join(","), true),
 					);
@@ -230,6 +248,7 @@ export async function tmaiManageAsync() {
 					const prompt = await askTaskPrompt();
 					const research = await askAdvancedResearchConfirmation();
 					await tmai.updateSubtaskByAIAsync(subtaskId, prompt, research, tag);
+					tasks = await tmai.getTasksContentAsync();
 					console.log(
 						await tmai.listQuickAsync(tasks, TASKS_STATUSES.join(","), true),
 					);
@@ -242,6 +261,7 @@ export async function tmaiManageAsync() {
 					const subtaskId = await askTaskId(tasks.master.tasks.length);
 					const parentId = await askTaskId(tasks.master.tasks.length);
 					await tmai.convertTaskToSubtaskAsync(subtaskId, parentId);
+					tasks = await tmai.getTasksContentAsync();
 					console.log(
 						await tmai.listQuickAsync(tasks, TASKS_STATUSES.join(","), true),
 					);
