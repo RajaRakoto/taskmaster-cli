@@ -550,6 +550,116 @@ export class TaskMaster {
 	}
 
 	// ==============================================
+	// Updating Methods
+	// ==============================================
+
+	// TODO: in-progress
+	/**
+	 * @description Modifies a task using AI
+	 * @param id ID of the task to modify
+	 * @param prompt Modification prompt
+	 * @param allowAdvancedResearch Use advanced research
+	 * @param tag Context tag
+	 */
+	public async updateTaskByAIAsync(
+		id: number,
+		prompt: string,
+		allowAdvancedResearch: boolean,
+		tag: string,
+	): Promise<void> {
+		await this.executeCommandAsync(
+			`Modifying task ${id} with AI...`,
+			`Task ${id} modified successfully!`,
+			`Failed to modify task ${id}`,
+			this._mainCommand,
+			[
+				"update-task",
+				`--id=${id}`,
+				`--prompt=${prompt}`,
+				allowAdvancedResearch ? "--research" : "",
+				tag ? `--tag=${tag}` : "",
+			].filter(Boolean),
+		);
+	}
+
+	// TODO: validate
+	/**
+	 * @description Updates multiple tasks using AI from a starting ID
+	 * @param startingId Starting ID for the update
+	 * @param prompt Global modification prompt
+	 * @param allowAdvancedResearch Use advanced research
+	 * @param tag Context tag
+	 */
+	public async updateMultipleTasksByAIAsync(
+		startingId: number,
+		prompt: string,
+		allowAdvancedResearch: boolean,
+		tag: string,
+	): Promise<void> {
+		await this.executeCommandAsync(
+			`Updating tasks from ${startingId} with AI...`,
+			"Tasks updated successfully!",
+			"Failed to update tasks",
+			this._mainCommand,
+			[
+				"update",
+				`--from=${startingId}`,
+				`--prompt=${prompt}`,
+				allowAdvancedResearch ? "--research" : "",
+				tag ? `--tag=${tag}` : "",
+			].filter(Boolean),
+		);
+	}
+
+	// TODO: validate
+	/**
+	 * @description Modifies a subtask using AI
+	 * @param hierarchicalId Hierarchical ID of the subtask
+	 * @param prompt Modification prompt
+	 * @param allowAdvancedResearch Use advanced research
+	 * @param tag Context tag
+	 */
+	public async updateSubtaskByAIAsync(
+		hierarchicalId: string,
+		prompt: string,
+		allowAdvancedResearch: boolean,
+		tag: string,
+	): Promise<void> {
+		await this.executeCommandAsync(
+			`Modifying subtask ${hierarchicalId} with AI...`,
+			`Subtask ${hierarchicalId} modified successfully!`,
+			`Failed to modify subtask ${hierarchicalId}`,
+			this._mainCommand,
+			[
+				"update-subtask",
+				`--id=${hierarchicalId}`,
+				`--prompt=${prompt}`,
+				allowAdvancedResearch ? "--research" : "",
+				tag ? `--tag=${tag}` : "",
+			].filter(Boolean),
+		);
+	}
+
+	// TODO: validate
+	/**
+	 * @description Converts an existing task to a subtask
+	 * @param subtaskId ID of the task to convert into a subtask
+	 * @param parentId ID of the task to which the converted task should be added as a subtask
+	 */
+	public async convertTaskToSubtaskAsync(
+		subtaskId: number,
+		parentId: number,
+	): Promise<void> {
+		await this.executeCommandAsync(
+			`Converting task ${subtaskId} to subtask of ${parentId}...`,
+			`Task ${subtaskId} converted to subtask successfully!`,
+			`Failed to convert task ${subtaskId} to subtask`,
+			this._mainCommand,
+			["add-subtask", `--parent=${parentId}`, `--task-id=${subtaskId}`],
+		);
+	}
+
+	// ==============================================
 	// Backup, Restore and Clear Methods
 	// ==============================================
 
