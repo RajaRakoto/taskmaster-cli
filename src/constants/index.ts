@@ -39,7 +39,6 @@ export const MAX_SUBTASKS_TO_GENERATE = 10;
 export const MAX_TITLE_LENGTH = 100;
 export const MAX_TITLE_TRUNC_LENGTH = 40;
 export const MAX_DESCRIPTION_LENGTH = 250;
-export const MAX_DETAILS_LENGTH = 500;
 export const MAX_PROMPT_LENGTH = 1024;
 export const MIN_PARENT_ID = 1;
 

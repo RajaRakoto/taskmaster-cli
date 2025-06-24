@@ -11,7 +11,6 @@ import {
 	DEFAULT_TAG,
 	DEFAULT_TASKS_TO_GENERATE,
 	MAX_DESCRIPTION_LENGTH,
-	MAX_DETAILS_LENGTH,
 	MAX_PROMPT_LENGTH,
 	MAX_SUBTASKS_TO_GENERATE,
 	MAX_TASKS_TO_GENERATE,
@@ -20,7 +19,6 @@ import {
 	MIN_SUBTASKS_TO_GENERATE,
 	MIN_TASKS_TO_GENERATE,
 	PRD_PATH,
-	TASKS_PRIORITIES,
 	TASKS_STATUSES,
 	TASKS_BCK_DEST_PATH,
 } from "@/constants";
@@ -33,7 +31,7 @@ import { existsAsync } from "@/utils/extras";
 /**
  * @description Asks the user for confirmation to overwrite the existing tasks.json file.
  */
-export async function askOverwriteConfirmation() {
+export async function askOverwriteConfirmation(): Promise<boolean> {
 	const { overwrite } = await inquirer.prompt({
 		type: "confirm",
 		name: "overwrite",
@@ -48,7 +46,7 @@ export async function askOverwriteConfirmation() {
 /**
  * @description Asks the user for the path to their PRD file.
  */
-export async function askPrdPath() {
+export async function askPrdPath(): Promise<string> {
 	const { prdPath } = await inquirer.prompt({
 		type: "input",
 		name: "prdPath",
@@ -68,7 +66,7 @@ export async function askPrdPath() {
 /**
  * @description Asks the user for the number of tasks to generate.
  */
-export async function askNumTasksToGenerate() {
+export async function askNumTasksToGenerate(): Promise<number> {
 	const { numTasksToGenerate } = await inquirer.prompt({
 		type: "number",
 		name: "numTasksToGenerate",
@@ -86,13 +84,13 @@ export async function askNumTasksToGenerate() {
 			return true;
 		},
 	});
-	return numTasksToGenerate;
+	return Number(numTasksToGenerate);
 }
 
 /**
  * @description Asks the user for confirmation to allow advanced research for task generation (using AI).
  */
-export async function askAdvancedResearchConfirmation() {
+export async function askAdvancedResearchConfirmation(): Promise<boolean> {
 	const { allowAdvancedResearch } = await inquirer.prompt({
 		type: "confirm",
 		name: "allowAdvancedResearch",
@@ -105,7 +103,7 @@ export async function askAdvancedResearchConfirmation() {
 /**
  * @description Asks the user to enter a tag for the tasks.
  */
-export async function askTaskTag() {
+export async function askTaskTag(): Promise<string> {
 	const { tag } = await inquirer.prompt({
 		type: "input",
 		name: "tag",
@@ -125,7 +123,7 @@ export async function askTaskTag() {
 /**
  * @description Asks the user for confirmation to decompose all tasks.
  */
-export async function askDecompositionConfirmation() {
+export async function askDecompositionConfirmation(): Promise<boolean> {
 	const { confirmDecomposition } = await inquirer.prompt({
 		type: "confirm",
 		name: "confirmDecomposition",
@@ -140,7 +138,7 @@ export async function askDecompositionConfirmation() {
 /**
  * @description Asks the user to select task statuses.
  */
-export async function askStatusSelection() {
+export async function askStatusSelection(): Promise<string> {
 	const { status: validatedStatus } = await inquirer.prompt([
 		{
 			type: "checkbox",
@@ -163,7 +161,10 @@ export async function askStatusSelection() {
 /**
  * @description Asks the user for display options when listing tasks.
  */
-export async function askDisplayOptions() {
+export async function askDisplayOptions(): Promise<{
+	quickly: boolean;
+	withSubtasks: boolean;
+}> {
 	const { quickly, withSubtasks } = await inquirer.prompt([
 		{
 			type: "confirm",
@@ -182,49 +183,14 @@ export async function askDisplayOptions() {
 }
 
 /**
- * @description Asks the user to enter a tag for the tasks.
- */
-export async function askTaskIdInput() {
-	const { taskId } = await inquirer.prompt({
-		type: "input",
-		name: "taskId",
-		message: "Enter the task ID:",
-		validate: (input) => {
-			if (!input || !/^(\d+)(\.\d+)*$/.test(input)) {
-				return "Invalid task ID. Must be an integer or hierarchical ID (e.g. 1, 2.1, 5.1.1)";
-			}
-			return true;
-		},
-	});
-	return taskId;
-}
-
-/**
- * @description Asks the user for the task creation prompt
- */
-export async function askTaskPrompt() {
-	const { prompt } = await inquirer.prompt({
-		type: "input",
-		name: "prompt",
-		message: "Enter prompt:",
-		validate: (input) => {
-			if (!input || input.trim().length > MAX_PROMPT_LENGTH) {
-				return `Prompt must be at least ${MAX_PROMPT_LENGTH} characters`;
-			}
-			return true;
-		},
-	});
-	return prompt;
-}
-
-/**
  * @description Asks the user for the parent task ID
  */
-export async function askSubtaskParentId(tasksLength: number) {
+export async function askTaskId(tasksLength: number): Promise<number> {
 	const { parentId } = await inquirer.prompt({
-		type: "input",
+		type: "number",
 		name: "parentId",
-		message: "Enter parent task ID:",
+		message: "Enter task ID:",
+		default: 1,
 		validate: (input) => {
 			const num = Number(input);
 			if (
@@ -242,9 +208,45 @@ export async function askSubtaskParentId(tasksLength: number) {
 }
 
 /**
+ * @description Asks the user to enter subtask ID
+ */
+export async function askHierarchicalTaskId(): Promise<string> {
+	const { taskId } = await inquirer.prompt({
+		type: "input",
+		name: "taskId",
+		message: "Enter the hierarchical task ID:",
+		validate: (input) => {
+			if (!input || !/^(\d+(\.\d+)*\.\d+)$/.test(input)) {
+				return "Invalid subtask ID. Must be a hierarchical ID (e.g: 1.1, 2.1.1)";
+			}
+			return true;
+		},
+	});
+	return taskId;
+}
+
+/**
+ * @description Asks the user for the task creation prompt
+ */
+export async function askTaskPrompt(): Promise<string> {
+	const { prompt } = await inquirer.prompt({
+		type: "input",
+		name: "prompt",
+		message: "Enter prompt:",
+		validate: (input) => {
+			if (!input || input.trim().length > MAX_PROMPT_LENGTH) {
+				return `Prompt must be at least ${MAX_PROMPT_LENGTH} characters`;
+			}
+			return true;
+		},
+	});
+	return prompt;
+}
+
+/**
  * @description Asks the user for the number of subtasks to generate
  */
-export async function askNumSubtasks() {
+export async function askNumSubtasks(): Promise<number> {
 	const { num } = await inquirer.prompt({
 		type: "number",
 		name: "num",
@@ -261,13 +263,13 @@ export async function askNumSubtasks() {
 			return true;
 		},
 	});
-	return num;
+	return Number(num);
 }
 
 /**
  * @description Asks the user for manual subtask parameters
  */
-export async function askBackupSlot() {
+export async function askBackupSlot(): Promise<string> {
 	const slots = [1, 2, 3];
 	const slotChoices = [];
 
@@ -308,7 +310,10 @@ export async function askBackupSlot() {
 	return selectedSlot;
 }
 
-export async function askSubtaskManualParams() {
+export async function askSubtaskManualParams(): Promise<{
+	title: string;
+	description: string;
+}> {
 	return await inquirer.prompt([
 		{
 			type: "input",
