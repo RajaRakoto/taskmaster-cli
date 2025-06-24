@@ -187,19 +187,20 @@ export async function askDisplayOptions(): Promise<{
  */
 export async function askTaskId(tasksLength: number): Promise<number> {
 	const { parentId } = await inquirer.prompt({
-		type: "number",
+		type: "input",
 		name: "parentId",
 		message: "Enter task ID:",
-		validate: (input) => {
-			const num = Number(input);
+		validate: (input: string) => {
+			const num = Number.parseInt(input, 10);
 			if (
 				Number.isNaN(num) ||
-				!Number.isInteger(num) ||
+				!Number.isInteger(Number(input)) ||
 				num < MIN_PARENT_ID ||
 				num > tasksLength
 			) {
 				return `Please enter a valid integer between ${MIN_PARENT_ID} and ${tasksLength}`;
 			}
+
 			return true;
 		},
 	});
