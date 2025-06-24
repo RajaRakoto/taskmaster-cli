@@ -543,8 +543,8 @@ export class TaskMaster {
 			[
 				"add-subtask",
 				`--parent=${parentId}`,
-				`--title="${title}"`,
-				`--description="${description}"`,
+				`--title=${title}`,
+				`--description=${description}`,
 			].filter(Boolean),
 		);
 	}
