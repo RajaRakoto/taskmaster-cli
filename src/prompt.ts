@@ -249,7 +249,7 @@ export const tmaiUpdateTasksMenu_prompt = [
 			},
 			{
 				name: `${emoji.get("arrows_counterclockwise")} Update multiple tasks (AI)`,
-				value: "tmai-updatemultipletaskai",
+				value: "tmai-updatemultipletasksai",
 			},
 			{
 				name: `${emoji.get("memo")} Update subtask (AI)`,

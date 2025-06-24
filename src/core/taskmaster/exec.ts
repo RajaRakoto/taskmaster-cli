@@ -22,9 +22,9 @@ import {
 	askDecompositionConfirmation,
 	askStatusSelection,
 	askDisplayOptions,
-	askTaskIdInput,
+	askHierarchicalTaskId,
 	askTaskPrompt,
-	askSubtaskParentId,
+	askTaskId,
 	askNumSubtasks,
 	askSubtaskManualParams,
 	askBackupSlot,
@@ -74,7 +74,6 @@ export async function tmaiGenAsync() {
 
 	if (choice.tmaiGenDecMenu === "tmai-parse") {
 		const tasksJsonPath = path.join(".taskmaster", "tasks", "tasks.json");
-
 		if (await existsAsync(tasksJsonPath)) {
 			const overwrite = await askOverwriteConfirmation();
 			if (!overwrite) {
@@ -126,7 +125,7 @@ export async function tmaiManageAsync() {
 				console.log(
 					await tmai.listQuickAsync(tasks, TASKS_STATUSES.join(","), true),
 				);
-				const taskId = await askTaskIdInput();
+				const taskId = await askHierarchicalTaskId();
 				await tmai.showAsync(taskId);
 			} else if (tmaiListNavMenu === "tmai-next") {
 				await tmai.nextAsync();
@@ -163,7 +162,7 @@ export async function tmaiManageAsync() {
 					console.log(
 						await tmai.listQuickAsync(tasks, TASKS_STATUSES.join(","), true),
 					);
-					const parentId = await askSubtaskParentId(tasks.master.tasks.length);
+					const parentId = await askTaskId(tasks.master.tasks.length);
 					const numTasksToGenerate = await askNumSubtasks();
 					const research = await askAdvancedResearchConfirmation();
 					await tmai.addSubtasksByAIAsync(
@@ -177,7 +176,7 @@ export async function tmaiManageAsync() {
 					console.log(
 						await tmai.listQuickAsync(tasks, TASKS_STATUSES.join(","), true),
 					);
-					const parentId = await askSubtaskParentId(tasks.master.tasks.length);
+					const parentId = await askTaskId(tasks.master.tasks.length);
 					const { title, description } = await askSubtaskManualParams();
 					await tmai.addSubtaskManuallyAsync(parentId, title, description);
 					break;
@@ -189,8 +188,65 @@ export async function tmaiManageAsync() {
 			const { tmaiUpdateTasksMenu } = await inquirer.prompt(
 				tmaiUpdateTasksMenu_prompt,
 			);
-			if (tmaiUpdateTasksMenu === "tmai-updatetasks") {
-				console.log("Executing task update...");
+			const tag = await askTaskTag();
+
+			switch (tmaiUpdateTasksMenu) {
+				case "tmai-updatetaskai": {
+					console.log(
+						await tmai.listQuickAsync(tasks, TASKS_STATUSES.join(","), false),
+					);
+					const parentId = await askTaskId(tasks.master.tasks.length);
+					const prompt = await askTaskPrompt();
+					const research = await askAdvancedResearchConfirmation();
+					await tmai.updateTaskByAIAsync(parentId, prompt, research, tag);
+					console.log(
+						await tmai.listQuickAsync(tasks, TASKS_STATUSES.join(","), false),
+					);
+					break;
+				}
+				case "tmai-updatemultipletasksai": {
+					console.log(
+						await tmai.listQuickAsync(tasks, TASKS_STATUSES.join(","), false),
+					);
+					const startingId = await askTaskId(tasks.master.tasks.length);
+					const prompt = await askTaskPrompt();
+					const research = await askAdvancedResearchConfirmation();
+					await tmai.updateMultipleTasksByAIAsync(
+						startingId,
+						prompt,
+						research,
+						tag,
+					);
+					console.log(
+						await tmai.listQuickAsync(tasks, TASKS_STATUSES.join(","), true),
+					);
+					break;
+				}
+				case "tmai-updatesubtaskai": {
+					console.log(
+						await tmai.listQuickAsync(tasks, TASKS_STATUSES.join(","), true),
+					);
+					const subtaskId = await askHierarchicalTaskId();
+					const prompt = await askTaskPrompt();
+					const research = await askAdvancedResearchConfirmation();
+					await tmai.updateSubtaskByAIAsync(subtaskId, prompt, research, tag);
+					console.log(
+						await tmai.listQuickAsync(tasks, TASKS_STATUSES.join(","), true),
+					);
+					break;
+				}
+				case "tmai-converttasktosubtask": {
+					console.log(
+						await tmai.listQuickAsync(tasks, TASKS_STATUSES.join(","), false),
+					);
+					const subtaskId = await askTaskId(tasks.master.tasks.length);
+					const parentId = await askTaskId(tasks.master.tasks.length);
+					await tmai.convertTaskToSubtaskAsync(subtaskId, parentId);
+					console.log(
+						await tmai.listQuickAsync(tasks, TASKS_STATUSES.join(","), true),
+					);
+					break;
+				}
 			}
 			break;
 		}
