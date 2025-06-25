@@ -185,11 +185,14 @@ export async function askDisplayOptions(): Promise<{
 /**
  * @description Asks the user for the parent task ID
  */
-export async function askTaskId(tasksLength: number): Promise<number> {
+export async function askTaskId(
+	tasksLength: number,
+	customMessage?: string,
+): Promise<number> {
 	const { parentId } = await inquirer.prompt({
 		type: "input",
 		name: "parentId",
-		message: "Enter task ID:",
+		message: customMessage || "Enter task ID:",
 		validate: (input: string) => {
 			const num = Number.parseInt(input, 10);
 			if (
@@ -210,16 +213,49 @@ export async function askTaskId(tasksLength: number): Promise<number> {
 /**
  * @description Asks the user to enter subtask ID
  */
-export async function askHierarchicalTaskId(): Promise<string> {
+export async function askHierarchicalTaskId(
+	customMessage?: string,
+): Promise<string> {
 	const { taskId } = await inquirer.prompt({
 		type: "input",
 		name: "taskId",
-		message: "Enter the hierarchical task ID:",
+		message: customMessage || "Enter the hierarchical task ID:",
 		validate: (input) => {
 			if (!input || !/^(\d+(\.\d+)*\.\d+)$/.test(input)) {
-				return "Invalid subtask ID. Must be a hierarchical ID (e.g: 1.1, 2.1.1)";
+				return "Invalid subtask ID. Must be a hierarchical ID (1.1, 2.1.1)";
 			}
 			return true;
+		},
+	});
+	return taskId;
+}
+
+/**
+ * @description Asks the user for a task ID that can be an integer or hierarchical.
+ */
+export async function askHybridTaskId(
+	tasksLength: number,
+	customMessage?: string,
+): Promise<string> {
+	const { taskId } = await inquirer.prompt({
+		type: "input",
+		name: "taskId",
+		message: customMessage || "Enter task ID (integer or hierarchical):",
+		validate: (input) => {
+			const num = Number(input);
+			if (
+				!Number.isNaN(num) &&
+				Number.isInteger(num) &&
+				num >= MIN_PARENT_ID &&
+				num <= tasksLength
+			) {
+				return true;
+			}
+			if (/^(\d+(\.\d+)*\.\d+)$/.test(input)) {
+				return true;
+			}
+
+			return `Invalid ID. Must be an integer between ${MIN_PARENT_ID} and ${tasksLength} or hierarchical (1.1, 2.3.1)`;
 		},
 	});
 	return taskId;
