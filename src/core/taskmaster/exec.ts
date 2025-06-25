@@ -28,6 +28,7 @@ import {
 	askNumSubtasks,
 	askSubtaskManualParams,
 	askBackupSlot,
+	askHybridTaskId,
 } from "@/core/taskmaster/asks";
 
 import chalk from "chalk";
@@ -42,6 +43,7 @@ import {
 	tmaiUpdateTasksMenu_prompt,
 	tmaiDeleteTasksMenu_prompt,
 	tmaiStatusTrackingMenu_prompt,
+	tmaiDepsMenu_prompt,
 	tmaiBackupRestoreClearClear_prompt,
 } from "@/prompt";
 
@@ -256,7 +258,7 @@ export async function tmaiManageAsync() {
 				}
 				case "tmai-converttasktosubtask": {
 					console.log(
-						await tmai.listQuickAsync(tasks, TASKS_STATUSES.join(","), false),
+						await tmai.listQuickAsync(tasks, TASKS_STATUSES.join(","), true),
 					);
 					const subtaskId = await askTaskId(tasks.master.tasks.length);
 					const parentId = await askTaskId(tasks.master.tasks.length);
@@ -286,6 +288,38 @@ export async function tmaiManageAsync() {
 			if (tmaiStatusTrackingMenu === "tmai-statustracking") {
 				console.log("Executing status tracking...");
 			}
+			break;
+		}
+		default:
+			console.log("Invalid option selected.");
+	}
+
+	await restartAsync();
+}
+
+// TODO: in-progress
+export async function tmaiDependenciesAsync() {
+	const { tmaiDepsMenu } = await inquirer.prompt(tmaiDepsMenu_prompt);
+
+	switch (tmaiDepsMenu) {
+		case "tmai-adddeps": {
+			console.log("Executing add dependencies...");
+			break;
+		}
+		case "tmai-validatedeps": {
+			console.log("Executing validate dependencies...");
+			break;
+		}
+		case "tmai-fixdeps": {
+			console.log("Executing fix dependencies...");
+			break;
+		}
+		case "tmai-clearalldeps": {
+			const tasks = await tmai.getTasksContentAsync();
+			await tmai.listAsync(tasks, TASKS_STATUSES.join(","), false, true);
+			const taskId = await askHybridTaskId(tasks.master.tasks.length);
+			await tmai.clearAllDependenciesAsync(taskId);
+			await tmai.listAsync(tasks, TASKS_STATUSES.join(","), false, true);
 			break;
 		}
 		default:
