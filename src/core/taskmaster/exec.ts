@@ -260,8 +260,14 @@ export async function tmaiManageAsync() {
 					console.log(
 						await tmai.listQuickAsync(tasks, TASKS_STATUSES.join(","), true),
 					);
-					const subtaskId = await askTaskId(tasks.master.tasks.length);
-					const parentId = await askTaskId(tasks.master.tasks.length);
+					const subtaskId = await askTaskId(
+						tasks.master.tasks.length,
+						"Enter task ID (to convert):",
+					);
+					const parentId = await askTaskId(
+						tasks.master.tasks.length,
+						"Enter task ID (parent):",
+					);
 					await tmai.convertTaskToSubtaskAsync(subtaskId, parentId);
 					tasks = await tmai.getTasksContentAsync();
 					console.log(
