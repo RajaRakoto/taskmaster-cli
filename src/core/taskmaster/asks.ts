@@ -21,6 +21,7 @@ import {
 	PRD_PATH,
 	TASKS_STATUSES,
 	TASKS_BCK_DEST_PATH,
+	MAX_SUBTASKS_LENGTH,
 } from "@/constants";
 
 /* utils */
@@ -255,10 +256,86 @@ export async function askHybridTaskId(
 				return true;
 			}
 
-			return `Invalid ID. Must be an integer between ${MIN_PARENT_ID} and ${tasksLength} or hierarchical (1.1, 2.3.1)`;
+			return `Invalid ID. Must be an integer between ${MIN_PARENT_ID} and ${tasksLength} or hierarchical (1.1, 2.3, 4.9)`;
 		},
 	});
 	return taskId;
+}
+
+/**
+ * @description Asks the user for multiple task IDs (either tasks or subtasks) and returns them as an array.
+ */
+export async function askMultipleTaskId(
+	tasksLength: number,
+	customMessage?: string,
+): Promise<string[]> {
+	const { idType } = await inquirer.prompt({
+		type: "list",
+		name: "idType",
+		message: "Select the type of task IDs to enter:",
+		choices: ["tasks", "subtasks"],
+		default: "tasks",
+	});
+
+	const { ids } = await inquirer.prompt({
+		type: "input",
+		name: "ids",
+		message: customMessage || `Enter ${idType} IDs (comma-separated):`,
+		validate: (input: string) => {
+			if (!input) {
+				return "At least one ID is required";
+			}
+
+			const idList = input.split(",").map((id: string) => id.trim());
+			let isValid = true;
+			let errorMessage = "";
+
+			if (idType === "tasks") {
+				for (const idStr of idList) {
+					const num = Number(idStr);
+					if (
+						Number.isNaN(num) ||
+						!Number.isInteger(num) ||
+						num < MIN_PARENT_ID ||
+						num > tasksLength
+					) {
+						isValid = false;
+						errorMessage = `Invalid task ID: ${idStr}. Must be an integer between ${MIN_PARENT_ID} and ${tasksLength}`;
+						break;
+					}
+				}
+			} else {
+				for (const idStr of idList) {
+					const arrayOfidStr = idStr.split(".");
+					if (
+						Number(arrayOfidStr[0]) > tasksLength ||
+						Number(arrayOfidStr[0]) <= 0
+					) {
+						isValid = false;
+						errorMessage = `Invalid subtask ID: ${idStr}. The first part of the hierarchical ID must be an integer between ${MIN_PARENT_ID} and ${tasksLength}`;
+						break;
+					}
+					if (
+						Number(arrayOfidStr[1]) > MAX_SUBTASKS_LENGTH ||
+						Number(arrayOfidStr[1]) <= 0
+					) {
+						isValid = false;
+						errorMessage = `Invalid subtask ID: ${idStr}. The second part of the hierarchical ID must be an integer between 1 and ${MAX_SUBTASKS_LENGTH}`;
+						break;
+					}
+					if (!/^\d+(\.\d+)+$/.test(idStr) || arrayOfidStr.length > 2) {
+						isValid = false;
+						errorMessage = `Invalid subtask ID: ${idStr}. Must be in hierarchical format (e.g: 1.2, 2.1, 3.6)`;
+						break;
+					}
+				}
+			}
+
+			return isValid || errorMessage;
+		},
+	});
+
+	return ids.split(",").map((id: string) => id.trim());
 }
 
 /**
