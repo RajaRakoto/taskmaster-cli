@@ -74,6 +74,9 @@ export class TaskMaster {
 	// Getters and Setters
 	// ==============================================
 
+	/**
+	 * @description Retrieves the contents of the tasks.json file
+	 */
 	public async getTasksContentAsync(): Promise<I_Tasks> {
 		const oraOptions = {
 			text: `Fetching tasks from ${chalk.bold(this._tasksFilePath)}...`,
@@ -87,8 +90,52 @@ export class TaskMaster {
 		);
 	}
 
+	/**
+	 * @description Sets the tasks file path to use for task-master operations
+	 */
 	public setTasksFilePath(tasksFilePath: string): void {
 		this._tasksFilePath = tasksFilePath;
+	}
+
+	/**
+	 * @description Retrieves all dependencies for a given task or subtask.
+	 * @param tasks The tasks data structure
+	 * @param taskId The task ID (either a simple number as string or hierarchical like "1.2")
+	 */
+	private async getAllDependenciesAsync(
+		tasks: I_Tasks,
+		taskId: string,
+	): Promise<number[]> {
+		if (!taskId.includes(".")) {
+			const idNum = Number.parseInt(taskId, 10);
+			const task = tasks.master.tasks.find((t) => t.id === idNum);
+			if (!task) {
+				throw new Error(`Task not found: ${taskId}`);
+			}
+			return task.dependencies;
+		}
+
+		const parts = taskId.split(".");
+		if (parts.length < 2) {
+			throw new Error(`Invalid hierarchical task ID: ${taskId}`);
+		}
+		const parentId = Number.parseInt(parts[0], 10);
+		const subtaskIndex = Number.parseInt(parts[1], 10) - 1;
+		const parentTask = tasks.master.tasks.find((t) => t.id === parentId);
+		if (!parentTask) {
+			throw new Error(`Parent task not found for subtask: ${taskId}`);
+		}
+
+		if (
+			!parentTask.subtasks ||
+			subtaskIndex < 0 ||
+			subtaskIndex >= parentTask.subtasks.length
+		) {
+			throw new Error(`Subtask not found: ${taskId}`);
+		}
+
+		const subtask = parentTask.subtasks[subtaskIndex];
+		return subtask.dependencies;
 	}
 
 	// ==============================================
@@ -401,7 +448,7 @@ export class TaskMaster {
 	 * @param status Filter tasks by status (comma-separated values)
 	 * @param withSubtasks Whether to include subtasks in the output
 	 */
-	public async listQuickAsync(
+	private async listQuickAsync(
 		tasks: I_Tasks,
 		status: string,
 		withSubtasks = true,
@@ -751,46 +798,53 @@ export class TaskMaster {
 	// Dependencies
 	// ==============================================
 
+	// TODO: in-progress
+	/**
+	 * @description Adds a dependency to a task
+	 * @param taskId ID of the task to modify
+	 * @param dependencyIds IDs of the dependencies to add
+	 */
+	public async addDependencyAsync(
+		taskId: string,
+		dependencyIds: string[],
+	): Promise<void> {
+		const formatedDepsIds =
+			dependencyIds.length > 1 ? dependencyIds.join(",") : dependencyIds[0];
+		await this.executeCommandAsync(
+			`Adding dependency ${formatedDepsIds} to task ${taskId}...`,
+			`Dependency ${formatedDepsIds} added successfully to task ${taskId}!`,
+			`Failed to add dependency ${formatedDepsIds} to task ${taskId}`,
+			this._mainCommand,
+			["add-dependency", `--id=${taskId}`, `--depends-on=${formatedDepsIds}`],
+		);
+	}
+
 	// TODO: done
 	/**
-	 * @description Retrieves all dependencies for a given task or subtask.
-	 * @param tasks The tasks data structure
-	 * @param taskId The task ID (either a simple number as string or hierarchical like "1.2")
+	 * @description Validates task dependencies
 	 */
-	private async getAllDependenciesAsync(
-		tasks: I_Tasks,
-		taskId: string,
-	): Promise<number[]> {
-		if (!taskId.includes(".")) {
-			const idNum = Number.parseInt(taskId, 10);
-			const task = tasks.master.tasks.find((t) => t.id === idNum);
-			if (!task) {
-				throw new Error(`Task not found: ${taskId}`);
-			}
-			return task.dependencies;
-		}
+	public async validateDependenciesAsync(): Promise<void> {
+		await this.executeCommandAsync(
+			"Validating dependencies...",
+			"Dependencies validated successfully!",
+			"Failed to validate dependencies",
+			this._mainCommand,
+			["validate-dependencies"],
+		);
+	}
 
-		const parts = taskId.split(".");
-		if (parts.length < 2) {
-			throw new Error(`Invalid hierarchical task ID: ${taskId}`);
-		}
-		const parentId = Number.parseInt(parts[0], 10);
-		const subtaskIndex = Number.parseInt(parts[1], 10) - 1;
-		const parentTask = tasks.master.tasks.find((t) => t.id === parentId);
-		if (!parentTask) {
-			throw new Error(`Parent task not found for subtask: ${taskId}`);
-		}
-
-		if (
-			!parentTask.subtasks ||
-			subtaskIndex < 0 ||
-			subtaskIndex >= parentTask.subtasks.length
-		) {
-			throw new Error(`Subtask not found: ${taskId}`);
-		}
-
-		const subtask = parentTask.subtasks[subtaskIndex];
-		return subtask.dependencies;
+	// TODO: done
+	/**
+	 * @description Automatically fixes dependency issues
+	 */
+	public async fixDependenciesAsync(): Promise<void> {
+		await this.executeCommandAsync(
+			"Fixing dependencies...",
+			"Dependencies fixed successfully!",
+			"Failed to fix dependencies",
+			this._mainCommand,
+			["fix-dependencies"],
+		);
 	}
 
 	// TODO: done
