@@ -544,6 +544,31 @@ export class TaskMaster {
 
 	// TODO: done
 	/**
+	 * @description Extracts all main task IDs and subtask IDs from the tasks data
+	 * @param tasks Tasks data to process
+	 * @returns Object containing two arrays: mainIDs (numbers) and subtasksIDs (strings in the format "parentId.subtaskIndex")
+	 */
+	public async getAllTaskIdsAsync(tasks: I_Tasks): Promise<{
+		mainIDs: number[];
+		subtasksIDs: string[];
+	}> {
+		const mainIDs: number[] = [];
+		const subtasksIDs: string[] = [];
+
+		for (const task of tasks.master.tasks) {
+			mainIDs.push(task.id);
+			if (task.subtasks && task.subtasks.length > 0) {
+				for (let i = 0; i < task.subtasks.length; i++) {
+					subtasksIDs.push(`${task.id}.${i + 1}`);
+				}
+			}
+		}
+
+		return { mainIDs, subtasksIDs };
+	}
+
+	// TODO: done
+	/**
 	 * @description Lists tasks with optional status filtering and subtask display
 	 * @param quickly List tasks quickly
 	 * @param status Filter tasks by status (todo, in-progress, done, blocked, pending)

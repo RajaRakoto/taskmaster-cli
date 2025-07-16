@@ -62,7 +62,7 @@ export function isValidHierarchicalTaskId(
 	if (!/^\d+\.\d+$/.test(input)) {
 		return {
 			isValid: false,
-			errorMessage: "Expected format: 'mainId.subtaskId' (e.g: 1.3)",
+			errorMessage: "Please enter a valid hierarchical ID (1.1, 2.3, 4.9)",
 		};
 	}
 

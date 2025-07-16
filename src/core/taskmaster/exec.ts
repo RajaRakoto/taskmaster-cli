@@ -285,33 +285,13 @@ export async function tmaiDependenciesAsync() {
 
 	switch (tmaiDepsMenu) {
 		case "tmai-adddeps": {
-			// await tmai.listAsync(tasks, TASKS_STATUSES.join(","), true, true);
-			// const taskId = await askHybridTaskIdAsync(tasks.master.tasks.length);
-			// const multipleTaskIds = await askMultipleTaskIdAsync(
-			// 	tasks.master.tasks.length,
-			// );
-			// await tmai.addDependencyAsync(taskId, multipleTaskIds);
-			// await tmai.listAsync(tasks, TASKS_STATUSES.join(","), false, true);
-
-			const testaskTaskIdAsync = await askTaskIdAsync(
+			await tmai.listAsync(tasks, TASKS_STATUSES.join(","), true, true);
+			const taskId = await askHybridTaskIdAsync(tasks.master.tasks.length);
+			const multipleTaskIds = await askMultipleTaskIdAsync(
 				tasks.master.tasks.length,
 			);
-			const testaskHierarchicalTaskIdAsync = await askHierarchicalTaskIdAsync(
-				tasks.master.tasks.length,
-			);
-			const testaskHybridTaskIdAsync = await askHybridTaskIdAsync(
-				tasks.master.tasks.length,
-			);
-			const testaskMultipleTaskIdAsync = await askMultipleTaskIdAsync(
-				tasks.master.tasks.length,
-			);
-
-			console.log(`Test askTaskIdAsync: ${testaskTaskIdAsync}`);
-			console.log(
-				`Test askHierarchicalTaskIdAsync: ${testaskHierarchicalTaskIdAsync}`,
-			);
-			console.log(`Test askHybridTaskIdAsync: ${testaskHybridTaskIdAsync}`);
-			console.log(`Test askMultipleTaskIdAsync: ${testaskMultipleTaskIdAsync}`);
+			await tmai.addDependencyAsync(taskId, multipleTaskIds);
+			await tmai.listAsync(tasks, TASKS_STATUSES.join(","), false, true);
 			break;
 		}
 		case "tmai-validatedeps": {
