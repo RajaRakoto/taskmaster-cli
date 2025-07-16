@@ -448,7 +448,7 @@ export class TaskMaster {
 	 * @param status Filter tasks by status (comma-separated values)
 	 * @param withSubtasks Whether to include subtasks in the output
 	 */
-	private async listQuickAsync(
+	public async listQuickAsync(
 		tasks: I_Tasks,
 		status: string,
 		withSubtasks = true,
