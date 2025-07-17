@@ -182,7 +182,7 @@ export class TaskMaster {
 	 * @description Fixes the format of the tasks.json file if necessary
 	 * by encapsulating the 'tasks' and 'metadata' keys under a 'master' key
 	 */
-	private async fixTasksFileFormatAsync(): Promise<void> {
+	public async fixTasksFileFormatAsync(): Promise<void> {
 		const oraOptions = {
 			text: "Verifying tasks.json file format...",
 			successText: chalk.bgGreen("tasks.json format validated successfully!"),
