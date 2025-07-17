@@ -60,7 +60,7 @@ export function isValidHierarchicalTaskId(
 	if (!/^\d+\.\d+$/.test(input)) {
 		return {
 			isValid: false,
-			errorMessage: "Please enter a valid hierarchical ID (1.1, 2.3, 4.9)",
+			errorMessage: `Unknown subtask ID. Available IDs: ${subtasksIDs.join(", ")}`,
 		};
 	}
 

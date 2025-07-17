@@ -3,10 +3,7 @@ import { describe, expect, test } from "bun:test";
 import stripAnsi from "strip-ansi";
 
 /* constants */
-import {
-	MAIN_COMMAND,
-	MAX_TITLE_TRUNC_LENGTH,
-} from "@/constants";
+import { MAIN_COMMAND, MAX_TITLE_TRUNC_LENGTH } from "@/constants";
 
 /* core */
 import { TaskMaster } from "@/core/taskmaster/TaskMaster";
@@ -331,7 +328,7 @@ describe("ID validation", () => {
 			const result = isValidTaskId("11", mainIDs);
 			expect(result.isValid).toBe(false);
 			expect(result.errorMessage).toBe(
-				"Unknown task ID. Available IDs: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10",
+				`Unknown task ID. Available IDs: ${mainIDs.join(", ")}`,
 			);
 		});
 
@@ -351,7 +348,7 @@ describe("ID validation", () => {
 			const result = isValidTaskId("-1", mainIDs);
 			expect(result.isValid).toBe(false);
 			expect(result.errorMessage).toBe(
-				"Unknown task ID. Available IDs: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10",
+				`Unknown task ID. Available IDs: ${mainIDs.join(", ")}`,
 			);
 		});
 
@@ -359,7 +356,7 @@ describe("ID validation", () => {
 			const result = isValidHierarchicalTaskId("", subtasksIDs);
 			expect(result.isValid).toBe(false);
 			expect(result.errorMessage).toBe(
-				"Please enter a valid hierarchical ID (1.1, 2.3, 4.9)",
+				`Unknown subtask ID. Available IDs: ${subtasksIDs.join(", ")}`,
 			);
 		});
 	});
@@ -375,7 +372,7 @@ describe("ID validation", () => {
 			const result = isValidHierarchicalTaskId("53", subtasksIDs);
 			expect(result.isValid).toBe(false);
 			expect(result.errorMessage).toBe(
-				"Please enter a valid hierarchical ID (1.1, 2.3, 4.9)",
+				`Unknown subtask ID. Available IDs: ${subtasksIDs.join(", ")}`,
 			);
 		});
 
@@ -383,7 +380,7 @@ describe("ID validation", () => {
 			const result = isValidHierarchicalTaskId("5.3.1", subtasksIDs);
 			expect(result.isValid).toBe(false);
 			expect(result.errorMessage).toBe(
-				"Please enter a valid hierarchical ID (1.1, 2.3, 4.9)",
+				`Unknown subtask ID. Available IDs: ${subtasksIDs.join(", ")}`,
 			);
 		});
 
@@ -391,7 +388,7 @@ describe("ID validation", () => {
 			const result = isValidHierarchicalTaskId("a.3", subtasksIDs);
 			expect(result.isValid).toBe(false);
 			expect(result.errorMessage).toBe(
-				"Please enter a valid hierarchical ID (1.1, 2.3, 4.9)",
+				`Unknown subtask ID. Available IDs: ${subtasksIDs.join(", ")}`,
 			);
 		});
 
@@ -399,7 +396,7 @@ describe("ID validation", () => {
 			const result = isValidHierarchicalTaskId("5.b", subtasksIDs);
 			expect(result.isValid).toBe(false);
 			expect(result.errorMessage).toBe(
-				"Please enter a valid hierarchical ID (1.1, 2.3, 4.9)",
+				`Unknown subtask ID. Available IDs: ${subtasksIDs.join(", ")}`,
 			);
 		});
 
@@ -407,7 +404,7 @@ describe("ID validation", () => {
 			const result = isValidHierarchicalTaskId("", subtasksIDs);
 			expect(result.isValid).toBe(false);
 			expect(result.errorMessage).toBe(
-				"Please enter a valid hierarchical ID (1.1, 2.3, 4.9)",
+				`Unknown subtask ID. Available IDs: ${subtasksIDs.join(", ")}`,
 			);
 		});
 	});
