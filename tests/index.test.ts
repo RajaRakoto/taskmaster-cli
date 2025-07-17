@@ -319,139 +319,97 @@ describe("TaskMaster Class", () => {
 });
 
 describe("ID validation", () => {
-	const tasksLength = 10; // For tests, we assume there are 10 tasks
+	const mainIDs = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+	const subtasksIDs = ["1.1", "1.2", "2.1", "3.5", "10.3"];
 
 	describe("isValidTaskId", () => {
 		test("valid ID", () => {
-			const result = isValidTaskId("5", tasksLength);
+			const result = isValidTaskId("5", mainIDs);
 			expect(result.isValid).toBe(true);
 			expect(result.errorMessage).toBe("");
 		});
 
-		test("ID too low", () => {
-			const result = isValidTaskId("0", tasksLength);
+		test("ID not in mainIDs", () => {
+			const result = isValidTaskId("11", mainIDs);
 			expect(result.isValid).toBe(false);
-			expect(result.errorMessage).toContain(
-				`integer between ${MIN_PARENT_ID} and ${tasksLength}`,
-			);
-		});
-
-		test("ID too high", () => {
-			const result = isValidTaskId("11", tasksLength);
-			expect(result.isValid).toBe(false);
-			expect(result.errorMessage).toContain(
-				`integer between ${MIN_PARENT_ID} and ${tasksLength}`,
+			expect(result.errorMessage).toBe(
+				"Unknown task ID. Available IDs: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10",
 			);
 		});
 
 		test("non-numeric ID", () => {
-			const result = isValidTaskId("abc", tasksLength);
+			const result = isValidTaskId("abc", mainIDs);
 			expect(result.isValid).toBe(false);
-			expect(result.errorMessage).toContain("valid integer");
+			expect(result.errorMessage).toBe("Please enter a valid integer");
 		});
 
 		test("decimal ID", () => {
-			const result = isValidTaskId("5.5", tasksLength);
+			const result = isValidTaskId("5.5", mainIDs);
 			expect(result.isValid).toBe(false);
-			expect(result.errorMessage).toContain("valid integer");
+			expect(result.errorMessage).toBe("Please enter a valid integer");
 		});
 
 		test("negative ID", () => {
-			const result = isValidTaskId("-1", tasksLength);
+			const result = isValidTaskId("-1", mainIDs);
 			expect(result.isValid).toBe(false);
-			expect(result.errorMessage).toContain(
-				`integer between ${MIN_PARENT_ID} and ${tasksLength}`,
+			expect(result.errorMessage).toBe(
+				"Unknown task ID. Available IDs: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10",
 			);
 		});
 
 		test("empty ID", () => {
-			const result = isValidTaskId("", tasksLength);
+			const result = isValidHierarchicalTaskId("", subtasksIDs);
 			expect(result.isValid).toBe(false);
-			expect(result.errorMessage).toContain(
-				`integer between ${MIN_PARENT_ID} and ${tasksLength}`,
+			expect(result.errorMessage).toBe(
+				"Please enter a valid hierarchical ID (1.1, 2.3, 4.9)",
 			);
 		});
 	});
 
 	describe("isValidHierarchicalTaskId", () => {
 		test("valid hierarchical ID", () => {
-			const result = isValidHierarchicalTaskId("5.3", tasksLength);
+			const result = isValidHierarchicalTaskId("1.1", subtasksIDs);
 			expect(result.isValid).toBe(true);
 			expect(result.errorMessage).toBe("");
 		});
 
 		test("invalid format - missing dot", () => {
-			const result = isValidHierarchicalTaskId("53", tasksLength);
+			const result = isValidHierarchicalTaskId("53", subtasksIDs);
 			expect(result.isValid).toBe(false);
-			expect(result.errorMessage).toContain(
-				"Expected format: 'mainId.subtaskId'",
+			expect(result.errorMessage).toBe(
+				"Please enter a valid hierarchical ID (1.1, 2.3, 4.9)",
 			);
 		});
 
 		test("invalid format - multiple dots", () => {
-			const result = isValidHierarchicalTaskId("5.3.1", tasksLength);
+			const result = isValidHierarchicalTaskId("5.3.1", subtasksIDs);
 			expect(result.isValid).toBe(false);
-			expect(result.errorMessage).toContain(
-				"Expected format: 'mainId.subtaskId'",
-			);
-		});
-
-		test("main ID too low", () => {
-			const result = isValidHierarchicalTaskId("0.3", tasksLength);
-			expect(result.isValid).toBe(false);
-			expect(result.errorMessage).toContain(
-				`between ${MIN_PARENT_ID} and ${tasksLength}`,
-			);
-		});
-
-		test("main ID too high", () => {
-			const result = isValidHierarchicalTaskId("11.3", tasksLength);
-			expect(result.isValid).toBe(false);
-			expect(result.errorMessage).toContain(
-				`between ${MIN_PARENT_ID} and ${tasksLength}`,
-			);
-		});
-
-		test("subtask ID too low", () => {
-			const result = isValidHierarchicalTaskId("5.0", tasksLength);
-			expect(result.isValid).toBe(false);
-			expect(result.errorMessage).toContain(
-				`between 1 and ${MAX_SUBTASKS_LENGTH}`,
-			);
-		});
-
-		test("subtask ID too high", () => {
-			const result = isValidHierarchicalTaskId(
-				`5.${MAX_SUBTASKS_LENGTH + 1}`,
-				tasksLength,
-			);
-			expect(result.isValid).toBe(false);
-			expect(result.errorMessage).toContain(
-				`between 1 and ${MAX_SUBTASKS_LENGTH}`,
+			expect(result.errorMessage).toBe(
+				"Please enter a valid hierarchical ID (1.1, 2.3, 4.9)",
 			);
 		});
 
 		test("non-numeric main ID", () => {
-			const result = isValidHierarchicalTaskId("a.3", tasksLength);
+			const result = isValidHierarchicalTaskId("a.3", subtasksIDs);
 			expect(result.isValid).toBe(false);
-			expect(result.errorMessage).toContain(
-				"Expected format: 'mainId.subtaskId'",
+			expect(result.errorMessage).toBe(
+				"Please enter a valid hierarchical ID (1.1, 2.3, 4.9)",
 			);
 		});
 
 		test("non-numeric subtask ID", () => {
-			const result = isValidHierarchicalTaskId("5.b", tasksLength);
+			const result = isValidHierarchicalTaskId("5.b", subtasksIDs);
 			expect(result.isValid).toBe(false);
-			expect(result.errorMessage).toContain(
-				"Expected format: 'mainId.subtaskId'",
+			expect(result.errorMessage).toBe(
+				"Please enter a valid hierarchical ID (1.1, 2.3, 4.9)",
 			);
 		});
 
 		test("empty ID", () => {
-			const result = isValidHierarchicalTaskId("", tasksLength);
+			const result = isValidHierarchicalTaskId("", subtasksIDs);
 			expect(result.isValid).toBe(false);
-			expect(result.errorMessage).toContain(
-				"Expected format: 'mainId.subtaskId'",
+			expect(result.errorMessage).toBe(
+				"Please enter a valid hierarchical ID (1.1, 2.3, 4.9)",
 			);
 		});
 	});

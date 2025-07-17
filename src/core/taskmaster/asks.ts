@@ -15,13 +15,11 @@ import {
 	MAX_SUBTASKS_TO_GENERATE,
 	MAX_TASKS_TO_GENERATE,
 	MAX_TITLE_LENGTH,
-	MIN_PARENT_ID,
 	MIN_SUBTASKS_TO_GENERATE,
 	MIN_TASKS_TO_GENERATE,
 	PRD_PATH,
 	TASKS_STATUSES,
 	TASKS_BCK_DEST_PATH,
-	MAX_SUBTASKS_LENGTH,
 } from "@/constants";
 
 /* utils */
@@ -34,7 +32,7 @@ import { existsAsync } from "@/utils/extras";
  */
 export function isValidTaskId(
 	input: string,
-	tasksLength: number,
+	mainIDs: number[],
 ): { isValid: boolean; errorMessage: string } {
 	const num = Number(input);
 	if (Number.isNaN(num) || !Number.isInteger(num)) {
@@ -43,10 +41,10 @@ export function isValidTaskId(
 			errorMessage: "Please enter a valid integer",
 		};
 	}
-	if (num < MIN_PARENT_ID || num > tasksLength) {
+	if (!mainIDs.includes(num)) {
 		return {
 			isValid: false,
-			errorMessage: `Please enter an integer between ${MIN_PARENT_ID} and ${tasksLength}`,
+			errorMessage: `Unknown task ID. Available IDs: ${mainIDs.join(", ")}`,
 		};
 	}
 	return { isValid: true, errorMessage: "" };
@@ -57,7 +55,7 @@ export function isValidTaskId(
  */
 export function isValidHierarchicalTaskId(
 	input: string,
-	tasksLength: number,
+	subtasksIDs: string[],
 ): { isValid: boolean; errorMessage: string } {
 	if (!/^\d+\.\d+$/.test(input)) {
 		return {
@@ -66,39 +64,10 @@ export function isValidHierarchicalTaskId(
 		};
 	}
 
-	const parts = input.split(".");
-	const mainId = Number(parts[0]);
-	const subtaskId = Number(parts[1]);
-
-	if (Number.isNaN(mainId) || mainId < 0 || !Number.isInteger(mainId)) {
+	if (!subtasksIDs.includes(input)) {
 		return {
 			isValid: false,
-			errorMessage: "Main task ID must be a positive integer",
-		};
-	}
-
-	if (
-		Number.isNaN(subtaskId) ||
-		subtaskId < 0 ||
-		!Number.isInteger(subtaskId)
-	) {
-		return {
-			isValid: false,
-			errorMessage: "Subtask ID must be a positive integer",
-		};
-	}
-
-	if (mainId < MIN_PARENT_ID || mainId > tasksLength) {
-		return {
-			isValid: false,
-			errorMessage: `Main task ID must be between ${MIN_PARENT_ID} and ${tasksLength}`,
-		};
-	}
-
-	if (subtaskId < 1 || subtaskId > MAX_SUBTASKS_LENGTH) {
-		return {
-			isValid: false,
-			errorMessage: `Subtask ID must be between 1 and ${MAX_SUBTASKS_LENGTH}`,
+			errorMessage: `Unknown subtask ID. Available IDs: ${subtasksIDs.join(", ")}`,
 		};
 	}
 
@@ -265,7 +234,7 @@ export async function askDisplayOptionsAsync(): Promise<{
  * @description Asks the user for the parent task ID
  */
 export async function askTaskIdAsync(
-	tasksLength: number,
+	mainIDs: number[],
 	customMessage?: string,
 ): Promise<number> {
 	const { parentId } = await inquirer.prompt({
@@ -273,7 +242,7 @@ export async function askTaskIdAsync(
 		name: "parentId",
 		message: customMessage || "Enter task ID:",
 		validate: (input: string) => {
-			const { isValid, errorMessage } = isValidTaskId(input, tasksLength);
+			const { isValid, errorMessage } = isValidTaskId(input, mainIDs);
 			return isValid || errorMessage;
 		},
 	});
@@ -284,7 +253,7 @@ export async function askTaskIdAsync(
  * @description Asks the user to enter subtask ID
  */
 export async function askHierarchicalTaskIdAsync(
-	tasksLength: number,
+	subtasksIDs: string[],
 	customMessage?: string,
 ): Promise<string> {
 	const { taskId } = await inquirer.prompt({
@@ -294,7 +263,7 @@ export async function askHierarchicalTaskIdAsync(
 		validate: (input) => {
 			const { isValid, errorMessage } = isValidHierarchicalTaskId(
 				input,
-				tasksLength,
+				subtasksIDs,
 			);
 			return isValid || errorMessage;
 		},
@@ -306,7 +275,8 @@ export async function askHierarchicalTaskIdAsync(
  * @description Asks the user for a task ID that can be an integer or hierarchical.
  */
 export async function askHybridTaskIdAsync(
-	tasksLength: number,
+	mainIDs: number[],
+	subtasksIDs: string[],
 	customMessage?: string,
 ): Promise<string> {
 	const { taskId } = await inquirer.prompt({
@@ -314,16 +284,16 @@ export async function askHybridTaskIdAsync(
 		name: "taskId",
 		message: customMessage || "Enter task ID (integer or hierarchical):",
 		validate: (input) => {
-			const taskValidation = isValidTaskId(input, tasksLength);
+			const taskValidation = isValidTaskId(input, mainIDs);
 			if (taskValidation.isValid) return true;
 
 			const hierarchicalValidation = isValidHierarchicalTaskId(
 				input,
-				tasksLength,
+				subtasksIDs,
 			);
 			if (hierarchicalValidation.isValid) return true;
 
-			return `Invalid ID. Must be an integer between ${MIN_PARENT_ID} and ${tasksLength} or hierarchical (1.1, 2.3, 4.9)`;
+			return `Invalid ID. Valid main IDs: ${mainIDs.join(", ")} | valid subtask IDs: ${subtasksIDs.join(", ")}`;
 		},
 	});
 	return taskId;
@@ -333,7 +303,8 @@ export async function askHybridTaskIdAsync(
  * @description Asks the user for multiple task IDs (either tasks or subtasks) and returns them as an array.
  */
 export async function askMultipleTaskIdAsync(
-	tasksLength: number,
+	mainIDs: number[],
+	subtasksIDs: string[],
 	customMessage?: string,
 ): Promise<string[]> {
 	const { idType } = await inquirer.prompt({
@@ -357,14 +328,14 @@ export async function askMultipleTaskIdAsync(
 
 			if (idType === "tasks") {
 				for (const idStr of idList) {
-					const { isValid, errorMessage } = isValidTaskId(idStr, tasksLength);
+					const { isValid, errorMessage } = isValidTaskId(idStr, mainIDs);
 					if (!isValid) return errorMessage;
 				}
 			} else {
 				for (const idStr of idList) {
 					const { isValid, errorMessage } = isValidHierarchicalTaskId(
 						idStr,
-						tasksLength,
+						subtasksIDs,
 					);
 					if (!isValid) return errorMessage;
 				}
