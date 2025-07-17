@@ -6,8 +6,6 @@ import stripAnsi from "strip-ansi";
 import {
 	MAIN_COMMAND,
 	MAX_TITLE_TRUNC_LENGTH,
-	MAX_SUBTASKS_LENGTH,
-	MIN_PARENT_ID,
 } from "@/constants";
 
 /* core */

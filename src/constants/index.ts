@@ -36,12 +36,10 @@ export const MIN_TASKS_TO_GENERATE = 3;
 export const MAX_TASKS_TO_GENERATE = 30;
 export const MIN_SUBTASKS_TO_GENERATE = 1;
 export const MAX_SUBTASKS_TO_GENERATE = 15;
-export const MAX_SUBTASKS_LENGTH = 20;
 export const MAX_TITLE_LENGTH = 100;
 export const MAX_TITLE_TRUNC_LENGTH = 40;
 export const MAX_DESCRIPTION_LENGTH = 250;
 export const MAX_PROMPT_LENGTH = 1024;
-export const MIN_PARENT_ID = 1;
 
 // status configuration
 export const STATUS_CONFIG = {
