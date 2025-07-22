@@ -35,12 +35,11 @@ export const DEFAULT_SUBTASKS_TO_GENERATE = 5;
 export const MIN_TASKS_TO_GENERATE = 3;
 export const MAX_TASKS_TO_GENERATE = 30;
 export const MIN_SUBTASKS_TO_GENERATE = 1;
-export const MAX_SUBTASKS_TO_GENERATE = 10;
+export const MAX_SUBTASKS_TO_GENERATE = 15;
 export const MAX_TITLE_LENGTH = 100;
 export const MAX_TITLE_TRUNC_LENGTH = 40;
 export const MAX_DESCRIPTION_LENGTH = 250;
 export const MAX_PROMPT_LENGTH = 1024;
-export const MIN_PARENT_ID = 1;
 
 // status configuration
 export const STATUS_CONFIG = {
@@ -61,3 +60,15 @@ export const PACKAGE_MANAGERS = ["npm", "pnpm", "bun"] as const;
 export const TASKMASTER_INIT_MSG = "TaskMaster AI Core initialized";
 export const TASKS_FILE_WARN: (path: string) => string = (path: string) =>
 	`tasks.json not found at "${path}". Please generate tasks from PRD first.`;
+
+// Supported languages for TMAI responses
+export const LANG = [
+	"English",
+	"French",
+	"Spanish",
+	"German",
+	"Italian",
+	"Portuguese",
+	"Chinese",
+	"Japanese",
+] as const;

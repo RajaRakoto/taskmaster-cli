@@ -10,12 +10,12 @@ import {
 	DEFAULT_SUBTASKS_TO_GENERATE,
 	DEFAULT_TAG,
 	DEFAULT_TASKS_TO_GENERATE,
+	LANG,
 	MAX_DESCRIPTION_LENGTH,
 	MAX_PROMPT_LENGTH,
 	MAX_SUBTASKS_TO_GENERATE,
 	MAX_TASKS_TO_GENERATE,
 	MAX_TITLE_LENGTH,
-	MIN_PARENT_ID,
 	MIN_SUBTASKS_TO_GENERATE,
 	MIN_TASKS_TO_GENERATE,
 	PRD_PATH,
@@ -29,44 +29,58 @@ import { existsAsync } from "@/utils/extras";
 // ===============================
 
 /**
- * @description Asks the user for confirmation to overwrite the existing tasks.json file.
+ * @description Validates a standard task ID
  */
-export async function askOverwriteConfirmation(): Promise<boolean> {
-	const { overwrite } = await inquirer.prompt({
-		type: "confirm",
-		name: "overwrite",
-		message: chalk.bgYellow(
-			"tasks.json already exists. Do you want to overwrite it?",
-		),
-		default: false,
-	});
-	return overwrite;
+export function isValidTaskId(
+	input: string,
+	mainIDs: number[],
+): { isValid: boolean; errorMessage: string } {
+	const num = Number(input);
+	if (Number.isNaN(num) || !Number.isInteger(num)) {
+		return {
+			isValid: false,
+			errorMessage: "Please enter a valid integer",
+		};
+	}
+	if (!mainIDs.includes(num)) {
+		return {
+			isValid: false,
+			errorMessage: `Unknown task ID. Available IDs: ${mainIDs.join(", ")}`,
+		};
+	}
+	return { isValid: true, errorMessage: "" };
 }
 
 /**
- * @description Asks the user for the path to their PRD file.
+ * @description Validates a hierarchical task ID
  */
-export async function askPrdPath(): Promise<string> {
-	const { prdPath } = await inquirer.prompt({
-		type: "input",
-		name: "prdPath",
-		message: "Enter the path to your PRD file:",
-		default: PRD_PATH,
-		validate: (input) => {
-			const regex = /^[\w\s/_-]+(?:\.(?:txt|md))$/;
-			if (!regex.test(input)) {
-				return "Please enter a valid PRD file with .txt or .md extension and without special characters, except for /, -, and _";
-			}
-			return true;
-		},
-	});
-	return prdPath;
+export function isValidHierarchicalTaskId(
+	input: string,
+	subtasksIDs: string[],
+): { isValid: boolean; errorMessage: string } {
+	if (!/^\d+\.\d+$/.test(input)) {
+		return {
+			isValid: false,
+			errorMessage: `Unknown subtask ID. Available IDs: ${subtasksIDs.join(", ")}`,
+		};
+	}
+
+	if (!subtasksIDs.includes(input)) {
+		return {
+			isValid: false,
+			errorMessage: `Unknown subtask ID. Available IDs: ${subtasksIDs.join(", ")}`,
+		};
+	}
+
+	return { isValid: true, errorMessage: "" };
 }
 
+// ===============================
+
 /**
- * @description Asks the user for the number of tasks to generate.
+ * @description Asks the user to enter the number of tasks to generate
  */
-export async function askNumTasksToGenerate(): Promise<number> {
+export async function askNumTasksToGenerateAsync(): Promise<number> {
 	const { numTasksToGenerate } = await inquirer.prompt({
 		type: "number",
 		name: "numTasksToGenerate",
@@ -88,9 +102,44 @@ export async function askNumTasksToGenerate(): Promise<number> {
 }
 
 /**
+ * @description Asks the user for confirmation to overwrite the existing tasks.json file.
+ */
+export async function askOverwriteConfirmationAsync(): Promise<boolean> {
+	const { overwrite } = await inquirer.prompt({
+		type: "confirm",
+		name: "overwrite",
+		message: chalk.bgYellow(
+			"tasks.json already exists. Do you want to overwrite it?",
+		),
+		default: false,
+	});
+	return overwrite;
+}
+
+/**
+ * @description Asks the user for the path to their PRD file.
+ */
+export async function askPrdPathAsync(): Promise<string> {
+	const { prdPath } = await inquirer.prompt({
+		type: "input",
+		name: "prdPath",
+		message: "Enter the path to your PRD file:",
+		default: PRD_PATH,
+		validate: (input) => {
+			const regex = /^[\w\s/_-]+(?:\.(?:txt|md))$/;
+			if (!regex.test(input)) {
+				return "Please enter a valid PRD file with .txt or .md extension and without special characters, except for /, -, and _";
+			}
+			return true;
+		},
+	});
+	return prdPath;
+}
+
+/**
  * @description Asks the user for confirmation to allow advanced research for task generation (using AI).
  */
-export async function askAdvancedResearchConfirmation(): Promise<boolean> {
+export async function askAdvancedResearchConfirmationAsync(): Promise<boolean> {
 	const { allowAdvancedResearch } = await inquirer.prompt({
 		type: "confirm",
 		name: "allowAdvancedResearch",
@@ -103,7 +152,7 @@ export async function askAdvancedResearchConfirmation(): Promise<boolean> {
 /**
  * @description Asks the user to enter a tag for the tasks.
  */
-export async function askTaskTag(): Promise<string> {
+export async function askTaskTagAsync(): Promise<string> {
 	const { tag } = await inquirer.prompt({
 		type: "input",
 		name: "tag",
@@ -123,7 +172,7 @@ export async function askTaskTag(): Promise<string> {
 /**
  * @description Asks the user for confirmation to decompose all tasks.
  */
-export async function askDecompositionConfirmation(): Promise<boolean> {
+export async function askDecompositionConfirmationAsync(): Promise<boolean> {
 	const { confirmDecomposition } = await inquirer.prompt({
 		type: "confirm",
 		name: "confirmDecomposition",
@@ -138,7 +187,7 @@ export async function askDecompositionConfirmation(): Promise<boolean> {
 /**
  * @description Asks the user to select task statuses.
  */
-export async function askStatusSelection(): Promise<string> {
+export async function askStatusSelectionAsync(): Promise<string> {
 	const { status: validatedStatus } = await inquirer.prompt([
 		{
 			type: "checkbox",
@@ -161,7 +210,7 @@ export async function askStatusSelection(): Promise<string> {
 /**
  * @description Asks the user for display options when listing tasks.
  */
-export async function askDisplayOptions(): Promise<{
+export async function askDisplayOptionsAsync(): Promise<{
 	quickly: boolean;
 	withSubtasks: boolean;
 }> {
@@ -185,23 +234,17 @@ export async function askDisplayOptions(): Promise<{
 /**
  * @description Asks the user for the parent task ID
  */
-export async function askTaskId(tasksLength: number): Promise<number> {
+export async function askTaskIdAsync(
+	mainIDs: number[],
+	customMessage?: string,
+): Promise<number> {
 	const { parentId } = await inquirer.prompt({
 		type: "input",
 		name: "parentId",
-		message: "Enter task ID:",
+		message: customMessage || "Enter task ID:",
 		validate: (input: string) => {
-			const num = Number.parseInt(input, 10);
-			if (
-				Number.isNaN(num) ||
-				!Number.isInteger(Number(input)) ||
-				num < MIN_PARENT_ID ||
-				num > tasksLength
-			) {
-				return `Please enter a valid integer between ${MIN_PARENT_ID} and ${tasksLength}`;
-			}
-
-			return true;
+			const { isValid, errorMessage } = isValidTaskId(input, mainIDs);
+			return isValid || errorMessage;
 		},
 	});
 	return Number(parentId);
@@ -210,25 +253,106 @@ export async function askTaskId(tasksLength: number): Promise<number> {
 /**
  * @description Asks the user to enter subtask ID
  */
-export async function askHierarchicalTaskId(): Promise<string> {
+export async function askHierarchicalTaskIdAsync(
+	subtasksIDs: string[],
+	customMessage?: string,
+): Promise<string> {
 	const { taskId } = await inquirer.prompt({
 		type: "input",
 		name: "taskId",
-		message: "Enter the hierarchical task ID:",
+		message: customMessage || "Enter the hierarchical task ID:",
 		validate: (input) => {
-			if (!input || !/^(\d+(\.\d+)*\.\d+)$/.test(input)) {
-				return "Invalid subtask ID. Must be a hierarchical ID (e.g: 1.1, 2.1.1)";
-			}
-			return true;
+			const { isValid, errorMessage } = isValidHierarchicalTaskId(
+				input,
+				subtasksIDs,
+			);
+			return isValid || errorMessage;
 		},
 	});
 	return taskId;
 }
 
 /**
+ * @description Asks the user for a task ID that can be an integer or hierarchical.
+ */
+export async function askHybridTaskIdAsync(
+	mainIDs: number[],
+	subtasksIDs: string[],
+	customMessage?: string,
+): Promise<string> {
+	const { taskId } = await inquirer.prompt({
+		type: "input",
+		name: "taskId",
+		message: customMessage || "Enter task ID (integer or hierarchical):",
+		validate: (input) => {
+			const taskValidation = isValidTaskId(input, mainIDs);
+			if (taskValidation.isValid) return true;
+
+			const hierarchicalValidation = isValidHierarchicalTaskId(
+				input,
+				subtasksIDs,
+			);
+			if (hierarchicalValidation.isValid) return true;
+
+			return `Invalid ID. Valid main IDs: ${mainIDs.join(", ")} | valid subtask IDs: ${subtasksIDs.join(", ")}`;
+		},
+	});
+	return taskId;
+}
+
+/**
+ * @description Asks the user for multiple task IDs (either tasks or subtasks) and returns them as an array.
+ */
+export async function askMultipleTaskIdAsync(
+	mainIDs: number[],
+	subtasksIDs: string[],
+	customMessage?: string,
+): Promise<string[]> {
+	const { idType } = await inquirer.prompt({
+		type: "list",
+		name: "idType",
+		message: "Select the type of task IDs to enter:",
+		choices: ["tasks", "subtasks"],
+		default: "tasks",
+	});
+
+	const { ids } = await inquirer.prompt({
+		type: "input",
+		name: "ids",
+		message: customMessage || `Enter ${idType} IDs (comma-separated):`,
+		validate: (input: string) => {
+			if (!input) {
+				return "At least one ID is required";
+			}
+
+			const idList = input.split(",").map((id: string) => id.trim());
+
+			if (idType === "tasks") {
+				for (const idStr of idList) {
+					const { isValid, errorMessage } = isValidTaskId(idStr, mainIDs);
+					if (!isValid) return errorMessage;
+				}
+			} else {
+				for (const idStr of idList) {
+					const { isValid, errorMessage } = isValidHierarchicalTaskId(
+						idStr,
+						subtasksIDs,
+					);
+					if (!isValid) return errorMessage;
+				}
+			}
+
+			return true;
+		},
+	});
+
+	return ids.split(",").map((id: string) => id.trim());
+}
+
+/**
  * @description Asks the user for the task creation prompt
  */
-export async function askTaskPrompt(): Promise<string> {
+export async function askTaskPromptAsync(): Promise<string> {
 	const { prompt } = await inquirer.prompt({
 		type: "input",
 		name: "prompt",
@@ -246,7 +370,7 @@ export async function askTaskPrompt(): Promise<string> {
 /**
  * @description Asks the user for the number of subtasks to generate
  */
-export async function askNumSubtasks(): Promise<number> {
+export async function askNumSubtasksAsync(): Promise<number> {
 	const { num } = await inquirer.prompt({
 		type: "number",
 		name: "num",
@@ -269,7 +393,7 @@ export async function askNumSubtasks(): Promise<number> {
 /**
  * @description Asks the user for manual subtask parameters
  */
-export async function askBackupSlot(): Promise<string> {
+export async function askBackupSlotAsync(): Promise<string> {
 	const slots = [1, 2, 3];
 	const slotChoices = [];
 
@@ -303,14 +427,17 @@ export async function askBackupSlot(): Promise<string> {
 	const { selectedSlot } = await inquirer.prompt({
 		type: "list",
 		name: "selectedSlot",
-		message: "Choisissez un slot de sauvegarde :",
+		message: "Choose a backup slot:",
 		choices: slotChoices,
 	});
 
 	return selectedSlot;
 }
 
-export async function askSubtaskManualParams(): Promise<{
+/**
+ * @description Prompts the user to enter the title and description for a subtask.
+ */
+export async function askSubtaskManualParamsAsync(): Promise<{
 	title: string;
 	description: string;
 }> {
@@ -338,4 +465,17 @@ export async function askSubtaskManualParams(): Promise<{
 			},
 		},
 	]);
+}
+
+/**
+ * @description Prompts the user to select a language for TMAI responses
+ */
+export async function askLangAsync(): Promise<string> {
+	const { lang } = await inquirer.prompt({
+		type: "list",
+		name: "lang",
+		message: "Select the language for TMAI responses:",
+		choices: LANG,
+	});
+	return lang;
 }

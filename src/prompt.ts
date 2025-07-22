@@ -91,6 +91,10 @@ export const tmaiInitMenu_prompt = [
 				name: `${emoji.get("wrench")} 3 - Configure AI models`,
 				value: "tmai-config",
 			},
+			{
+				name: `${emoji.get("globe_with_meridians")} 4 - Set the response language for AI-generated content in TMAI`,
+				value: "tmai-lang",
+			},
 		],
 	},
 ];
@@ -347,7 +351,7 @@ export const tmaiStatusTrackingMenu_prompt = [
 	},
 ];
 
-// TODO: pending
+// TODO: in-progress
 // ==============================
 // Dependencies menu
 // ==============================
@@ -363,21 +367,19 @@ export const tmaiDepsMenu_prompt = [
 			new inquirer.Separator("=== Dependencies ==="),
 			{
 				name: `${emoji.get("paperclip")} Add dependency`,
-				value: "tmai-deps-add",
+				value: "tmai-adddeps",
 			},
 			{
-				name: `${emoji.get("broken_heart")} Remove dependency`,
-				value: "tmai-deps-remove",
-			},
-			{
-				name: `${emoji.get(
-					"magnifying_glass_tilted_left",
-				)} Validate dependencies`,
-				value: "tmai-deps-validate",
+				name: `${emoji.get("white_check_mark")} Validate dependencies`,
+				value: "tmai-validatedeps",
 			},
 			{
 				name: `${emoji.get("wrench")} Fix dependencies`,
-				value: "tmai-deps-fix",
+				value: "tmai-fixdeps",
+			},
+			{
+				name: `${emoji.get("broken_heart")} Clear all dependencies from a task`,
+				value: "tmai-clearalldeps",
 			},
 		],
 	},

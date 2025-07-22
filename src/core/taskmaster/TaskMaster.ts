@@ -27,6 +27,9 @@ import {
 	readJsonFileAsync,
 } from "@/utils/extras";
 
+/* asks */
+import { askLangAsync } from "@/core/taskmaster/asks";
+
 /* types */
 import type { T_PackageManager } from "@/@types/index";
 import type { I_Tasks, Status, Priority } from "@/@types/tasks";
@@ -74,6 +77,9 @@ export class TaskMaster {
 	// Getters and Setters
 	// ==============================================
 
+	/**
+	 * @description Retrieves the contents of the tasks.json file
+	 */
 	public async getTasksContentAsync(): Promise<I_Tasks> {
 		const oraOptions = {
 			text: `Fetching tasks from ${chalk.bold(this._tasksFilePath)}...`,
@@ -87,8 +93,52 @@ export class TaskMaster {
 		);
 	}
 
+	/**
+	 * @description Sets the tasks file path to use for task-master operations
+	 */
 	public setTasksFilePath(tasksFilePath: string): void {
 		this._tasksFilePath = tasksFilePath;
+	}
+
+	/**
+	 * @description Retrieves all dependencies for a given task or subtask.
+	 * @param tasks The tasks data structure
+	 * @param taskId The task ID (either a simple number as string or hierarchical like "1.2")
+	 */
+	private async getAllDependenciesAsync(
+		tasks: I_Tasks,
+		taskId: string,
+	): Promise<number[]> {
+		if (!taskId.includes(".")) {
+			const idNum = Number.parseInt(taskId, 10);
+			const task = tasks.master.tasks.find((t) => t.id === idNum);
+			if (!task) {
+				throw new Error(`Task not found: ${taskId}`);
+			}
+			return task.dependencies;
+		}
+
+		const parts = taskId.split(".");
+		if (parts.length < 2) {
+			throw new Error(`Invalid hierarchical task ID: ${taskId}`);
+		}
+		const parentId = Number.parseInt(parts[0], 10);
+		const subtaskIndex = Number.parseInt(parts[1], 10) - 1;
+		const parentTask = tasks.master.tasks.find((t) => t.id === parentId);
+		if (!parentTask) {
+			throw new Error(`Parent task not found for subtask: ${taskId}`);
+		}
+
+		if (
+			!parentTask.subtasks ||
+			subtaskIndex < 0 ||
+			subtaskIndex >= parentTask.subtasks.length
+		) {
+			throw new Error(`Subtask not found: ${taskId}`);
+		}
+
+		const subtask = parentTask.subtasks[subtaskIndex];
+		return subtask.dependencies;
 	}
 
 	// ==============================================
@@ -135,7 +185,7 @@ export class TaskMaster {
 	 * @description Fixes the format of the tasks.json file if necessary
 	 * by encapsulating the 'tasks' and 'metadata' keys under a 'master' key
 	 */
-	private async fixTasksFileFormatAsync(): Promise<void> {
+	public async fixTasksFileFormatAsync(): Promise<void> {
 		const oraOptions = {
 			text: "Verifying tasks.json file format...",
 			successText: chalk.bgGreen("tasks.json format validated successfully!"),
@@ -274,6 +324,21 @@ export class TaskMaster {
 
 			await runCommandAsync(command, args, false, false);
 		}, oraOptions);
+	}
+
+	// TODO: done
+	/**
+	 * @description Sets the response language for TMAI
+	 * @param lang Language to set for TMAI responses
+	 */
+	public async setLangAsync(lang: string): Promise<void> {
+		await this.executeCommandAsync(
+			`Setting TMAI response language to ${chalk.bold(lang)}...`,
+			`Language set to ${lang} successfully!`,
+			`Failed to set language to ${lang}`,
+			this._mainCommand,
+			["lang", `--response=${lang}`],
+		);
 	}
 
 	// TODO: done
@@ -497,6 +562,31 @@ export class TaskMaster {
 
 	// TODO: done
 	/**
+	 * @description Extracts all main task IDs and subtask IDs from the tasks data
+	 * @param tasks Tasks data to process
+	 * @returns Object containing two arrays: mainIDs (numbers) and subtasksIDs (strings in the format "parentId.subtaskIndex")
+	 */
+	public async getAllTaskIdsAsync(tasks: I_Tasks): Promise<{
+		mainIDs: number[];
+		subtasksIDs: string[];
+	}> {
+		const mainIDs: number[] = [];
+		const subtasksIDs: string[] = [];
+
+		for (const task of tasks.master.tasks) {
+			mainIDs.push(task.id);
+			if (task.subtasks && task.subtasks.length > 0) {
+				for (let i = 0; i < task.subtasks.length; i++) {
+					subtasksIDs.push(`${task.id}.${i + 1}`);
+				}
+			}
+		}
+
+		return { mainIDs, subtasksIDs };
+	}
+
+	// TODO: done
+	/**
 	 * @description Lists tasks with optional status filtering and subtask display
 	 * @param quickly List tasks quickly
 	 * @param status Filter tasks by status (todo, in-progress, done, blocked, pending)
@@ -640,7 +730,7 @@ export class TaskMaster {
 	// Updating Methods
 	// ==============================================
 
-	// TODO: validate
+	// TODO: in-progress
 	/**
 	 * @description Modifies a task using AI
 	 * @param id ID of the task to modify
@@ -669,7 +759,7 @@ export class TaskMaster {
 		);
 	}
 
-	// TODO: validate
+	// TODO: in-progress
 	/**
 	 * @description Updates multiple tasks using AI from a starting ID
 	 * @param startingId Starting ID for the update
@@ -698,7 +788,7 @@ export class TaskMaster {
 		);
 	}
 
-	// TODO: validate
+	// TODO: in-progress
 	/**
 	 * @description Modifies a subtask using AI
 	 * @param hierarchicalId Hierarchical ID of the subtask
@@ -727,7 +817,7 @@ export class TaskMaster {
 		);
 	}
 
-	// TODO: validate
+	// TODO: in-progress
 	/**
 	 * @description Converts an existing task to a subtask
 	 * @param subtaskId ID of the task to convert into a subtask
@@ -737,6 +827,7 @@ export class TaskMaster {
 		subtaskId: number,
 		parentId: number,
 	): Promise<void> {
+		await this.clearAllDependenciesAsync(subtaskId.toString());
 		await this.executeCommandAsync(
 			`Converting task ${subtaskId} to subtask of ${parentId}...`,
 			`Task ${subtaskId} converted to subtask successfully!`,
@@ -744,6 +835,87 @@ export class TaskMaster {
 			this._mainCommand,
 			["add-subtask", `--parent=${parentId}`, `--task-id=${subtaskId}`],
 		);
+	}
+
+	// ==============================================
+	// Dependencies
+	// ==============================================
+
+	// TODO: in-progress
+	/**
+	 * @description Adds a dependency to a task
+	 * @param taskId ID of the task to modify
+	 * @param dependencyIds IDs of the dependencies to add
+	 */
+	public async addDependencyAsync(
+		taskId: string,
+		dependencyIds: string[],
+	): Promise<void> {
+		const formatedDepsIds =
+			dependencyIds.length > 1 ? dependencyIds.join(",") : dependencyIds[0];
+		await this.executeCommandAsync(
+			`Adding dependency ${formatedDepsIds} to task ${taskId}...`,
+			`Dependency ${formatedDepsIds} added successfully to task ${taskId}!`,
+			`Failed to add dependency ${formatedDepsIds} to task ${taskId}`,
+			this._mainCommand,
+			["add-dependency", `--id=${taskId}`, `--depends-on=${formatedDepsIds}`],
+		);
+	}
+
+	// TODO: done
+	/**
+	 * @description Validates task dependencies
+	 */
+	public async validateDependenciesAsync(): Promise<void> {
+		await this.executeCommandAsync(
+			"Validating dependencies...",
+			"Dependencies validated successfully!",
+			"Failed to validate dependencies",
+			this._mainCommand,
+			["validate-dependencies"],
+		);
+	}
+
+	// TODO: done
+	/**
+	 * @description Automatically fixes dependency issues
+	 */
+	public async fixDependenciesAsync(): Promise<void> {
+		await this.executeCommandAsync(
+			"Fixing dependencies...",
+			"Dependencies fixed successfully!",
+			"Failed to fix dependencies",
+			this._mainCommand,
+			["fix-dependencies"],
+		);
+	}
+
+	// TODO: done
+	/**
+	 * @description Clears all dependencies for the specified task or subtask.
+	 * @param taskId The task ID (either a simple number as string or hierarchical like "1.2")
+	 */
+	public async clearAllDependenciesAsync(taskId: string): Promise<void> {
+		const tasks = await this.getTasksContentAsync();
+		const dependencyIds = await this.getAllDependenciesAsync(tasks, taskId);
+
+		if (dependencyIds.length === 0) {
+			console.log(chalk.yellow(`No dependencies found for task ${taskId}.`));
+			return;
+		}
+
+		for (const dependencyId of dependencyIds) {
+			const dependsOnId = taskId.includes(".")
+				? `${taskId.split(".")[0]}.${dependencyId}`
+				: dependencyId;
+			await this.executeCommandAsync(
+				`Removing dependency ${dependsOnId} from task ${taskId}...`,
+				`Dependency ${dependsOnId} removed successfully from task ${taskId}!`,
+				`Failed to remove dependency ${dependsOnId} from task ${taskId}`,
+				this._mainCommand,
+				["remove-dependency", `--id=${taskId}`, `--depends-on=${dependsOnId}`],
+			);
+		}
 	}
 
 	// ==============================================
