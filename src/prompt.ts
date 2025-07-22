@@ -88,11 +88,19 @@ export const tmaiInitMenu_prompt = [
 				value: "tmai-init",
 			},
 			{
-				name: `${emoji.get("wrench")} 3 - Configure AI models`,
+				name: `${emoji.get(
+					"wrench",
+				)} 3 - Configure AI models (interactive mode)`,
+				value: "tmai-interactive-config",
+			},
+			{
+				name: `${emoji.get("fast_forward")} 4 - Configure AI models (quickly)`,
 				value: "tmai-config",
 			},
 			{
-				name: `${emoji.get("globe_with_meridians")} 4 - Set the response language for AI-generated content in TMAI`,
+				name: `${emoji.get(
+					"globe_with_meridians",
+				)} 5 - Set the response language for AI-generated content in TMAI`,
 				value: "tmai-lang",
 			},
 		],

@@ -61,7 +61,7 @@ export const TASKMASTER_INIT_MSG = "TaskMaster AI Core initialized";
 export const TASKS_FILE_WARN: (path: string) => string = (path: string) =>
 	`tasks.json not found at "${path}". Please generate tasks from PRD first.`;
 
-// Supported languages for TMAI responses
+// supported languages for TMAI responses
 export const LANG = [
 	"English",
 	"French",
@@ -72,3 +72,9 @@ export const LANG = [
 	"Chinese",
 	"Japanese",
 ] as const;
+
+// ai models configuration
+export const AI_MODELS = [
+	{ name: "Gemini 2.5 Pro", value: "gemini-2.5-pro" },
+	{ name: "Gemini 2.5 Flash", value: "gemini-2.5-flash" },
+];

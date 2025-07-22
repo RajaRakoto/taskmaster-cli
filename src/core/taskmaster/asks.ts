@@ -21,6 +21,7 @@ import {
 	PRD_PATH,
 	TASKS_STATUSES,
 	TASKS_BCK_DEST_PATH,
+	AI_MODELS,
 } from "@/constants";
 
 /* utils */
@@ -478,4 +479,48 @@ export async function askLangAsync(): Promise<string> {
 		choices: LANG,
 	});
 	return lang;
+}
+
+/**
+ * @description Prompts the user to select AI models for main, research, and fallback
+ * Note: This list is designed for faster TMAI testing using free or generously quota'd models.
+ * For a wider selection, use the standard interactive configuration mode.
+ */
+export async function askModelsAsync(): Promise<{
+	mainModel: string;
+	researchModel: string;
+	fallbackModel: string;
+}> {
+	console.log(
+		chalk.blue(
+			"Note: This list is optimized for quicker TMAI testing with free or high-quota models. These models are fully suitable for real projects too. For more options, use the standard interactive configuration mode.",
+		),
+	);
+
+	const { mainModel, researchModel, fallbackModel } = await inquirer.prompt<{
+		mainModel: string;
+		researchModel: string;
+		fallbackModel: string;
+	}>([
+		{
+			type: "list",
+			name: "mainModel",
+			message: "Select the main AI model:",
+			choices: AI_MODELS,
+		},
+		{
+			type: "list",
+			name: "researchModel",
+			message: "Select the research AI model:",
+			choices: AI_MODELS,
+		},
+		{
+			type: "list",
+			name: "fallbackModel",
+			message: "Select the fallback AI model:",
+			choices: AI_MODELS,
+		},
+	]);
+
+	return { mainModel, researchModel, fallbackModel };
 }

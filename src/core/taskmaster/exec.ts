@@ -31,6 +31,7 @@ import {
 	askHybridTaskIdAsync,
 	askMultipleTaskIdAsync,
 	askLangAsync,
+	askModelsAsync,
 } from "@/core/taskmaster/asks";
 
 import chalk from "chalk";
@@ -65,8 +66,11 @@ export async function tmaiInitAsync() {
 		await tmai.installAsync();
 	} else if (choice.tmaiInitMenu === "tmai-init") {
 		await tmai.initAsync();
+	} else if (choice.tmaiInitMenu === "tmai-interactive-config") {
+		await tmai.interactiveConfigModelAsync();
 	} else if (choice.tmaiInitMenu === "tmai-config") {
-		await tmai.configAsync();
+		const { mainModel, researchModel, fallbackModel } = await askModelsAsync();
+		await tmai.configModelsAsync(mainModel, researchModel, fallbackModel);
 	} else if (choice.tmaiInitMenu === "tmai-lang") {
 		const lang = await askLangAsync();
 		await tmai.setLangAsync(lang);

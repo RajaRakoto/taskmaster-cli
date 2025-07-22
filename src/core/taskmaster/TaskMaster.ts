@@ -27,9 +27,6 @@ import {
 	readJsonFileAsync,
 } from "@/utils/extras";
 
-/* asks */
-import { askLangAsync } from "@/core/taskmaster/asks";
-
 /* types */
 import type { T_PackageManager } from "@/@types/index";
 import type { I_Tasks, Status, Priority } from "@/@types/tasks";
@@ -328,21 +325,6 @@ export class TaskMaster {
 
 	// TODO: done
 	/**
-	 * @description Sets the response language for TMAI
-	 * @param lang Language to set for TMAI responses
-	 */
-	public async setLangAsync(lang: string): Promise<void> {
-		await this.executeCommandAsync(
-			`Setting TMAI response language to ${chalk.bold(lang)}...`,
-			`Language set to ${lang} successfully!`,
-			`Failed to set language to ${lang}`,
-			this._mainCommand,
-			["lang", `--response=${lang}`],
-		);
-	}
-
-	// TODO: done
-	/**
 	 * @description Initializes the task-master AI by creating a PRD file
 	 * @note This function doesn't use oraPromise as it is not a long-running task
 	 * @throws Will throw an error if file operations fail
@@ -370,13 +352,68 @@ export class TaskMaster {
 	/**
 	 * @description Configures AI models for task-master by running the interactive setup
 	 */
-	public async configAsync(): Promise<void> {
+	public async interactiveConfigModelAsync(): Promise<void> {
 		await this.executeCommandAsync(
 			"Configuring AI models...",
 			"AI models configured successfully!",
 			"AI model configuration failed",
 			this._mainCommand,
 			["models", "--setup"],
+		);
+	}
+
+	// TODO: done
+	/**
+	 * @description Configures AI models with specified models
+	 * @param mainModel The main AI model to use
+	 * @param researchModel The research AI model to use
+	 * @param fallbackModel The fallback AI model to use
+	 */
+	public async configModelsAsync(
+		mainModel: string,
+		researchModel: string,
+		fallbackModel: string,
+	): Promise<void> {
+		const oraOptions = {
+			text: "Configuring AI models...",
+			successText: chalk.bgGreen("AI models configured successfully!"),
+			failText: chalk.bgRed("AI model configuration failed"),
+		};
+
+		await oraPromise(async () => {
+			await runCommandAsync(
+				this._mainCommand,
+				["models", "--set-main", mainModel],
+				false,
+				false,
+			);
+			await runCommandAsync(
+				this._mainCommand,
+				["models", "--set-research", researchModel],
+				false,
+				false,
+			);
+			await runCommandAsync(
+				this._mainCommand,
+				["models", "--set-fallback", fallbackModel],
+				false,
+				false,
+			);
+		}, oraOptions);
+	}
+
+	// TODO: done
+	/**
+	 * @description Sets the response language for TMAI
+	 * @param lang Language to set for TMAI responses
+	 */
+	public async setLangAsync(lang: string): Promise<void> {
+		await this.executeCommandAsync(
+			`Setting TMAI response language to ${chalk.bold(lang)}...`,
+			`Language set to ${lang} successfully!`,
+			`Failed to set language to ${lang}`,
+			this._mainCommand,
+			["lang", `--response=${lang}`],
 		);
 	}
 
