@@ -27,6 +27,9 @@ import {
 	readJsonFileAsync,
 } from "@/utils/extras";
 
+/* asks */
+import { askLangAsync } from "@/core/taskmaster/asks";
+
 /* types */
 import type { T_PackageManager } from "@/@types/index";
 import type { I_Tasks, Status, Priority } from "@/@types/tasks";
@@ -321,6 +324,21 @@ export class TaskMaster {
 
 			await runCommandAsync(command, args, false, false);
 		}, oraOptions);
+	}
+
+	// TODO: done
+	/**
+	 * @description Sets the response language for TMAI
+	 * @param lang Language to set for TMAI responses
+	 */
+	public async setLangAsync(lang: string): Promise<void> {
+		await this.executeCommandAsync(
+			`Setting TMAI response language to ${chalk.bold(lang)}...`,
+			`Language set to ${lang} successfully!`,
+			`Failed to set language to ${lang}`,
+			this._mainCommand,
+			["lang", `--response=${lang}`],
+		);
 	}
 
 	// TODO: done

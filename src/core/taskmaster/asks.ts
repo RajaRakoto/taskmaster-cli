@@ -10,6 +10,7 @@ import {
 	DEFAULT_SUBTASKS_TO_GENERATE,
 	DEFAULT_TAG,
 	DEFAULT_TASKS_TO_GENERATE,
+	LANG,
 	MAX_DESCRIPTION_LENGTH,
 	MAX_PROMPT_LENGTH,
 	MAX_SUBTASKS_TO_GENERATE,
@@ -464,4 +465,17 @@ export async function askSubtaskManualParamsAsync(): Promise<{
 			},
 		},
 	]);
+}
+
+/**
+ * @description Prompts the user to select a language for TMAI responses
+ */
+export async function askLangAsync(): Promise<string> {
+	const { lang } = await inquirer.prompt({
+		type: "list",
+		name: "lang",
+		message: "Select the language for TMAI responses:",
+		choices: LANG,
+	});
+	return lang;
 }

@@ -91,6 +91,10 @@ export const tmaiInitMenu_prompt = [
 				name: `${emoji.get("wrench")} 3 - Configure AI models`,
 				value: "tmai-config",
 			},
+			{
+				name: `${emoji.get("globe_with_meridians")} 4 - Set the response language for AI-generated content in TMAI`,
+				value: "tmai-lang",
+			},
 		],
 	},
 ];

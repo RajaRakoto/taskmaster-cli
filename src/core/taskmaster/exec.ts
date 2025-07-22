@@ -30,6 +30,7 @@ import {
 	askBackupSlotAsync,
 	askHybridTaskIdAsync,
 	askMultipleTaskIdAsync,
+	askLangAsync,
 } from "@/core/taskmaster/asks";
 
 import chalk from "chalk";
@@ -66,6 +67,9 @@ export async function tmaiInitAsync() {
 		await tmai.initAsync();
 	} else if (choice.tmaiInitMenu === "tmai-config") {
 		await tmai.configAsync();
+	} else if (choice.tmaiInitMenu === "tmai-lang") {
+		const lang = await askLangAsync();
+		await tmai.setLangAsync(lang);
 	}
 
 	await restartAsync();

@@ -60,3 +60,15 @@ export const PACKAGE_MANAGERS = ["npm", "pnpm", "bun"] as const;
 export const TASKMASTER_INIT_MSG = "TaskMaster AI Core initialized";
 export const TASKS_FILE_WARN: (path: string) => string = (path: string) =>
 	`tasks.json not found at "${path}". Please generate tasks from PRD first.`;
+
+// Supported languages for TMAI responses
+export const LANG = [
+	"English",
+	"French",
+	"Spanish",
+	"German",
+	"Italian",
+	"Portuguese",
+	"Chinese",
+	"Japanese",
+] as const;
