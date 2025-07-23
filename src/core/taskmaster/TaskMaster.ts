@@ -783,7 +783,7 @@ export class TaskMaster {
 		tag: string,
 		tasks: I_Tasks,
 	): Promise<void> {
-		const task = tasks.master.tasks.find(t => t.id === id);
+		const task = tasks.master.tasks.find((t) => t.id === id);
 		if (task && task.status !== "pending" && task.status !== "in-progress") {
 			await this.updateTaskStatusAsync([id.toString()], "pending", tag);
 		}
@@ -819,7 +819,7 @@ export class TaskMaster {
 		tag: string,
 		tasks: I_Tasks,
 	): Promise<void> {
-		const task = tasks.master.tasks.find(t => t.id === startingId);
+		const task = tasks.master.tasks.find((t) => t.id === startingId);
 		if (task && task.status !== "pending" && task.status !== "in-progress") {
 			await this.updateTaskStatusAsync([startingId.toString()], "pending", tag);
 		}
@@ -858,9 +858,13 @@ export class TaskMaster {
 		const [parentIdStr, subtaskIndexStr] = hierarchicalId.split(".");
 		const parentId = Number.parseInt(parentIdStr, 10);
 		const subtaskIndex = Number.parseInt(subtaskIndexStr, 10) - 1;
-		const parentTask = tasks.master.tasks.find(t => t.id === parentId);
+		const parentTask = tasks.master.tasks.find((t) => t.id === parentId);
 		const subtask = parentTask?.subtasks?.[subtaskIndex];
-		if (subtask && subtask.status !== "pending" && subtask.status !== "in-progress") {
+		if (
+			subtask &&
+			subtask.status !== "pending" &&
+			subtask.status !== "in-progress"
+		) {
 			await this.updateTaskStatusAsync([hierarchicalId], "pending", tag);
 		}
 
@@ -1087,9 +1091,32 @@ export class TaskMaster {
 
 	// TODO: done
 	/**
+	 * @description Clears all subtasks from all tasks
+	 */
+	public async clearAllSubtasksAsync(): Promise<void> {
+		const { confirm } = await inquirer.prompt({
+			type: "confirm",
+			name: "confirm",
+			message: chalk.red("Clear all subtasks from all tasks? ..."),
+			default: false,
+		});
+
+		if (confirm) {
+			await this.executeCommandAsync(
+				"Clearing all subtasks...",
+				"All subtasks cleared successfully!",
+				"Failed to clear all subtasks",
+				this._mainCommand,
+				["clear-subtasks", "--all"],
+			);
+		}
+	}
+
+	// TODO: done
+	/**
 	 * @description Clears all task-related files and directories
 	 */
-	public async clearTasksAsync(): Promise<void> {
+	public async clearAllTasksAsync(): Promise<void> {
 		for (const filePath of TASKS_FILES) {
 			if (!fs.existsSync(filePath)) continue;
 
