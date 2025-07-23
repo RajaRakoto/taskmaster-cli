@@ -210,7 +210,7 @@ export async function tmaiManageAsync() {
 					const parentId = await askTaskIdAsync(mainIDs);
 					const prompt = await askTaskPromptAsync();
 					const research = await askAdvancedResearchConfirmationAsync();
-					await tmai.updateTaskByAIAsync(parentId, prompt, research, tag);
+					await tmai.updateTaskByAIAsync(parentId, prompt, research, tag, tasks);
 					tasks = await tmai.getTasksContentAsync();
 					await tmai.listAsync(tasks, TASKS_STATUSES.join(","), true, true);
 					break;
@@ -225,6 +225,7 @@ export async function tmaiManageAsync() {
 						prompt,
 						research,
 						tag,
+						tasks,
 					);
 					tasks = await tmai.getTasksContentAsync();
 					await tmai.listAsync(tasks, TASKS_STATUSES.join(","), true, true);
@@ -235,7 +236,7 @@ export async function tmaiManageAsync() {
 					const subtaskId = await askHierarchicalTaskIdAsync(subtasksIDs);
 					const prompt = await askTaskPromptAsync();
 					const research = await askAdvancedResearchConfirmationAsync();
-					await tmai.updateSubtaskByAIAsync(subtaskId, prompt, research, tag);
+					await tmai.updateSubtaskByAIAsync(subtaskId, prompt, research, tag, tasks);
 					tasks = await tmai.getTasksContentAsync();
 					await tmai.listAsync(tasks, TASKS_STATUSES.join(","), true, true);
 					break;

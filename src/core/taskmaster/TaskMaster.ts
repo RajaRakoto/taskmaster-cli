@@ -774,13 +774,20 @@ export class TaskMaster {
 	 * @param prompt Modification prompt
 	 * @param allowAdvancedResearch Use advanced research
 	 * @param tag Context tag
+	 * @param tasks Current tasks data to check and potentially update status
 	 */
 	public async updateTaskByAIAsync(
 		id: number,
 		prompt: string,
 		allowAdvancedResearch: boolean,
 		tag: string,
+		tasks: I_Tasks,
 	): Promise<void> {
+		const task = tasks.master.tasks.find(t => t.id === id);
+		if (task && task.status !== "pending" && task.status !== "in-progress") {
+			await this.updateTaskStatusAsync([id.toString()], "pending", tag);
+		}
+
 		await this.executeCommandAsync(
 			`Modifying task ${id} with AI...`,
 			`Task ${id} modified successfully!`,
@@ -803,13 +810,20 @@ export class TaskMaster {
 	 * @param prompt Global modification prompt
 	 * @param allowAdvancedResearch Use advanced research
 	 * @param tag Context tag
+	 * @param tasks Current tasks data to check and potentially update status
 	 */
 	public async updateMultipleTasksByAIAsync(
 		startingId: number,
 		prompt: string,
 		allowAdvancedResearch: boolean,
 		tag: string,
+		tasks: I_Tasks,
 	): Promise<void> {
+		const task = tasks.master.tasks.find(t => t.id === startingId);
+		if (task && task.status !== "pending" && task.status !== "in-progress") {
+			await this.updateTaskStatusAsync([startingId.toString()], "pending", tag);
+		}
+
 		await this.executeCommandAsync(
 			`Updating tasks from ${startingId} with AI...`,
 			"Tasks updated successfully!",
@@ -832,13 +846,24 @@ export class TaskMaster {
 	 * @param prompt Modification prompt
 	 * @param allowAdvancedResearch Use advanced research
 	 * @param tag Context tag
+	 * @param tasks Current tasks data to check and potentially update status
 	 */
 	public async updateSubtaskByAIAsync(
 		hierarchicalId: string,
 		prompt: string,
 		allowAdvancedResearch: boolean,
 		tag: string,
+		tasks: I_Tasks,
 	): Promise<void> {
+		const [parentIdStr, subtaskIndexStr] = hierarchicalId.split(".");
+		const parentId = Number.parseInt(parentIdStr, 10);
+		const subtaskIndex = Number.parseInt(subtaskIndexStr, 10) - 1;
+		const parentTask = tasks.master.tasks.find(t => t.id === parentId);
+		const subtask = parentTask?.subtasks?.[subtaskIndex];
+		if (subtask && subtask.status !== "pending" && subtask.status !== "in-progress") {
+			await this.updateTaskStatusAsync([hierarchicalId], "pending", tag);
+		}
+
 		await this.executeCommandAsync(
 			`Modifying subtask ${hierarchicalId} with AI...`,
 			`Subtask ${hierarchicalId} modified successfully!`,
