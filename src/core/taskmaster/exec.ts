@@ -66,7 +66,7 @@ export async function tmaiInitAsync() {
 		await tmai.installAsync();
 	} else if (choice.tmaiInitMenu === "tmai-init") {
 		await tmai.initAsync();
-	} else if (choice.tmaiInitMenu === "tmai-interactive-config") {
+	} else if (choice.tmaiInitMenu === "tmai-interactiveconfig") {
 		await tmai.interactiveConfigModelAsync();
 	} else if (choice.tmaiInitMenu === "tmai-config") {
 		const { mainModel, researchModel, fallbackModel } = await askModelsAsync();
@@ -210,7 +210,13 @@ export async function tmaiManageAsync() {
 					const parentId = await askTaskIdAsync(mainIDs);
 					const prompt = await askTaskPromptAsync();
 					const research = await askAdvancedResearchConfirmationAsync();
-					await tmai.updateTaskByAIAsync(parentId, prompt, research, tag, tasks);
+					await tmai.updateTaskByAIAsync(
+						parentId,
+						prompt,
+						research,
+						tag,
+						tasks,
+					);
 					tasks = await tmai.getTasksContentAsync();
 					await tmai.listAsync(tasks, TASKS_STATUSES.join(","), true, true);
 					break;
@@ -236,7 +242,13 @@ export async function tmaiManageAsync() {
 					const subtaskId = await askHierarchicalTaskIdAsync(subtasksIDs);
 					const prompt = await askTaskPromptAsync();
 					const research = await askAdvancedResearchConfirmationAsync();
-					await tmai.updateSubtaskByAIAsync(subtaskId, prompt, research, tag, tasks);
+					await tmai.updateSubtaskByAIAsync(
+						subtaskId,
+						prompt,
+						research,
+						tag,
+						tasks,
+					);
 					tasks = await tmai.getTasksContentAsync();
 					await tmai.listAsync(tasks, TASKS_STATUSES.join(","), true, true);
 					break;
@@ -353,8 +365,12 @@ export async function tmaiBackupRestoreClearAsync() {
 			}
 			break;
 		}
-		case "tmai-clear": {
-			await tmai.clearTasksAsync();
+		case "tmai-clearallsubtasks": {
+			await tmai.clearAllSubtasksAsync();
+			break;
+		}
+		case "tmai-clearall": {
+			await tmai.clearAllTasksAsync();
 			break;
 		}
 		default:

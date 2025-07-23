@@ -3,9 +3,6 @@ import inquirer from "inquirer";
 import chalk from "chalk";
 import * as emoji from "node-emoji";
 
-/* constants */
-import { DEV_MODE } from "./constants";
-
 // TODO: done
 // ==============================
 // Main menu
@@ -45,14 +42,6 @@ export const mainMenu_prompt = [
 				name: `${emoji.get("floppy_disk")} Backup, Restore and Clear`,
 				value: "tmai-bckrestore",
 			},
-			...(DEV_MODE
-				? [
-						{
-							name: `${emoji.get("gear")}  Dev mode`,
-							value: "tmai-dev",
-						},
-					]
-				: []),
 			{
 				name: `${emoji.get("door")} Exit`,
 				value: "exit",
@@ -91,7 +80,7 @@ export const tmaiInitMenu_prompt = [
 				name: `${emoji.get(
 					"wrench",
 				)} 3 - Configure AI models (interactive mode)`,
-				value: "tmai-interactive-config",
+				value: "tmai-interactiveconfig",
 			},
 			{
 				name: `${emoji.get("fast_forward")} 4 - Configure AI models (quickly)`,
@@ -275,7 +264,7 @@ export const tmaiUpdateTasksMenu_prompt = [
 	},
 ];
 
-// TODO: pending
+// TODO: in-progress
 // ==============================
 // Deleting tasks menu
 // ==============================
@@ -291,27 +280,23 @@ export const tmaiDeleteTasksMenu_prompt = [
 			new inquirer.Separator("=== Deleting tasks ==="),
 			{
 				name: `${emoji.get("wastebasket")} Delete task`,
-				value: "tmai-manage-remove-task",
-			},
-			{
-				name: `${emoji.get("boom")} Delete task permanently`,
-				value: "tmai-manage-remove-task-permanent",
+				value: "tmai-deletetask",
 			},
 			{
 				name: `${emoji.get("scissors")} Delete subtask`,
-				value: "tmai-manage-remove-subtask",
+				value: "tmai-deletesubtask",
 			},
 			{
 				name: `${emoji.get("recycle")} Convert subtask to task`,
-				value: "tmai-manage-remove-subtask-convert",
+				value: "tmai-deletesubtaskconvert",
 			},
 			{
 				name: `${emoji.get("broom")} Clear subtasks from task`,
-				value: "tmai-manage-clear-subtasks",
+				value: "tmai-clearsubtasks",
 			},
 			{
 				name: `${emoji.get("fire")} Clear all subtasks`,
-				value: "tmai-manage-clear-subtasks-all",
+				value: "tmai-clearsubtasksall",
 			},
 		],
 	},
@@ -406,8 +391,16 @@ export const tmaiBackupRestoreClearClear_prompt = [
 				value: "tmai-restore",
 			},
 			{
-				name: chalk.red(`${emoji.get("boom")} Clear all current tasks`),
-				value: "tmai-clear",
+				name: chalk.red(
+					`${emoji.get("boom")} Clear all subtasks only (excluding main tasks)`,
+				),
+				value: "tmai-clearallsubtasks",
+			},
+			{
+				name: chalk.red(
+					`${emoji.get("boom")} Clear all current tasks (including subtasks) and all related tmai files`,
+				),
+				value: "tmai-clearall",
 			},
 		],
 	},
