@@ -209,6 +209,22 @@ export async function askStatusSelectionAsync(): Promise<string> {
 }
 
 /**
+ * @description Asks the user to select a single task status.
+ */
+export async function askStatusAsync(): Promise<string> {
+	const { status } = await inquirer.prompt({
+		type: "list",
+		name: "status",
+		message: "Select task status:",
+		choices: TASKS_STATUSES.map((status) => ({
+			name: status,
+			value: status,
+		})),
+	});
+	return status;
+}
+
+/**
  * @description Asks the user for display options when listing tasks.
  */
 export async function askDisplayOptionsAsync(): Promise<{

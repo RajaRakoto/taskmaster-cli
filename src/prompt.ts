@@ -169,10 +169,6 @@ export const tmaiManageMenu_prompt = [
 				name: `${emoji.get("wastebasket")}  Delete tasks`,
 				value: "tmai-deletetasks",
 			},
-			{
-				name: `${emoji.get("hourglass")} Status tracking`,
-				value: "tmai-statustracking",
-			},
 		],
 	},
 ];
@@ -268,6 +264,10 @@ export const tmaiUpdateTasksMenu_prompt = [
 				value: "tmai-updatesubtaskai",
 			},
 			{
+				name: `${emoji.get("pencil2")}  Update task or subtask status`,
+				value: "tmai-updatestatus",
+			},
+			{
 				name: `${emoji.get("pencil2")}  Convert task to subtask`,
 				value: "tmai-converttasktosubtask",
 			},
@@ -312,48 +312,6 @@ export const tmaiDeleteTasksMenu_prompt = [
 			{
 				name: `${emoji.get("fire")} Clear all subtasks`,
 				value: "tmai-manage-clear-subtasks-all",
-			},
-		],
-	},
-];
-
-// TODO: pending
-// ==============================
-// Status tracking menu
-// ==============================
-
-export const tmaiStatusTrackingMenu_prompt = [
-	{
-		type: "list",
-		name: "tmaiStatusTrackingMenu",
-		message: chalk.bgBlue("Choose an operation"),
-		loop: true,
-		pageSize: 7,
-		choices: [
-			new inquirer.Separator("=== Status Tracking ==="),
-			{
-				name: `${emoji.get("hourglass")} Mark as pending`,
-				value: "tmai-manage-set-status-pending",
-			},
-			{
-				name: `${emoji.get("hammer_and_wrench")} Mark as in progress`,
-				value: "tmai-manage-set-status-in-progress",
-			},
-			{
-				name: `${emoji.get("white_check_mark")} Mark as done`,
-				value: "tmai-manage-set-status-done",
-			},
-			{
-				name: `${emoji.get("eye")} Mark for review`,
-				value: "tmai-manage-set-status-review",
-			},
-			{
-				name: `${emoji.get("x")} Mark as cancelled`,
-				value: "tmai-manage-set-status-cancelled",
-			},
-			{
-				name: `${emoji.get("calendar")} Mark as deferred`,
-				value: "tmai-manage-set-status-deferred",
 			},
 		],
 	},

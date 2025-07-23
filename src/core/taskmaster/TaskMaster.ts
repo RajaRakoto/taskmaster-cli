@@ -767,7 +767,7 @@ export class TaskMaster {
 	// Updating Methods
 	// ==============================================
 
-	// TODO: in-progress
+	// TODO: validate
 	/**
 	 * @description Modifies a task using AI
 	 * @param id ID of the task to modify
@@ -796,7 +796,7 @@ export class TaskMaster {
 		);
 	}
 
-	// TODO: in-progress
+	// TODO: validate
 	/**
 	 * @description Updates multiple tasks using AI from a starting ID
 	 * @param startingId Starting ID for the update
@@ -825,7 +825,7 @@ export class TaskMaster {
 		);
 	}
 
-	// TODO: in-progress
+	// TODO: validate
 	/**
 	 * @description Modifies a subtask using AI
 	 * @param hierarchicalId Hierarchical ID of the subtask
@@ -854,7 +854,35 @@ export class TaskMaster {
 		);
 	}
 
-	// TODO: in-progress
+	// TODO: done
+	/**
+	 * @description Updates the status of one or more tasks
+	 * @param ids Array of task IDs (can be main tasks or hierarchical subtask IDs)
+	 * @param status The new status to set for the tasks
+	 * @param tag Optional tag to filter tasks
+	 */
+	public async updateTaskStatusAsync(
+		ids: string[],
+		status: string,
+		tag?: string,
+	): Promise<void> {
+		const formatedIds = ids.length > 1 ? ids.join(",") : ids[0];
+		const args = ["set-status", `--id=${formatedIds}`, `--status=${status}`];
+
+		if (tag) {
+			args.push(`--tag=${tag}`);
+		}
+
+		await this.executeCommandAsync(
+			`Updating status of task(s) ${formatedIds} to ${status}...`,
+			`Status of task(s) ${formatedIds} updated successfully!`,
+			`Failed to update status of task(s) ${formatedIds}`,
+			this._mainCommand,
+			args,
+		);
+	}
+
+	// TODO: validate
 	/**
 	 * @description Converts an existing task to a subtask
 	 * @param subtaskId ID of the task to convert into a subtask
