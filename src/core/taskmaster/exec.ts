@@ -284,8 +284,34 @@ export async function tmaiManageAsync() {
 			const { tmaiDeleteTasksMenu } = await inquirer.prompt(
 				tmaiDeleteTasksMenu_prompt,
 			);
-			if (tmaiDeleteTasksMenu === "tmai-deletetasks") {
-				console.log("Executing task deletion...");
+			const { mainIDs, subtasksIDs } = await tmai.getAllTaskIdsAsync(tasks);
+			const tag = await askTaskTagAsync();
+
+			switch (tmaiDeleteTasksMenu) {
+				case "tmai-deletetask": {
+					await tmai.listAsync(tasks, TASKS_STATUSES.join(","), true, true);
+					const taskId = await askTaskIdAsync(mainIDs);
+					await tmai.deleteTaskAsync(taskId, tag);
+					tasks = await tmai.getTasksContentAsync();
+					await tmai.listAsync(tasks, TASKS_STATUSES.join(","), true, true);
+					break;
+				}
+				case "tmai-deletesubtask": {
+					await tmai.listAsync(tasks, TASKS_STATUSES.join(","), true, true);
+					const subtaskId = await askHierarchicalTaskIdAsync(subtasksIDs);
+					await tmai.deleteSubtaskAsync(subtaskId, tag);
+					tasks = await tmai.getTasksContentAsync();
+					await tmai.listAsync(tasks, TASKS_STATUSES.join(","), true, true);
+					break;
+				}
+				case "tmai-deleteallsubtasksfromtask": {
+					await tmai.listAsync(tasks, TASKS_STATUSES.join(","), true, true);
+					const taskId = await askTaskIdAsync(mainIDs);
+					await tmai.deleteAllSubtasksFromTaskAsync(taskId, tag);
+					tasks = await tmai.getTasksContentAsync();
+					await tmai.listAsync(tasks, TASKS_STATUSES.join(","), true, true);
+					break;
+				}
 			}
 			break;
 		}

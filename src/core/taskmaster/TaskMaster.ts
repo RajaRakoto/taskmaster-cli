@@ -428,7 +428,7 @@ export class TaskMaster {
 	 * @param numTasksToGenerate Number of tasks to generate (default: 10)
 	 * @param allowAdvancedResearch Allow advanced research for task generation
 	 * @param appendToExistingTasks Whether to append to existing tasks
-	 * @param tag tag for the generated tasks
+	 * @param tag Context tag
 	 */
 	public async parseAsync(
 		inputFilePath: string,
@@ -480,7 +480,7 @@ export class TaskMaster {
 	// TODO: done
 	/**
 	 * @description Decomposes all tasks using AI
-	 * @param tag tag for the tasks to decompose
+	 * @param tag Context tag
 	 */
 	public async decomposeAsync(tag: string): Promise<void> {
 		await this.executeCommandAsync(
@@ -690,7 +690,7 @@ export class TaskMaster {
 	 * @description Adds a new task using AI
 	 * @param prompt Description of the task to create
 	 * @param allowAdvancedResearch Use research capabilities
-	 * @param tag Tag context for the task
+	 * @param tag Context tag
 	 */
 	public async addTaskByAIAsync(
 		prompt: string,
@@ -888,26 +888,25 @@ export class TaskMaster {
 	 * @description Updates the status of one or more tasks
 	 * @param ids Array of task IDs (can be main tasks or hierarchical subtask IDs)
 	 * @param status The new status to set for the tasks
-	 * @param tag Optional tag to filter tasks
+	 * @param tag Context tag
 	 */
 	public async updateTaskStatusAsync(
 		ids: string[],
 		status: string,
-		tag?: string,
+		tag: string,
 	): Promise<void> {
 		const formatedIds = ids.length > 1 ? ids.join(",") : ids[0];
-		const args = ["set-status", `--id=${formatedIds}`, `--status=${status}`];
-
-		if (tag) {
-			args.push(`--tag=${tag}`);
-		}
-
 		await this.executeCommandAsync(
 			`Updating status of task(s) ${formatedIds} to ${status}...`,
 			`Status of task(s) ${formatedIds} updated successfully!`,
 			`Failed to update status of task(s) ${formatedIds}`,
 			this._mainCommand,
-			args,
+			[
+				"set-status",
+				`--id=${formatedIds}`,
+				`--status=${status}`,
+				`--tag=${tag}`,
+			],
 		);
 	}
 
@@ -932,7 +931,93 @@ export class TaskMaster {
 	}
 
 	// ==============================================
-	// Dependencies
+	// Deleting Methods
+	// ==============================================
+
+	/**
+	 * @description Delete a task by ID (including subtasks)
+	 * @param id The ID of the task to remove
+	 * @param tag Context tag
+	 */
+	public async deleteTaskAsync(id: number, tag: string): Promise<void> {
+		const { confirm } = await inquirer.prompt({
+			type: "confirm",
+			name: "confirm",
+			message: chalk.red(`Are you sure you want to delete task ${id}?`),
+			default: false,
+		});
+
+		if (confirm) {
+			await this.executeCommandAsync(
+				`Deleting task ${id}...`,
+				`Task ${id} deleted successfully!`,
+				`Failed to delete task ${id}`,
+				this._mainCommand,
+				["remove-task", `--id=${id}`, `--tag=${tag}`, "-y"],
+			);
+		}
+	}
+
+	/**
+	 * @description Delete a specific subtask
+	 * @param hierarchicalId The hierarchical ID of the subtask
+	 * @param tag Context tag
+	 */
+	public async deleteSubtaskAsync(
+		hierarchicalId: string,
+		tag: string,
+	): Promise<void> {
+		const { confirm } = await inquirer.prompt({
+			type: "confirm",
+			name: "confirm",
+			message: chalk.red(
+				`Are you sure you want to delete subtask ${hierarchicalId}?`,
+			),
+			default: false,
+		});
+
+		if (confirm) {
+			await this.executeCommandAsync(
+				`Deleting subtask ${hierarchicalId}...`,
+				`Subtask ${hierarchicalId} deleted successfully!`,
+				`Failed to delete subtask ${hierarchicalId}`,
+				this._mainCommand,
+				["remove-subtask", `--id=${hierarchicalId}`, `--tag=${tag}`],
+			);
+		}
+	}
+
+	/**
+	 * @description Deletes all subtasks from a specific task
+	 * @param id The ID of the task to clear subtasks from
+	 * @param tag Context tag
+	 */
+	public async deleteAllSubtasksFromTaskAsync(
+		id: number,
+		tag: string,
+	): Promise<void> {
+		const { confirm } = await inquirer.prompt({
+			type: "confirm",
+			name: "confirm",
+			message: chalk.red(
+				`Are you sure you want to delete all subtasks from task ${id}?`,
+			),
+			default: false,
+		});
+
+		if (confirm) {
+			await this.executeCommandAsync(
+				`Deleting all subtasks from task ${id}...`,
+				`All subtasks deleted from task ${id} successfully!`,
+				`Failed to delete subtasks from task ${id}`,
+				this._mainCommand,
+				["clear-subtasks", `--id=${id}`, `--tag=${tag}`],
+			);
+		}
+	}
+
+	// ==============================================
+	// Dependencies Methods
 	// ==============================================
 
 	// TODO: in-progress

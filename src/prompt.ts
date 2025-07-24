@@ -275,28 +275,20 @@ export const tmaiDeleteTasksMenu_prompt = [
 		name: "tmaiDeleteTasksMenu",
 		message: chalk.bgBlue("Choose an operation"),
 		loop: true,
-		pageSize: 15,
+		pageSize: 7,
 		choices: [
 			new inquirer.Separator("=== Deleting tasks ==="),
 			{
-				name: `${emoji.get("wastebasket")} Delete task`,
+				name: `${emoji.get("wastebasket")} Delete a task (including subtasks)`,
 				value: "tmai-deletetask",
 			},
 			{
-				name: `${emoji.get("scissors")} Delete subtask`,
+				name: `${emoji.get("wastebasket")} Delete a subtask`,
 				value: "tmai-deletesubtask",
 			},
 			{
-				name: `${emoji.get("recycle")} Convert subtask to task`,
-				value: "tmai-deletesubtaskconvert",
-			},
-			{
-				name: `${emoji.get("broom")} Clear subtasks from task`,
-				value: "tmai-clearsubtasks",
-			},
-			{
-				name: `${emoji.get("fire")} Clear all subtasks`,
-				value: "tmai-clearsubtasksall",
+				name: `${emoji.get("wastebasket")} Clear all subtasks from a task`,
+				value: "tmai-deleteallsubtasksfromtask",
 			},
 		],
 	},
@@ -392,13 +384,13 @@ export const tmaiBackupRestoreClearClear_prompt = [
 			},
 			{
 				name: chalk.red(
-					`${emoji.get("boom")} Clear all subtasks only (excluding main tasks)`,
+					`${emoji.get("broom")} Clear all subtasks only (excluding main tasks)`,
 				),
 				value: "tmai-clearallsubtasks",
 			},
 			{
 				name: chalk.red(
-					`${emoji.get("boom")} Clear all current tasks (including subtasks) and all related tmai files`,
+					`${emoji.get("broom")} Clear all current tasks (including subtasks) and all related tmai files`,
 				),
 				value: "tmai-clearall",
 			},
