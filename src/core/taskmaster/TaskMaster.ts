@@ -991,6 +991,23 @@ export class TaskMaster {
 		);
 	}
 
+	// TODO: validate
+	/**
+	 * @description Converts an existing subtask to a task
+	 * @param hierarchicalId Hierarchical ID of the subtask to convert to a task
+	 */
+	public async convertSubtaskToTaskAsync(
+		hierarchicalId: string,
+	): Promise<void> {
+		await this.executeCommandAsync(
+			`Converting subtask ${hierarchicalId} to task...`,
+			`Subtask ${hierarchicalId} converted to task successfully!`,
+			`Failed to convert subtask ${hierarchicalId} to task`,
+			this._mainCommand,
+			["remove-subtask", `--id=${hierarchicalId}`, "--convert"],
+		);
+	}
+
 	// ==============================================
 	// Deleting Methods
 	// ==============================================

@@ -277,6 +277,14 @@ export async function tmaiManageAsync() {
 					await tmai.listAsync(tasks, TASKS_STATUSES.join(","), true, true);
 					break;
 				}
+				case "tmai-convertsubtasktotask": {
+					await tmai.listAsync(tasks, TASKS_STATUSES.join(","), true, true);
+					const subtaskId = await askHierarchicalTaskIdAsync(subtasksIDs);
+					await tmai.convertSubtaskToTaskAsync(subtaskId);
+					tasks = await tmai.getTasksContentAsync();
+					await tmai.listAsync(tasks, TASKS_STATUSES.join(","), true, true);
+					break;
+				}
 			}
 			break;
 		}
