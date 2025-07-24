@@ -179,6 +179,58 @@ export class TaskMaster {
 
 	// TODO: done
 	/**
+	 * @description Fixes the IDs of all tasks and subtasks in tasks.json to be sequential
+	 * by reorganizing them incrementally starting from 1.
+	 * This method ensures better organization and readability of the task list.
+	 */
+	public async fixIdsAsync(): Promise<void> {
+		const oraOptions = {
+			text: "Fixing task IDs...",
+			successText: chalk.bgGreen("Task IDs fixed successfully!"),
+			failText: chalk.bgRed("Failed to fix task IDs"),
+		};
+
+		await oraPromise(async () => {
+			// Read the current tasks
+			const tasks = await this.getTasksContentAsync();
+
+			// Sort tasks by their current ID to maintain logical order
+			tasks.master.tasks.sort((a, b) => a.id - b.id);
+
+			// Fix main task IDs
+			const idMap = new Map<number, number>();
+			for (const [index, task] of tasks.master.tasks.entries()) {
+				const oldId = task.id;
+				const newId = index + 1;
+				if (oldId !== newId) {
+					idMap.set(oldId, newId);
+					task.id = newId;
+				}
+			}
+
+			// Fix subtask IDs and update dependencies
+			for (const task of tasks.master.tasks) {
+				if (task.subtasks && task.subtasks.length > 0) {
+					for (const [index, subtask] of task.subtasks.entries()) {
+						subtask.id = index + 1;
+					}
+				}
+			}
+
+			// Write the updated tasks back to the file
+			await writeFile(this._tasksFilePath, JSON.stringify(tasks, null, 2));
+
+			// Update the internal tasks file path if needed
+			this._tasksFilePath = this._tasksFilePath;
+
+			// Ensure dependencies are valid after ID reorganization
+			await this.fixDependenciesAsync();
+			await this.validateDependenciesAsync();
+		}, oraOptions);
+	}
+
+	// TODO: done
+	/**
 	 * @description Fixes the format of the tasks.json file if necessary
 	 * by encapsulating the 'tasks' and 'metadata' keys under a 'master' key
 	 */
@@ -570,21 +622,30 @@ export class TaskMaster {
 			if (showParent) {
 				hasTasks = true;
 				const title = truncate(task.title, MAX_TITLE_TRUNC_LENGTH);
+				const dependencies =
+					task.dependencies.length > 0
+						? `deps: ${chalk.cyan(task.dependencies.join(","))}`
+						: `deps: ${chalk.gray("none")}`;
 				output +=
 					`${chalk.bgGreen.bold(`#${task.id}`)} ${chalk.magenta(title)} ` +
 					`[status: ${formatStatus(task.status)}] - ` +
-					`[priority: ${formatPriority(task.priority)}]\n`;
+					`[priority: ${formatPriority(task.priority)}] - ` +
+					`[${dependencies}]\n`;
 
 				// Only show matching subtasks
 				if (withSubtasks && matchingSubtasks.length > 0) {
 					for (const { subtask } of matchingSubtasks) {
 						const subTitle = truncate(subtask.title, MAX_TITLE_TRUNC_LENGTH);
 						const hierarchicalId = `${task.id}.${subtask.id}`;
+						const subDependencies =
+							subtask.dependencies.length > 0
+								? `deps: ${chalk.cyan(subtask.dependencies.join(","))}`
+								: `deps: ${chalk.gray("none")}`;
 						output +=
 							`  ${chalk.dim("↳")} ${chalk.bold(`#${hierarchicalId}`)} ` +
 							`${chalk.magenta(subTitle)} [status: ${formatStatus(
 								subtask.status,
-							)}]\n`;
+							)}] - [${subDependencies}]\n`;
 					}
 				}
 			}
@@ -920,7 +981,7 @@ export class TaskMaster {
 		subtaskId: number,
 		parentId: number,
 	): Promise<void> {
-		await this.clearAllDependenciesAsync(subtaskId.toString());
+		await this.deleteAllDepsFromTaskAsync(subtaskId.toString());
 		await this.executeCommandAsync(
 			`Converting task ${subtaskId} to subtask of ${parentId}...`,
 			`Task ${subtaskId} converted to subtask successfully!`,
@@ -934,6 +995,7 @@ export class TaskMaster {
 	// Deleting Methods
 	// ==============================================
 
+	// TODO: done
 	/**
 	 * @description Delete a task by ID (including subtasks)
 	 * @param id The ID of the task to remove
@@ -958,6 +1020,7 @@ export class TaskMaster {
 		}
 	}
 
+	// TODO: done
 	/**
 	 * @description Delete a specific subtask
 	 * @param hierarchicalId The hierarchical ID of the subtask
@@ -987,6 +1050,7 @@ export class TaskMaster {
 		}
 	}
 
+	// TODO: done
 	/**
 	 * @description Deletes all subtasks from a specific task
 	 * @param id The ID of the task to clear subtasks from
@@ -1012,6 +1076,39 @@ export class TaskMaster {
 				`Failed to delete subtasks from task ${id}`,
 				this._mainCommand,
 				["clear-subtasks", `--id=${id}`, `--tag=${tag}`],
+			);
+		}
+	}
+
+	// TODO: done
+	/**
+	 * @description Clears all dependencies for the specified task or subtask.
+	 * @param taskId The task ID or hierarchical ID of the subtask
+	 */
+	public async deleteAllDepsFromTaskAsync(taskId: string): Promise<void> {
+		const tasks = await this.getTasksContentAsync();
+		const dependencyIds = await this.getAllDependenciesAsync(tasks, taskId);
+
+		if (dependencyIds.length === 0) {
+			console.log(chalk.yellow(`No dependencies found for task ${taskId}.`));
+			return;
+		}
+
+		// For subtasks, dependency IDs are already in the correct format
+		// For main tasks, dependency IDs are numbers that need to be converted to string
+		const isSubtask = taskId.includes(".");
+
+		for (const dependencyId of dependencyIds) {
+			const dependsOnId = isSubtask
+				? dependencyId.toString() // For subtasks, dependencyId is already the full ID
+				: dependencyId.toString(); // For main tasks, convert number to string
+
+			await this.executeCommandAsync(
+				`Removing dependency ${dependsOnId} from task ${taskId}...`,
+				`Dependency ${dependsOnId} removed successfully from task ${taskId}!`,
+				`Failed to remove dependency ${dependsOnId} from task ${taskId}`,
+				this._mainCommand,
+				["remove-dependency", `--id=${taskId}`, `--depends-on=${dependsOnId}`],
 			);
 		}
 	}
@@ -1067,34 +1164,6 @@ export class TaskMaster {
 			this._mainCommand,
 			["fix-dependencies"],
 		);
-	}
-
-	// TODO: done
-	/**
-	 * @description Clears all dependencies for the specified task or subtask.
-	 * @param taskId The task ID (either a simple number as string or hierarchical like "1.2")
-	 */
-	public async clearAllDependenciesAsync(taskId: string): Promise<void> {
-		const tasks = await this.getTasksContentAsync();
-		const dependencyIds = await this.getAllDependenciesAsync(tasks, taskId);
-
-		if (dependencyIds.length === 0) {
-			console.log(chalk.yellow(`No dependencies found for task ${taskId}.`));
-			return;
-		}
-
-		for (const dependencyId of dependencyIds) {
-			const dependsOnId = taskId.includes(".")
-				? `${taskId.split(".")[0]}.${dependencyId}`
-				: dependencyId;
-			await this.executeCommandAsync(
-				`Removing dependency ${dependsOnId} from task ${taskId}...`,
-				`Dependency ${dependsOnId} removed successfully from task ${taskId}!`,
-				`Failed to remove dependency ${dependsOnId} from task ${taskId}`,
-				this._mainCommand,
-				["remove-dependency", `--id=${taskId}`, `--depends-on=${dependsOnId}`],
-			);
-		}
 	}
 
 	// ==============================================
@@ -1231,5 +1300,41 @@ export class TaskMaster {
 
 		if (allFilesCleared)
 			console.log(chalk.green("All task-related files are cleared!"));
+	}
+
+	// TODO: done
+	/**
+	 * @description Clears all dependencies from all tasks and subtasks
+	 */
+	public async clearAllDepsAsync(): Promise<void> {
+		const { confirm } = await inquirer.prompt({
+			type: "confirm",
+			name: "confirm",
+			message: chalk.red("Clear all dependencies from all tasks and subtasks?"),
+			default: false,
+		});
+
+		if (confirm) {
+			const oraOptions = {
+				text: "Clearing all dependencies...",
+				successText: chalk.bgGreen("All dependencies cleared successfully!"),
+				failText: chalk.bgRed("Failed to clear all dependencies"),
+			};
+
+			await oraPromise(async () => {
+				const tasks = await this.getTasksContentAsync();
+
+				for (const task of tasks.master.tasks) {
+					task.dependencies = [];
+					if (task.subtasks && task.subtasks.length > 0) {
+						for (const subtask of task.subtasks) {
+							subtask.dependencies = [];
+						}
+					}
+				}
+
+				await writeFile(this._tasksFilePath, JSON.stringify(tasks, null, 2));
+			}, oraOptions);
+		}
 	}
 }

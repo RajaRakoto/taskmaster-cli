@@ -312,6 +312,14 @@ export async function tmaiManageAsync() {
 					await tmai.listAsync(tasks, TASKS_STATUSES.join(","), true, true);
 					break;
 				}
+				case "tmai-deletealldepsfromtask": {
+					await tmai.listAsync(tasks, TASKS_STATUSES.join(","), true, true);
+					const taskId = await askHybridTaskIdAsync(mainIDs, subtasksIDs);
+					await tmai.deleteAllDepsFromTaskAsync(taskId);
+					tasks = await tmai.getTasksContentAsync();
+					await tmai.listAsync(tasks, TASKS_STATUSES.join(","), true, true);
+					break;
+				}
 			}
 			break;
 		}
@@ -346,12 +354,6 @@ export async function tmaiDependenciesAsync() {
 		}
 		case "tmai-fixdeps": {
 			await tmai.fixDependenciesAsync();
-			break;
-		}
-		case "tmai-clearalldeps": {
-			await tmai.listAsync(tasks, TASKS_STATUSES.join(","), false, true);
-			const taskId = await askHybridTaskIdAsync(mainIDs, subtasksIDs);
-			await tmai.clearAllDependenciesAsync(taskId);
 			break;
 		}
 		default:
@@ -389,6 +391,10 @@ export async function tmaiBackupRestoreClearAsync() {
 			} else {
 				console.log("Restore operation cancelled!");
 			}
+			break;
+		}
+		case "tmai-clearalldeps": {
+			await tmai.clearAllDepsAsync();
 			break;
 		}
 		case "tmai-clearallsubtasks": {

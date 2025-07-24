@@ -287,8 +287,12 @@ export const tmaiDeleteTasksMenu_prompt = [
 				value: "tmai-deletesubtask",
 			},
 			{
-				name: `${emoji.get("wastebasket")} Clear all subtasks from a task`,
+				name: `${emoji.get("wastebasket")} Delete all subtasks from a task`,
 				value: "tmai-deleteallsubtasksfromtask",
+			},
+			{
+				name: `${emoji.get("wastebasket")} Delete all dependencies from a task`,
+				value: "tmai-deletealldepsfromtask",
 			},
 		],
 	},
@@ -319,10 +323,6 @@ export const tmaiDepsMenu_prompt = [
 			{
 				name: `${emoji.get("wrench")} Fix dependencies`,
 				value: "tmai-fixdeps",
-			},
-			{
-				name: `${emoji.get("broken_heart")} Clear all dependencies from a task`,
-				value: "tmai-clearalldeps",
 			},
 		],
 	},
@@ -381,6 +381,12 @@ export const tmaiBackupRestoreClearClear_prompt = [
 					`${emoji.get("arrows_counterclockwise")} Restore tasks`,
 				),
 				value: "tmai-restore",
+			},
+			{
+				name: chalk.red(
+					`${emoji.get("broom")} Clear all dependencies only (for all tasks)`,
+				),
+				value: "tmai-clearalldeps",
 			},
 			{
 				name: chalk.red(
