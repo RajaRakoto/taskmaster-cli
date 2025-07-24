@@ -22,7 +22,7 @@ import type { I_Tasks, Task, Subtask, Priority, Status } from "@/@types/tasks";
 describe("TaskMaster Class", () => {
 	const tmai = new TaskMaster({
 		mainCommand: MAIN_COMMAND,
-		tasksFilePath: "tasks.json",
+		tasksFilePath: ".taskmaster/tasks/tasks.json",
 		isTestMode: true,
 	});
 
@@ -309,6 +309,12 @@ describe("TaskMaster Class", () => {
 					expect(titlePart.endsWith("…")).toBe(true);
 				}
 			}
+		});
+	});
+
+	describe("fixIdsAsync", () => {
+		test("fixes sequential IDs", async () => {
+			await tmai.fixIdsAsync();
 		});
 	});
 });
