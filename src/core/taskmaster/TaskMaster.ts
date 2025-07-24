@@ -577,9 +577,9 @@ export class TaskMaster {
 
 				// Only show matching subtasks
 				if (withSubtasks && matchingSubtasks.length > 0) {
-					for (const { index, subtask } of matchingSubtasks) {
+					for (const { subtask } of matchingSubtasks) {
 						const subTitle = truncate(subtask.title, MAX_TITLE_TRUNC_LENGTH);
-						const hierarchicalId = `${task.id}.${index + 1}`;
+						const hierarchicalId = `${task.id}.${subtask.id}`;
 						output +=
 							`  ${chalk.dim("↳")} ${chalk.bold(`#${hierarchicalId}`)} ` +
 							`${chalk.magenta(subTitle)} [status: ${formatStatus(
@@ -601,7 +601,7 @@ export class TaskMaster {
 	/**
 	 * @description Extracts all main task IDs and subtask IDs from the tasks data
 	 * @param tasks Tasks data to process
-	 * @returns Object containing two arrays: mainIDs (numbers) and subtasksIDs (strings in the format "parentId.subtaskIndex")
+	 * @returns Object containing two arrays: mainIDs (numbers) and subtasksIDs (strings in the format "parentId.subtaskId")
 	 */
 	public async getAllTaskIdsAsync(tasks: I_Tasks): Promise<{
 		mainIDs: number[];
@@ -613,8 +613,8 @@ export class TaskMaster {
 		for (const task of tasks.master.tasks) {
 			mainIDs.push(task.id);
 			if (task.subtasks && task.subtasks.length > 0) {
-				for (let i = 0; i < task.subtasks.length; i++) {
-					subtasksIDs.push(`${task.id}.${i + 1}`);
+				for (const subtask of task.subtasks) {
+					subtasksIDs.push(`${task.id}.${subtask.id}`);
 				}
 			}
 		}
