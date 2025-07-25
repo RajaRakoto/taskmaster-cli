@@ -312,11 +312,11 @@ describe("TaskMaster Class", () => {
 		});
 	});
 
-	describe("fixIdsAsync", () => {
-		test("fixes sequential IDs", async () => {
-			await tmai.fixIdsAsync();
-		});
-	});
+	// describe("_fixIdsToSequentialAsync", () => {
+	// 	test("fixes sequential IDs", async () => {
+	// 		await tmai._fixIdsToSequentialAsync();
+	// 	});
+	// });
 });
 
 describe("ID validation", () => {

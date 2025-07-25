@@ -102,7 +102,7 @@ export class TaskMaster {
 	 * @param tasks The tasks data structure
 	 * @param taskId The task ID (either a simple number as string or hierarchical like "1.2")
 	 */
-	private async getAllDependenciesAsync(
+	private async _getAllDependenciesAsync(
 		tasks: I_Tasks,
 		taskId: string,
 	): Promise<number[]> {
@@ -153,7 +153,7 @@ export class TaskMaster {
 	 * @note Escapes command arguments to prevent shell injection
 	 * Handles both quotes and dollar signs which could be dangerous in shell commands
 	 */
-	private async executeCommandAsync(
+	private async _executeCommandAsync(
 		text: string,
 		successText: string,
 		failText: string,
@@ -183,7 +183,7 @@ export class TaskMaster {
 	 * by reorganizing them incrementally starting from 1.
 	 * This method ensures better organization and readability of the task list.
 	 */
-	public async fixIdsAsync(): Promise<void> {
+	public async _fixIdsToSequentialAsync(): Promise<void> {
 		const oraOptions = {
 			text: "Fixing task IDs...",
 			successText: chalk.bgGreen("Task IDs fixed successfully!"),
@@ -222,10 +222,6 @@ export class TaskMaster {
 
 			// Update the internal tasks file path if needed
 			this._tasksFilePath = this._tasksFilePath;
-
-			// Ensure dependencies are valid after ID reorganization
-			await this.fixDependenciesAsync();
-			await this.validateDependenciesAsync();
 		}, oraOptions);
 	}
 
@@ -234,7 +230,7 @@ export class TaskMaster {
 	 * @description Fixes the format of the tasks.json file if necessary
 	 * by encapsulating the 'tasks' and 'metadata' keys under a 'master' key
 	 */
-	public async fixTasksFileFormatAsync(): Promise<void> {
+	public async _fixTasksFileFormatAsync(): Promise<void> {
 		const oraOptions = {
 			text: "Verifying tasks.json file format...",
 			successText: chalk.bgGreen("tasks.json format validated successfully!"),
@@ -405,7 +401,7 @@ export class TaskMaster {
 	 * @description Configures AI models for task-master by running the interactive setup
 	 */
 	public async interactiveConfigModelAsync(): Promise<void> {
-		await this.executeCommandAsync(
+		await this._executeCommandAsync(
 			"Configuring AI models...",
 			"AI models configured successfully!",
 			"AI model configuration failed",
@@ -460,7 +456,7 @@ export class TaskMaster {
 	 * @param lang Language to set for TMAI responses
 	 */
 	public async setLangAsync(lang: string): Promise<void> {
-		await this.executeCommandAsync(
+		await this._executeCommandAsync(
 			`Setting TMAI response language to ${chalk.bold(lang)}...`,
 			`Language set to ${lang} successfully!`,
 			`Failed to set language to ${lang}`,
@@ -489,7 +485,7 @@ export class TaskMaster {
 		appendToExistingTasks: boolean,
 		tag: string,
 	): Promise<void> {
-		await this.executeCommandAsync(
+		await this._executeCommandAsync(
 			`Parsing PRD file: ${chalk.bold(inputFilePath)}...`,
 			"PRD parsed successfully!",
 			"Failed to parse PRD file",
@@ -519,7 +515,7 @@ export class TaskMaster {
 				),
 			);
 		} else {
-			await this.executeCommandAsync(
+			await this._executeCommandAsync(
 				"Generating task files...",
 				"Task files generated successfully!",
 				"Task file generation failed",
@@ -535,7 +531,7 @@ export class TaskMaster {
 	 * @param tag Context tag
 	 */
 	public async decomposeAsync(tag: string): Promise<void> {
-		await this.executeCommandAsync(
+		await this._executeCommandAsync(
 			"Decomposing tasks ...",
 			"Tasks decomposed successfully!",
 			"Failed to decompose tasks",
@@ -703,7 +699,7 @@ export class TaskMaster {
 		if (quickly) {
 			console.log(await this.listQuickAsync(tasks, status, withSubtasks));
 		} else {
-			await this.executeCommandAsync(
+			await this._executeCommandAsync(
 				"Listing tasks...",
 				"Tasks listed successfully!",
 				"Failed to list tasks",
@@ -719,7 +715,7 @@ export class TaskMaster {
 	 * @param id Task ID (integer or hierarchical ID like 1.1, 2.3, etc.)
 	 */
 	public async showAsync(id: string): Promise<void> {
-		await this.executeCommandAsync(
+		await this._executeCommandAsync(
 			`Fetching details for task ${chalk.bold(id)}...`,
 			"Task details retrieved successfully!",
 			"Failed to retrieve task details",
@@ -733,7 +729,7 @@ export class TaskMaster {
 	 * @description Shows the next available task to work on
 	 */
 	public async nextAsync(): Promise<void> {
-		await this.executeCommandAsync(
+		await this._executeCommandAsync(
 			"Finding next available task...",
 			"Next task retrieved successfully!",
 			"Failed to determine next task",
@@ -758,7 +754,7 @@ export class TaskMaster {
 		allowAdvancedResearch: boolean,
 		tag: string,
 	): Promise<void> {
-		await this.executeCommandAsync(
+		await this._executeCommandAsync(
 			`Adding AI-generated task: "${chalk.bold(prompt)}"...`,
 			"Task added successfully!",
 			"Failed to add AI-generated task",
@@ -784,7 +780,7 @@ export class TaskMaster {
 		numTasksToGenerate: number,
 		allowAdvancedResearch: boolean,
 	): Promise<void> {
-		await this.executeCommandAsync(
+		await this._executeCommandAsync(
 			`Adding AI-generated subtasks to task ${chalk.bold(parentId)}...`,
 			"Subtasks added successfully!",
 			"Failed to add AI-generated subtasks",
@@ -810,7 +806,7 @@ export class TaskMaster {
 		title: string,
 		description: string,
 	): Promise<void> {
-		await this.executeCommandAsync(
+		await this._executeCommandAsync(
 			`Adding manual subtask to task ${chalk.bold(parentId)}...`,
 			"Subtask added successfully!",
 			"Failed to add manual subtask",
@@ -849,7 +845,7 @@ export class TaskMaster {
 			await this.updateTaskStatusAsync([id.toString()], "pending", tag);
 		}
 
-		await this.executeCommandAsync(
+		await this._executeCommandAsync(
 			`Modifying task ${id} with AI...`,
 			`Task ${id} modified successfully!`,
 			`Failed to modify task ${id}`,
@@ -885,7 +881,7 @@ export class TaskMaster {
 			await this.updateTaskStatusAsync([startingId.toString()], "pending", tag);
 		}
 
-		await this.executeCommandAsync(
+		await this._executeCommandAsync(
 			`Updating tasks from ${startingId} with AI...`,
 			"Tasks updated successfully!",
 			"Failed to update tasks",
@@ -929,7 +925,7 @@ export class TaskMaster {
 			await this.updateTaskStatusAsync([hierarchicalId], "pending", tag);
 		}
 
-		await this.executeCommandAsync(
+		await this._executeCommandAsync(
 			`Modifying subtask ${hierarchicalId} with AI...`,
 			`Subtask ${hierarchicalId} modified successfully!`,
 			`Failed to modify subtask ${hierarchicalId}`,
@@ -957,7 +953,7 @@ export class TaskMaster {
 		tag: string,
 	): Promise<void> {
 		const formatedIds = ids.length > 1 ? ids.join(",") : ids[0];
-		await this.executeCommandAsync(
+		await this._executeCommandAsync(
 			`Updating status of task(s) ${formatedIds} to ${status}...`,
 			`Status of task(s) ${formatedIds} updated successfully!`,
 			`Failed to update status of task(s) ${formatedIds}`,
@@ -982,7 +978,7 @@ export class TaskMaster {
 		parentId: number,
 	): Promise<void> {
 		await this.deleteAllDepsFromTaskAsync(subtaskId.toString());
-		await this.executeCommandAsync(
+		await this._executeCommandAsync(
 			`Converting task ${subtaskId} to subtask of ${parentId}...`,
 			`Task ${subtaskId} converted to subtask successfully!`,
 			`Failed to convert task ${subtaskId} to subtask`,
@@ -999,7 +995,7 @@ export class TaskMaster {
 	public async convertSubtaskToTaskAsync(
 		hierarchicalId: string,
 	): Promise<void> {
-		await this.executeCommandAsync(
+		await this._executeCommandAsync(
 			`Converting subtask ${hierarchicalId} to task...`,
 			`Subtask ${hierarchicalId} converted to task successfully!`,
 			`Failed to convert subtask ${hierarchicalId} to task`,
@@ -1027,7 +1023,7 @@ export class TaskMaster {
 		});
 
 		if (confirm) {
-			await this.executeCommandAsync(
+			await this._executeCommandAsync(
 				`Deleting task ${id}...`,
 				`Task ${id} deleted successfully!`,
 				`Failed to delete task ${id}`,
@@ -1057,7 +1053,7 @@ export class TaskMaster {
 		});
 
 		if (confirm) {
-			await this.executeCommandAsync(
+			await this._executeCommandAsync(
 				`Deleting subtask ${hierarchicalId}...`,
 				`Subtask ${hierarchicalId} deleted successfully!`,
 				`Failed to delete subtask ${hierarchicalId}`,
@@ -1087,7 +1083,7 @@ export class TaskMaster {
 		});
 
 		if (confirm) {
-			await this.executeCommandAsync(
+			await this._executeCommandAsync(
 				`Deleting all subtasks from task ${id}...`,
 				`All subtasks deleted from task ${id} successfully!`,
 				`Failed to delete subtasks from task ${id}`,
@@ -1104,7 +1100,7 @@ export class TaskMaster {
 	 */
 	public async deleteAllDepsFromTaskAsync(taskId: string): Promise<void> {
 		const tasks = await this.getTasksContentAsync();
-		const dependencyIds = await this.getAllDependenciesAsync(tasks, taskId);
+		const dependencyIds = await this._getAllDependenciesAsync(tasks, taskId);
 
 		if (dependencyIds.length === 0) {
 			console.log(chalk.yellow(`No dependencies found for task ${taskId}.`));
@@ -1120,7 +1116,7 @@ export class TaskMaster {
 				? dependencyId.toString() // For subtasks, dependencyId is already the full ID
 				: dependencyId.toString(); // For main tasks, convert number to string
 
-			await this.executeCommandAsync(
+			await this._executeCommandAsync(
 				`Removing dependency ${dependsOnId} from task ${taskId}...`,
 				`Dependency ${dependsOnId} removed successfully from task ${taskId}!`,
 				`Failed to remove dependency ${dependsOnId} from task ${taskId}`,
@@ -1146,7 +1142,7 @@ export class TaskMaster {
 	): Promise<void> {
 		const formatedDepsIds =
 			dependencyIds.length > 1 ? dependencyIds.join(",") : dependencyIds[0];
-		await this.executeCommandAsync(
+		await this._executeCommandAsync(
 			`Adding dependency ${formatedDepsIds} to task ${taskId}...`,
 			`Dependency ${formatedDepsIds} added successfully to task ${taskId}!`,
 			`Failed to add dependency ${formatedDepsIds} to task ${taskId}`,
@@ -1160,7 +1156,7 @@ export class TaskMaster {
 	 * @description Validates task dependencies
 	 */
 	public async validateDependenciesAsync(): Promise<void> {
-		await this.executeCommandAsync(
+		await this._executeCommandAsync(
 			"Validating dependencies...",
 			"Dependencies validated successfully!",
 			"Failed to validate dependencies",
@@ -1174,7 +1170,7 @@ export class TaskMaster {
 	 * @description Automatically fixes dependency issues
 	 */
 	public async fixDependenciesAsync(): Promise<void> {
-		await this.executeCommandAsync(
+		await this._executeCommandAsync(
 			"Fixing dependencies...",
 			"Dependencies fixed successfully!",
 			"Failed to fix dependencies",
@@ -1273,7 +1269,7 @@ export class TaskMaster {
 		});
 
 		if (confirm) {
-			await this.executeCommandAsync(
+			await this._executeCommandAsync(
 				"Clearing all subtasks...",
 				"All subtasks cleared successfully!",
 				"Failed to clear all subtasks",
