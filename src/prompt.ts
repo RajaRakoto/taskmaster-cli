@@ -3,7 +3,6 @@ import inquirer from "inquirer";
 import chalk from "chalk";
 import * as emoji from "node-emoji";
 
-// TODO: done
 // ==============================
 // Main menu
 // ==============================
@@ -50,7 +49,6 @@ export const mainMenu_prompt = [
 	},
 ];
 
-// TODO: done
 // ==============================
 // Initialization and Configuration menu
 // ==============================
@@ -96,7 +94,6 @@ export const tmaiInitMenu_prompt = [
 	},
 ];
 
-// TODO: done
 // ==============================
 // Generation and Decomposition menu
 // ==============================
@@ -128,7 +125,6 @@ export const tmaiGenDecMenu_prompt = [
 	},
 ];
 
-// TODO: done
 // ==============================
 // Task management menu
 // ==============================
@@ -162,7 +158,6 @@ export const tmaiManageMenu_prompt = [
 	},
 ];
 
-// TODO: done
 // ==============================
 // Task list and navigation menu
 // ==============================
@@ -192,7 +187,6 @@ export const tmaiListNavMenu_prompt = [
 	},
 ];
 
-// TODO: done
 // ==============================
 // Adding tasks menu
 // ==============================
@@ -226,7 +220,6 @@ export const tmaiAddTasksMenu_prompt = [
 	},
 ];
 
-// TODO: in-progress
 // ==============================
 // Modifying tasks menu
 // ==============================
@@ -268,7 +261,6 @@ export const tmaiUpdateTasksMenu_prompt = [
 	},
 ];
 
-// TODO: in-progress
 // ==============================
 // Deleting tasks menu
 // ==============================
@@ -302,7 +294,6 @@ export const tmaiDeleteTasksMenu_prompt = [
 	},
 ];
 
-// TODO: in-progress
 // ==============================
 // Dependencies menu
 // ==============================
@@ -362,7 +353,6 @@ export const tmaiAnalysisReportDocs_prompt = [
 	},
 ];
 
-// TODO: done
 // ==============================
 // Backup, Restore and Clear menu
 // ==============================
