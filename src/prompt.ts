@@ -3,10 +3,6 @@ import inquirer from "inquirer";
 import chalk from "chalk";
 import * as emoji from "node-emoji";
 
-/* constants */
-import { DEV_MODE } from "./constants";
-
-// TODO: done
 // ==============================
 // Main menu
 // ==============================
@@ -45,14 +41,6 @@ export const mainMenu_prompt = [
 				name: `${emoji.get("floppy_disk")} Backup, Restore and Clear`,
 				value: "tmai-bckrestore",
 			},
-			...(DEV_MODE
-				? [
-						{
-							name: `${emoji.get("gear")}  Dev mode`,
-							value: "tmai-dev",
-						},
-					]
-				: []),
 			{
 				name: `${emoji.get("door")} Exit`,
 				value: "exit",
@@ -61,7 +49,6 @@ export const mainMenu_prompt = [
 	},
 ];
 
-// TODO: done
 // ==============================
 // Initialization and Configuration menu
 // ==============================
@@ -88,18 +75,25 @@ export const tmaiInitMenu_prompt = [
 				value: "tmai-init",
 			},
 			{
-				name: `${emoji.get("wrench")} 3 - Configure AI models`,
+				name: `${emoji.get(
+					"wrench",
+				)} 3 - Configure AI models (interactive mode)`,
+				value: "tmai-interactiveconfig",
+			},
+			{
+				name: `${emoji.get("fast_forward")} 4 - Configure AI models (quickly)`,
 				value: "tmai-config",
 			},
 			{
-				name: `${emoji.get("globe_with_meridians")} 4 - Set the response language for AI-generated content in TMAI`,
+				name: `${emoji.get(
+					"globe_with_meridians",
+				)} 5 - Set the response language for AI-generated content in TMAI`,
 				value: "tmai-lang",
 			},
 		],
 	},
 ];
 
-// TODO: done
 // ==============================
 // Generation and Decomposition menu
 // ==============================
@@ -131,7 +125,6 @@ export const tmaiGenDecMenu_prompt = [
 	},
 ];
 
-// TODO: done
 // ==============================
 // Task management menu
 // ==============================
@@ -161,15 +154,10 @@ export const tmaiManageMenu_prompt = [
 				name: `${emoji.get("wastebasket")}  Delete tasks`,
 				value: "tmai-deletetasks",
 			},
-			{
-				name: `${emoji.get("hourglass")} Status tracking`,
-				value: "tmai-statustracking",
-			},
 		],
 	},
 ];
 
-// TODO: done
 // ==============================
 // Task list and navigation menu
 // ==============================
@@ -199,7 +187,6 @@ export const tmaiListNavMenu_prompt = [
 	},
 ];
 
-// TODO: done
 // ==============================
 // Adding tasks menu
 // ==============================
@@ -233,7 +220,6 @@ export const tmaiAddTasksMenu_prompt = [
 	},
 ];
 
-// TODO: in-progress
 // ==============================
 // Modifying tasks menu
 // ==============================
@@ -260,14 +246,21 @@ export const tmaiUpdateTasksMenu_prompt = [
 				value: "tmai-updatesubtaskai",
 			},
 			{
+				name: `${emoji.get("pencil2")}  Update task or subtask status`,
+				value: "tmai-updatestatus",
+			},
+			{
 				name: `${emoji.get("pencil2")}  Convert task to subtask`,
 				value: "tmai-converttasktosubtask",
+			},
+			{
+				name: `${emoji.get("pencil2")}  Convert subtask to task`,
+				value: "tmai-convertsubtasktotask",
 			},
 		],
 	},
 ];
 
-// TODO: pending
 // ==============================
 // Deleting tasks menu
 // ==============================
@@ -278,80 +271,29 @@ export const tmaiDeleteTasksMenu_prompt = [
 		name: "tmaiDeleteTasksMenu",
 		message: chalk.bgBlue("Choose an operation"),
 		loop: true,
-		pageSize: 15,
+		pageSize: 7,
 		choices: [
 			new inquirer.Separator("=== Deleting tasks ==="),
 			{
-				name: `${emoji.get("wastebasket")} Delete task`,
-				value: "tmai-manage-remove-task",
+				name: `${emoji.get("wastebasket")} Delete a task (including subtasks)`,
+				value: "tmai-deletetask",
 			},
 			{
-				name: `${emoji.get("boom")} Delete task permanently`,
-				value: "tmai-manage-remove-task-permanent",
+				name: `${emoji.get("wastebasket")} Delete a subtask`,
+				value: "tmai-deletesubtask",
 			},
 			{
-				name: `${emoji.get("scissors")} Delete subtask`,
-				value: "tmai-manage-remove-subtask",
+				name: `${emoji.get("wastebasket")} Delete all subtasks from a task`,
+				value: "tmai-deleteallsubtasksfromtask",
 			},
 			{
-				name: `${emoji.get("recycle")} Convert subtask to task`,
-				value: "tmai-manage-remove-subtask-convert",
-			},
-			{
-				name: `${emoji.get("broom")} Clear subtasks from task`,
-				value: "tmai-manage-clear-subtasks",
-			},
-			{
-				name: `${emoji.get("fire")} Clear all subtasks`,
-				value: "tmai-manage-clear-subtasks-all",
+				name: `${emoji.get("wastebasket")} Delete all dependencies from a task`,
+				value: "tmai-deletealldepsfromtask",
 			},
 		],
 	},
 ];
 
-// TODO: pending
-// ==============================
-// Status tracking menu
-// ==============================
-
-export const tmaiStatusTrackingMenu_prompt = [
-	{
-		type: "list",
-		name: "tmaiStatusTrackingMenu",
-		message: chalk.bgBlue("Choose an operation"),
-		loop: true,
-		pageSize: 7,
-		choices: [
-			new inquirer.Separator("=== Status Tracking ==="),
-			{
-				name: `${emoji.get("hourglass")} Mark as pending`,
-				value: "tmai-manage-set-status-pending",
-			},
-			{
-				name: `${emoji.get("hammer_and_wrench")} Mark as in progress`,
-				value: "tmai-manage-set-status-in-progress",
-			},
-			{
-				name: `${emoji.get("white_check_mark")} Mark as done`,
-				value: "tmai-manage-set-status-done",
-			},
-			{
-				name: `${emoji.get("eye")} Mark for review`,
-				value: "tmai-manage-set-status-review",
-			},
-			{
-				name: `${emoji.get("x")} Mark as cancelled`,
-				value: "tmai-manage-set-status-cancelled",
-			},
-			{
-				name: `${emoji.get("calendar")} Mark as deferred`,
-				value: "tmai-manage-set-status-deferred",
-			},
-		],
-	},
-];
-
-// TODO: in-progress
 // ==============================
 // Dependencies menu
 // ==============================
@@ -376,10 +318,6 @@ export const tmaiDepsMenu_prompt = [
 			{
 				name: `${emoji.get("wrench")} Fix dependencies`,
 				value: "tmai-fixdeps",
-			},
-			{
-				name: `${emoji.get("broken_heart")} Clear all dependencies from a task`,
-				value: "tmai-clearalldeps",
 			},
 		],
 	},
@@ -415,7 +353,6 @@ export const tmaiAnalysisReportDocs_prompt = [
 	},
 ];
 
-// TODO: done
 // ==============================
 // Backup, Restore and Clear menu
 // ==============================
@@ -440,8 +377,22 @@ export const tmaiBackupRestoreClearClear_prompt = [
 				value: "tmai-restore",
 			},
 			{
-				name: chalk.red(`${emoji.get("boom")} Clear all current tasks`),
-				value: "tmai-clear",
+				name: chalk.red(
+					`${emoji.get("broom")} Clear all dependencies only (for all tasks)`,
+				),
+				value: "tmai-clearalldeps",
+			},
+			{
+				name: chalk.red(
+					`${emoji.get("broom")} Clear all subtasks only (excluding main tasks)`,
+				),
+				value: "tmai-clearallsubtasks",
+			},
+			{
+				name: chalk.red(
+					`${emoji.get("broom")} Clear all current tasks (including subtasks) and all related tmai files`,
+				),
+				value: "tmai-clearall",
 			},
 		],
 	},

@@ -27,9 +27,6 @@ import {
 	readJsonFileAsync,
 } from "@/utils/extras";
 
-/* asks */
-import { askLangAsync } from "@/core/taskmaster/asks";
-
 /* types */
 import type { T_PackageManager } from "@/@types/index";
 import type { I_Tasks, Status, Priority } from "@/@types/tasks";
@@ -105,7 +102,7 @@ export class TaskMaster {
 	 * @param tasks The tasks data structure
 	 * @param taskId The task ID (either a simple number as string or hierarchical like "1.2")
 	 */
-	private async getAllDependenciesAsync(
+	private async _getAllDependenciesAsync(
 		tasks: I_Tasks,
 		taskId: string,
 	): Promise<number[]> {
@@ -156,7 +153,7 @@ export class TaskMaster {
 	 * @note Escapes command arguments to prevent shell injection
 	 * Handles both quotes and dollar signs which could be dangerous in shell commands
 	 */
-	private async executeCommandAsync(
+	private async _executeCommandAsync(
 		text: string,
 		successText: string,
 		failText: string,
@@ -182,10 +179,58 @@ export class TaskMaster {
 
 	// TODO: done
 	/**
+	 * @description Fixes the IDs of all tasks and subtasks in tasks.json to be sequential
+	 * by reorganizing them incrementally starting from 1.
+	 * This method ensures better organization and readability of the task list.
+	 */
+	public async _fixIdsToSequentialAsync(): Promise<void> {
+		const oraOptions = {
+			text: "Fixing task IDs...",
+			successText: chalk.bgGreen("Task IDs fixed successfully!"),
+			failText: chalk.bgRed("Failed to fix task IDs"),
+		};
+
+		await oraPromise(async () => {
+			// Read the current tasks
+			const tasks = await this.getTasksContentAsync();
+
+			// Sort tasks by their current ID to maintain logical order
+			tasks.master.tasks.sort((a, b) => a.id - b.id);
+
+			// Fix main task IDs
+			const idMap = new Map<number, number>();
+			for (const [index, task] of tasks.master.tasks.entries()) {
+				const oldId = task.id;
+				const newId = index + 1;
+				if (oldId !== newId) {
+					idMap.set(oldId, newId);
+					task.id = newId;
+				}
+			}
+
+			// Fix subtask IDs and update dependencies
+			for (const task of tasks.master.tasks) {
+				if (task.subtasks && task.subtasks.length > 0) {
+					for (const [index, subtask] of task.subtasks.entries()) {
+						subtask.id = index + 1;
+					}
+				}
+			}
+
+			// Write the updated tasks back to the file
+			await writeFile(this._tasksFilePath, JSON.stringify(tasks, null, 2));
+
+			// Update the internal tasks file path if needed
+			this._tasksFilePath = this._tasksFilePath;
+		}, oraOptions);
+	}
+
+	// TODO: done
+	/**
 	 * @description Fixes the format of the tasks.json file if necessary
 	 * by encapsulating the 'tasks' and 'metadata' keys under a 'master' key
 	 */
-	public async fixTasksFileFormatAsync(): Promise<void> {
+	public async _fixTasksFileFormatAsync(): Promise<void> {
 		const oraOptions = {
 			text: "Verifying tasks.json file format...",
 			successText: chalk.bgGreen("tasks.json format validated successfully!"),
@@ -328,21 +373,6 @@ export class TaskMaster {
 
 	// TODO: done
 	/**
-	 * @description Sets the response language for TMAI
-	 * @param lang Language to set for TMAI responses
-	 */
-	public async setLangAsync(lang: string): Promise<void> {
-		await this.executeCommandAsync(
-			`Setting TMAI response language to ${chalk.bold(lang)}...`,
-			`Language set to ${lang} successfully!`,
-			`Failed to set language to ${lang}`,
-			this._mainCommand,
-			["lang", `--response=${lang}`],
-		);
-	}
-
-	// TODO: done
-	/**
 	 * @description Initializes the task-master AI by creating a PRD file
 	 * @note This function doesn't use oraPromise as it is not a long-running task
 	 * @throws Will throw an error if file operations fail
@@ -370,13 +400,68 @@ export class TaskMaster {
 	/**
 	 * @description Configures AI models for task-master by running the interactive setup
 	 */
-	public async configAsync(): Promise<void> {
-		await this.executeCommandAsync(
+	public async interactiveConfigModelAsync(): Promise<void> {
+		await this._executeCommandAsync(
 			"Configuring AI models...",
 			"AI models configured successfully!",
 			"AI model configuration failed",
 			this._mainCommand,
 			["models", "--setup"],
+		);
+	}
+
+	// TODO: done
+	/**
+	 * @description Configures AI models with specified models
+	 * @param mainModel The main AI model to use
+	 * @param researchModel The research AI model to use
+	 * @param fallbackModel The fallback AI model to use
+	 */
+	public async configModelsAsync(
+		mainModel: string,
+		researchModel: string,
+		fallbackModel: string,
+	): Promise<void> {
+		const oraOptions = {
+			text: "Configuring AI models...",
+			successText: chalk.bgGreen("AI models configured successfully!"),
+			failText: chalk.bgRed("AI model configuration failed"),
+		};
+
+		await oraPromise(async () => {
+			await runCommandAsync(
+				this._mainCommand,
+				["models", "--set-main", mainModel],
+				false,
+				false,
+			);
+			await runCommandAsync(
+				this._mainCommand,
+				["models", "--set-research", researchModel],
+				false,
+				false,
+			);
+			await runCommandAsync(
+				this._mainCommand,
+				["models", "--set-fallback", fallbackModel],
+				false,
+				false,
+			);
+		}, oraOptions);
+	}
+
+	// TODO: done
+	/**
+	 * @description Sets the response language for TMAI
+	 * @param lang Language to set for TMAI responses
+	 */
+	public async setLangAsync(lang: string): Promise<void> {
+		await this._executeCommandAsync(
+			`Setting TMAI response language to ${chalk.bold(lang)}...`,
+			`Language set to ${lang} successfully!`,
+			`Failed to set language to ${lang}`,
+			this._mainCommand,
+			["lang", `--response=${lang}`],
 		);
 	}
 
@@ -391,7 +476,7 @@ export class TaskMaster {
 	 * @param numTasksToGenerate Number of tasks to generate (default: 10)
 	 * @param allowAdvancedResearch Allow advanced research for task generation
 	 * @param appendToExistingTasks Whether to append to existing tasks
-	 * @param tag tag for the generated tasks
+	 * @param tag Context tag
 	 */
 	public async parseAsync(
 		inputFilePath: string,
@@ -400,7 +485,7 @@ export class TaskMaster {
 		appendToExistingTasks: boolean,
 		tag: string,
 	): Promise<void> {
-		await this.executeCommandAsync(
+		await this._executeCommandAsync(
 			`Parsing PRD file: ${chalk.bold(inputFilePath)}...`,
 			"PRD parsed successfully!",
 			"Failed to parse PRD file",
@@ -430,7 +515,7 @@ export class TaskMaster {
 				),
 			);
 		} else {
-			await this.executeCommandAsync(
+			await this._executeCommandAsync(
 				"Generating task files...",
 				"Task files generated successfully!",
 				"Task file generation failed",
@@ -443,10 +528,10 @@ export class TaskMaster {
 	// TODO: done
 	/**
 	 * @description Decomposes all tasks using AI
-	 * @param tag tag for the tasks to decompose
+	 * @param tag Context tag
 	 */
 	public async decomposeAsync(tag: string): Promise<void> {
-		await this.executeCommandAsync(
+		await this._executeCommandAsync(
 			"Decomposing tasks ...",
 			"Tasks decomposed successfully!",
 			"Failed to decompose tasks",
@@ -533,21 +618,30 @@ export class TaskMaster {
 			if (showParent) {
 				hasTasks = true;
 				const title = truncate(task.title, MAX_TITLE_TRUNC_LENGTH);
+				const dependencies =
+					task.dependencies.length > 0
+						? `deps: ${chalk.cyan(task.dependencies.join(","))}`
+						: `deps: ${chalk.gray("none")}`;
 				output +=
 					`${chalk.bgGreen.bold(`#${task.id}`)} ${chalk.magenta(title)} ` +
 					`[status: ${formatStatus(task.status)}] - ` +
-					`[priority: ${formatPriority(task.priority)}]\n`;
+					`[priority: ${formatPriority(task.priority)}] - ` +
+					`[${dependencies}]\n`;
 
 				// Only show matching subtasks
 				if (withSubtasks && matchingSubtasks.length > 0) {
-					for (const { index, subtask } of matchingSubtasks) {
+					for (const { subtask } of matchingSubtasks) {
 						const subTitle = truncate(subtask.title, MAX_TITLE_TRUNC_LENGTH);
-						const hierarchicalId = `${task.id}.${index + 1}`;
+						const hierarchicalId = `${task.id}.${subtask.id}`;
+						const subDependencies =
+							subtask.dependencies.length > 0
+								? `deps: ${chalk.cyan(subtask.dependencies.join(","))}`
+								: `deps: ${chalk.gray("none")}`;
 						output +=
 							`  ${chalk.dim("↳")} ${chalk.bold(`#${hierarchicalId}`)} ` +
 							`${chalk.magenta(subTitle)} [status: ${formatStatus(
 								subtask.status,
-							)}]\n`;
+							)}] - [${subDependencies}]\n`;
 					}
 				}
 			}
@@ -564,7 +658,7 @@ export class TaskMaster {
 	/**
 	 * @description Extracts all main task IDs and subtask IDs from the tasks data
 	 * @param tasks Tasks data to process
-	 * @returns Object containing two arrays: mainIDs (numbers) and subtasksIDs (strings in the format "parentId.subtaskIndex")
+	 * @returns Object containing two arrays: mainIDs (numbers) and subtasksIDs (strings in the format "parentId.subtaskId")
 	 */
 	public async getAllTaskIdsAsync(tasks: I_Tasks): Promise<{
 		mainIDs: number[];
@@ -576,8 +670,8 @@ export class TaskMaster {
 		for (const task of tasks.master.tasks) {
 			mainIDs.push(task.id);
 			if (task.subtasks && task.subtasks.length > 0) {
-				for (let i = 0; i < task.subtasks.length; i++) {
-					subtasksIDs.push(`${task.id}.${i + 1}`);
+				for (const subtask of task.subtasks) {
+					subtasksIDs.push(`${task.id}.${subtask.id}`);
 				}
 			}
 		}
@@ -605,7 +699,7 @@ export class TaskMaster {
 		if (quickly) {
 			console.log(await this.listQuickAsync(tasks, status, withSubtasks));
 		} else {
-			await this.executeCommandAsync(
+			await this._executeCommandAsync(
 				"Listing tasks...",
 				"Tasks listed successfully!",
 				"Failed to list tasks",
@@ -621,7 +715,7 @@ export class TaskMaster {
 	 * @param id Task ID (integer or hierarchical ID like 1.1, 2.3, etc.)
 	 */
 	public async showAsync(id: string): Promise<void> {
-		await this.executeCommandAsync(
+		await this._executeCommandAsync(
 			`Fetching details for task ${chalk.bold(id)}...`,
 			"Task details retrieved successfully!",
 			"Failed to retrieve task details",
@@ -635,7 +729,7 @@ export class TaskMaster {
 	 * @description Shows the next available task to work on
 	 */
 	public async nextAsync(): Promise<void> {
-		await this.executeCommandAsync(
+		await this._executeCommandAsync(
 			"Finding next available task...",
 			"Next task retrieved successfully!",
 			"Failed to determine next task",
@@ -653,14 +747,14 @@ export class TaskMaster {
 	 * @description Adds a new task using AI
 	 * @param prompt Description of the task to create
 	 * @param allowAdvancedResearch Use research capabilities
-	 * @param tag Tag context for the task
+	 * @param tag Context tag
 	 */
 	public async addTaskByAIAsync(
 		prompt: string,
 		allowAdvancedResearch: boolean,
 		tag: string,
 	): Promise<void> {
-		await this.executeCommandAsync(
+		await this._executeCommandAsync(
 			`Adding AI-generated task: "${chalk.bold(prompt)}"...`,
 			"Task added successfully!",
 			"Failed to add AI-generated task",
@@ -686,7 +780,7 @@ export class TaskMaster {
 		numTasksToGenerate: number,
 		allowAdvancedResearch: boolean,
 	): Promise<void> {
-		await this.executeCommandAsync(
+		await this._executeCommandAsync(
 			`Adding AI-generated subtasks to task ${chalk.bold(parentId)}...`,
 			"Subtasks added successfully!",
 			"Failed to add AI-generated subtasks",
@@ -712,7 +806,7 @@ export class TaskMaster {
 		title: string,
 		description: string,
 	): Promise<void> {
-		await this.executeCommandAsync(
+		await this._executeCommandAsync(
 			`Adding manual subtask to task ${chalk.bold(parentId)}...`,
 			"Subtask added successfully!",
 			"Failed to add manual subtask",
@@ -730,21 +824,28 @@ export class TaskMaster {
 	// Updating Methods
 	// ==============================================
 
-	// TODO: in-progress
+	// TODO: validate
 	/**
 	 * @description Modifies a task using AI
 	 * @param id ID of the task to modify
 	 * @param prompt Modification prompt
 	 * @param allowAdvancedResearch Use advanced research
 	 * @param tag Context tag
+	 * @param tasks Current tasks data to check and potentially update status
 	 */
 	public async updateTaskByAIAsync(
 		id: number,
 		prompt: string,
 		allowAdvancedResearch: boolean,
 		tag: string,
+		tasks: I_Tasks,
 	): Promise<void> {
-		await this.executeCommandAsync(
+		const task = tasks.master.tasks.find((t) => t.id === id);
+		if (task && task.status !== "pending" && task.status !== "in-progress") {
+			await this.updateTaskStatusAsync([id.toString()], "pending", tag);
+		}
+
+		await this._executeCommandAsync(
 			`Modifying task ${id} with AI...`,
 			`Task ${id} modified successfully!`,
 			`Failed to modify task ${id}`,
@@ -759,21 +860,28 @@ export class TaskMaster {
 		);
 	}
 
-	// TODO: in-progress
+	// TODO: validate
 	/**
 	 * @description Updates multiple tasks using AI from a starting ID
 	 * @param startingId Starting ID for the update
 	 * @param prompt Global modification prompt
 	 * @param allowAdvancedResearch Use advanced research
 	 * @param tag Context tag
+	 * @param tasks Current tasks data to check and potentially update status
 	 */
 	public async updateMultipleTasksByAIAsync(
 		startingId: number,
 		prompt: string,
 		allowAdvancedResearch: boolean,
 		tag: string,
+		tasks: I_Tasks,
 	): Promise<void> {
-		await this.executeCommandAsync(
+		const task = tasks.master.tasks.find((t) => t.id === startingId);
+		if (task && task.status !== "pending" && task.status !== "in-progress") {
+			await this.updateTaskStatusAsync([startingId.toString()], "pending", tag);
+		}
+
+		await this._executeCommandAsync(
 			`Updating tasks from ${startingId} with AI...`,
 			"Tasks updated successfully!",
 			"Failed to update tasks",
@@ -788,21 +896,36 @@ export class TaskMaster {
 		);
 	}
 
-	// TODO: in-progress
+	// TODO: validate
 	/**
 	 * @description Modifies a subtask using AI
 	 * @param hierarchicalId Hierarchical ID of the subtask
 	 * @param prompt Modification prompt
 	 * @param allowAdvancedResearch Use advanced research
 	 * @param tag Context tag
+	 * @param tasks Current tasks data to check and potentially update status
 	 */
 	public async updateSubtaskByAIAsync(
 		hierarchicalId: string,
 		prompt: string,
 		allowAdvancedResearch: boolean,
 		tag: string,
+		tasks: I_Tasks,
 	): Promise<void> {
-		await this.executeCommandAsync(
+		const [parentIdStr, subtaskIndexStr] = hierarchicalId.split(".");
+		const parentId = Number.parseInt(parentIdStr, 10);
+		const subtaskIndex = Number.parseInt(subtaskIndexStr, 10) - 1;
+		const parentTask = tasks.master.tasks.find((t) => t.id === parentId);
+		const subtask = parentTask?.subtasks?.[subtaskIndex];
+		if (
+			subtask &&
+			subtask.status !== "pending" &&
+			subtask.status !== "in-progress"
+		) {
+			await this.updateTaskStatusAsync([hierarchicalId], "pending", tag);
+		}
+
+		await this._executeCommandAsync(
 			`Modifying subtask ${hierarchicalId} with AI...`,
 			`Subtask ${hierarchicalId} modified successfully!`,
 			`Failed to modify subtask ${hierarchicalId}`,
@@ -817,7 +940,34 @@ export class TaskMaster {
 		);
 	}
 
-	// TODO: in-progress
+	// TODO: done
+	/**
+	 * @description Updates the status of one or more tasks
+	 * @param ids Array of task IDs (can be main tasks or hierarchical subtask IDs)
+	 * @param status The new status to set for the tasks
+	 * @param tag Context tag
+	 */
+	public async updateTaskStatusAsync(
+		ids: string[],
+		status: string,
+		tag: string,
+	): Promise<void> {
+		const formatedIds = ids.length > 1 ? ids.join(",") : ids[0];
+		await this._executeCommandAsync(
+			`Updating status of task(s) ${formatedIds} to ${status}...`,
+			`Status of task(s) ${formatedIds} updated successfully!`,
+			`Failed to update status of task(s) ${formatedIds}`,
+			this._mainCommand,
+			[
+				"set-status",
+				`--id=${formatedIds}`,
+				`--status=${status}`,
+				`--tag=${tag}`,
+			],
+		);
+	}
+
+	// TODO: validate
 	/**
 	 * @description Converts an existing task to a subtask
 	 * @param subtaskId ID of the task to convert into a subtask
@@ -827,8 +977,8 @@ export class TaskMaster {
 		subtaskId: number,
 		parentId: number,
 	): Promise<void> {
-		await this.clearAllDependenciesAsync(subtaskId.toString());
-		await this.executeCommandAsync(
+		await this.deleteAllDepsFromTaskAsync(subtaskId.toString());
+		await this._executeCommandAsync(
 			`Converting task ${subtaskId} to subtask of ${parentId}...`,
 			`Task ${subtaskId} converted to subtask successfully!`,
 			`Failed to convert task ${subtaskId} to subtask`,
@@ -837,8 +987,147 @@ export class TaskMaster {
 		);
 	}
 
+	// TODO: validate
+	/**
+	 * @description Converts an existing subtask to a task
+	 * @param hierarchicalId Hierarchical ID of the subtask to convert to a task
+	 */
+	public async convertSubtaskToTaskAsync(
+		hierarchicalId: string,
+	): Promise<void> {
+		await this._executeCommandAsync(
+			`Converting subtask ${hierarchicalId} to task...`,
+			`Subtask ${hierarchicalId} converted to task successfully!`,
+			`Failed to convert subtask ${hierarchicalId} to task`,
+			this._mainCommand,
+			["remove-subtask", `--id=${hierarchicalId}`, "--convert"],
+		);
+	}
+
 	// ==============================================
-	// Dependencies
+	// Deleting Methods
+	// ==============================================
+
+	// TODO: done
+	/**
+	 * @description Delete a task by ID (including subtasks)
+	 * @param id The ID of the task to remove
+	 * @param tag Context tag
+	 */
+	public async deleteTaskAsync(id: number, tag: string): Promise<void> {
+		const { confirm } = await inquirer.prompt({
+			type: "confirm",
+			name: "confirm",
+			message: chalk.red(`Are you sure you want to delete task ${id}?`),
+			default: false,
+		});
+
+		if (confirm) {
+			await this._executeCommandAsync(
+				`Deleting task ${id}...`,
+				`Task ${id} deleted successfully!`,
+				`Failed to delete task ${id}`,
+				this._mainCommand,
+				["remove-task", `--id=${id}`, `--tag=${tag}`, "-y"],
+			);
+		}
+	}
+
+	// TODO: done
+	/**
+	 * @description Delete a specific subtask
+	 * @param hierarchicalId The hierarchical ID of the subtask
+	 * @param tag Context tag
+	 */
+	public async deleteSubtaskAsync(
+		hierarchicalId: string,
+		tag: string,
+	): Promise<void> {
+		const { confirm } = await inquirer.prompt({
+			type: "confirm",
+			name: "confirm",
+			message: chalk.red(
+				`Are you sure you want to delete subtask ${hierarchicalId}?`,
+			),
+			default: false,
+		});
+
+		if (confirm) {
+			await this._executeCommandAsync(
+				`Deleting subtask ${hierarchicalId}...`,
+				`Subtask ${hierarchicalId} deleted successfully!`,
+				`Failed to delete subtask ${hierarchicalId}`,
+				this._mainCommand,
+				["remove-subtask", `--id=${hierarchicalId}`, `--tag=${tag}`],
+			);
+		}
+	}
+
+	// TODO: done
+	/**
+	 * @description Deletes all subtasks from a specific task
+	 * @param id The ID of the task to clear subtasks from
+	 * @param tag Context tag
+	 */
+	public async deleteAllSubtasksFromTaskAsync(
+		id: number,
+		tag: string,
+	): Promise<void> {
+		const { confirm } = await inquirer.prompt({
+			type: "confirm",
+			name: "confirm",
+			message: chalk.red(
+				`Are you sure you want to delete all subtasks from task ${id}?`,
+			),
+			default: false,
+		});
+
+		if (confirm) {
+			await this._executeCommandAsync(
+				`Deleting all subtasks from task ${id}...`,
+				`All subtasks deleted from task ${id} successfully!`,
+				`Failed to delete subtasks from task ${id}`,
+				this._mainCommand,
+				["clear-subtasks", `--id=${id}`, `--tag=${tag}`],
+			);
+		}
+	}
+
+	// TODO: done
+	/**
+	 * @description Clears all dependencies for the specified task or subtask.
+	 * @param taskId The task ID or hierarchical ID of the subtask
+	 */
+	public async deleteAllDepsFromTaskAsync(taskId: string): Promise<void> {
+		const tasks = await this.getTasksContentAsync();
+		const dependencyIds = await this._getAllDependenciesAsync(tasks, taskId);
+
+		if (dependencyIds.length === 0) {
+			console.log(chalk.yellow(`No dependencies found for task ${taskId}.`));
+			return;
+		}
+
+		// For subtasks, dependency IDs are already in the correct format
+		// For main tasks, dependency IDs are numbers that need to be converted to string
+		const isSubtask = taskId.includes(".");
+
+		for (const dependencyId of dependencyIds) {
+			const dependsOnId = isSubtask
+				? dependencyId.toString() // For subtasks, dependencyId is already the full ID
+				: dependencyId.toString(); // For main tasks, convert number to string
+
+			await this._executeCommandAsync(
+				`Removing dependency ${dependsOnId} from task ${taskId}...`,
+				`Dependency ${dependsOnId} removed successfully from task ${taskId}!`,
+				`Failed to remove dependency ${dependsOnId} from task ${taskId}`,
+				this._mainCommand,
+				["remove-dependency", `--id=${taskId}`, `--depends-on=${dependsOnId}`],
+			);
+		}
+	}
+
+	// ==============================================
+	// Dependencies Methods
 	// ==============================================
 
 	// TODO: in-progress
@@ -853,7 +1142,7 @@ export class TaskMaster {
 	): Promise<void> {
 		const formatedDepsIds =
 			dependencyIds.length > 1 ? dependencyIds.join(",") : dependencyIds[0];
-		await this.executeCommandAsync(
+		await this._executeCommandAsync(
 			`Adding dependency ${formatedDepsIds} to task ${taskId}...`,
 			`Dependency ${formatedDepsIds} added successfully to task ${taskId}!`,
 			`Failed to add dependency ${formatedDepsIds} to task ${taskId}`,
@@ -867,7 +1156,7 @@ export class TaskMaster {
 	 * @description Validates task dependencies
 	 */
 	public async validateDependenciesAsync(): Promise<void> {
-		await this.executeCommandAsync(
+		await this._executeCommandAsync(
 			"Validating dependencies...",
 			"Dependencies validated successfully!",
 			"Failed to validate dependencies",
@@ -881,41 +1170,13 @@ export class TaskMaster {
 	 * @description Automatically fixes dependency issues
 	 */
 	public async fixDependenciesAsync(): Promise<void> {
-		await this.executeCommandAsync(
+		await this._executeCommandAsync(
 			"Fixing dependencies...",
 			"Dependencies fixed successfully!",
 			"Failed to fix dependencies",
 			this._mainCommand,
 			["fix-dependencies"],
 		);
-	}
-
-	// TODO: done
-	/**
-	 * @description Clears all dependencies for the specified task or subtask.
-	 * @param taskId The task ID (either a simple number as string or hierarchical like "1.2")
-	 */
-	public async clearAllDependenciesAsync(taskId: string): Promise<void> {
-		const tasks = await this.getTasksContentAsync();
-		const dependencyIds = await this.getAllDependenciesAsync(tasks, taskId);
-
-		if (dependencyIds.length === 0) {
-			console.log(chalk.yellow(`No dependencies found for task ${taskId}.`));
-			return;
-		}
-
-		for (const dependencyId of dependencyIds) {
-			const dependsOnId = taskId.includes(".")
-				? `${taskId.split(".")[0]}.${dependencyId}`
-				: dependencyId;
-			await this.executeCommandAsync(
-				`Removing dependency ${dependsOnId} from task ${taskId}...`,
-				`Dependency ${dependsOnId} removed successfully from task ${taskId}!`,
-				`Failed to remove dependency ${dependsOnId} from task ${taskId}`,
-				this._mainCommand,
-				["remove-dependency", `--id=${taskId}`, `--depends-on=${dependsOnId}`],
-			);
-		}
 	}
 
 	// ==============================================
@@ -997,9 +1258,32 @@ export class TaskMaster {
 
 	// TODO: done
 	/**
+	 * @description Clears all subtasks from all tasks
+	 */
+	public async clearAllSubtasksAsync(): Promise<void> {
+		const { confirm } = await inquirer.prompt({
+			type: "confirm",
+			name: "confirm",
+			message: chalk.red("Clear all subtasks from all tasks? ..."),
+			default: false,
+		});
+
+		if (confirm) {
+			await this._executeCommandAsync(
+				"Clearing all subtasks...",
+				"All subtasks cleared successfully!",
+				"Failed to clear all subtasks",
+				this._mainCommand,
+				["clear-subtasks", "--all"],
+			);
+		}
+	}
+
+	// TODO: done
+	/**
 	 * @description Clears all task-related files and directories
 	 */
-	public async clearTasksAsync(): Promise<void> {
+	public async clearAllTasksAsync(): Promise<void> {
 		for (const filePath of TASKS_FILES) {
 			if (!fs.existsSync(filePath)) continue;
 
@@ -1029,5 +1313,41 @@ export class TaskMaster {
 
 		if (allFilesCleared)
 			console.log(chalk.green("All task-related files are cleared!"));
+	}
+
+	// TODO: done
+	/**
+	 * @description Clears all dependencies from all tasks and subtasks
+	 */
+	public async clearAllDepsAsync(): Promise<void> {
+		const { confirm } = await inquirer.prompt({
+			type: "confirm",
+			name: "confirm",
+			message: chalk.red("Clear all dependencies from all tasks and subtasks?"),
+			default: false,
+		});
+
+		if (confirm) {
+			const oraOptions = {
+				text: "Clearing all dependencies...",
+				successText: chalk.bgGreen("All dependencies cleared successfully!"),
+				failText: chalk.bgRed("Failed to clear all dependencies"),
+			};
+
+			await oraPromise(async () => {
+				const tasks = await this.getTasksContentAsync();
+
+				for (const task of tasks.master.tasks) {
+					task.dependencies = [];
+					if (task.subtasks && task.subtasks.length > 0) {
+						for (const subtask of task.subtasks) {
+							subtask.dependencies = [];
+						}
+					}
+				}
+
+				await writeFile(this._tasksFilePath, JSON.stringify(tasks, null, 2));
+			}, oraOptions);
+		}
 	}
 }

@@ -195,6 +195,10 @@ export async function readJsonFileAsync<T = unknown>(
 	filePath: string,
 ): Promise<T> {
 	try {
+		const fileExists = fs.existsSync(filePath);
+		if (!fileExists) {
+			await writeFileAsync(filePath, JSON.stringify([]));
+		}
 		const data = await readFileAsync(filePath, "utf-8");
 		return JSON.parse(data) as T;
 	} catch (error) {

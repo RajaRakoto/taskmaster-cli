@@ -35,7 +35,7 @@ export async function bannerRendererAsync(
 			});
 			const coloredBanner = chalk.magenta(rendered);
 			const packageVersion = pkg.version;
-			const result = `${coloredBanner}\n ${chalk.underline("version:")} ${packageVersion}\n\n ${description}`;
+			const result = `${coloredBanner}\n ${chalk.underline("version:")} ${packageVersion}${DEV_MODE ? ` ${chalk.yellow("(dev mode)")}` : ""}\n\n ${description}`;
 			resolve(result);
 		} catch (error) {
 			reject(
