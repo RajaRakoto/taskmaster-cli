@@ -135,7 +135,7 @@ export async function tmaiManageAsync() {
 				await tmai.listAsync(tasks, validatedStatus, quickly, withSubtasks);
 			} else if (tmaiListNavMenu === "tmai-show") {
 				await tmai.listAsync(tasks, TASKS_STATUSES.join(","), true, true);
-				const taskId = await askHierarchicalTaskIdAsync(subtasksIDs);
+				const taskId = await askHybridTaskIdAsync(mainIDs, subtasksIDs);
 				await tmai.showAsync(taskId);
 			} else if (tmaiListNavMenu === "tmai-next") {
 				await tmai.nextAsync();
