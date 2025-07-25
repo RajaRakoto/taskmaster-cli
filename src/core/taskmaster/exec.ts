@@ -320,10 +320,18 @@ export async function tmaiManageAsync() {
 					await tmai.listAsync(tasks, TASKS_STATUSES.join(","), true, true);
 					break;
 				}
-				case "tmai-deletealldepsfromtask": {
+				case "tmai-deletealldepssafelyfromtask": {
 					await tmai.listAsync(tasks, TASKS_STATUSES.join(","), true, true);
 					const taskId = await askHybridTaskIdAsync(mainIDs, subtasksIDs);
-					await tmai.deleteAllDepsFromTaskAsync(taskId);
+					await tmai.deleteAllDepsSafelyFromTaskAsync(taskId);
+					tasks = await tmai.getTasksContentAsync();
+					await tmai.listAsync(tasks, TASKS_STATUSES.join(","), true, true);
+					break;
+				}
+				case "tmai-deletealldepsunsafefromtask": {
+					await tmai.listAsync(tasks, TASKS_STATUSES.join(","), true, true);
+					const taskId = await askHybridTaskIdAsync(mainIDs, subtasksIDs);
+					await tmai.deleteAllDepsUnsafeFromTaskAsync(taskId);
 					tasks = await tmai.getTasksContentAsync();
 					await tmai.listAsync(tasks, TASKS_STATUSES.join(","), true, true);
 					break;

@@ -977,7 +977,7 @@ export class TaskMaster {
 		subtaskId: number,
 		parentId: number,
 	): Promise<void> {
-		await this.deleteAllDepsFromTaskAsync(subtaskId.toString());
+		await this.deleteAllDepsSafelyFromTaskAsync(subtaskId.toString());
 		await this._executeCommandAsync(
 			`Converting task ${subtaskId} to subtask of ${parentId}...`,
 			`Task ${subtaskId} converted to subtask successfully!`,
@@ -995,6 +995,7 @@ export class TaskMaster {
 	public async convertSubtaskToTaskAsync(
 		hierarchicalId: string,
 	): Promise<void> {
+		await this.deleteAllDepsSafelyFromTaskAsync(hierarchicalId);
 		await this._executeCommandAsync(
 			`Converting subtask ${hierarchicalId} to task...`,
 			`Subtask ${hierarchicalId} converted to task successfully!`,
@@ -1098,7 +1099,7 @@ export class TaskMaster {
 	 * @description Clears all dependencies for the specified task or subtask.
 	 * @param taskId The task ID or hierarchical ID of the subtask
 	 */
-	public async deleteAllDepsFromTaskAsync(taskId: string): Promise<void> {
+	public async deleteAllDepsSafelyFromTaskAsync(taskId: string): Promise<void> {
 		const tasks = await this.getTasksContentAsync();
 		const dependencyIds = await this._getAllDependenciesAsync(tasks, taskId);
 
@@ -1124,6 +1125,58 @@ export class TaskMaster {
 				["remove-dependency", `--id=${taskId}`, `--depends-on=${dependsOnId}`],
 			);
 		}
+	}
+
+	// TODO: done
+	/**
+	 * @description Deletes all dependencies for the specified task or subtask without using external commands.
+	 * This is a faster but less safe method that directly modifies the tasks.json file.
+	 * @param taskId The task ID or hierarchical ID of the subtask
+	 */
+	public async deleteAllDepsUnsafeFromTaskAsync(taskId: string): Promise<void> {
+		const oraOptions = {
+			text: `Clearing dependencies from task ${taskId}...`,
+			successText: chalk.bgGreen(
+				`Dependencies cleared from task ${taskId} successfully!`,
+			),
+			failText: chalk.bgRed(`Failed to clear dependencies from task ${taskId}`),
+		};
+
+		await oraPromise(async () => {
+			const tasks = await this.getTasksContentAsync();
+
+			if (!taskId.includes(".")) {
+				// It's a main task
+				const idNum = Number.parseInt(taskId, 10);
+				const task = tasks.master.tasks.find((t) => t.id === idNum);
+				if (!task) {
+					throw new Error(`Task not found: ${taskId}`);
+				}
+				task.dependencies = [];
+			} else {
+				// It's a subtask
+				const parts = taskId.split(".");
+				const parentId = Number.parseInt(parts[0], 10);
+				const subtaskIndex = Number.parseInt(parts[1], 10) - 1;
+				const parentTask = tasks.master.tasks.find((t) => t.id === parentId);
+				if (!parentTask) {
+					throw new Error(`Parent task not found for subtask: ${taskId}`);
+				}
+
+				if (
+					!parentTask.subtasks ||
+					subtaskIndex < 0 ||
+					subtaskIndex >= parentTask.subtasks.length
+				) {
+					throw new Error(`Subtask not found: ${taskId}`);
+				}
+
+				const subtask = parentTask.subtasks[subtaskIndex];
+				subtask.dependencies = [];
+			}
+
+			await writeFile(this._tasksFilePath, JSON.stringify(tasks, null, 2));
+		}, oraOptions);
 	}
 
 	// ==============================================

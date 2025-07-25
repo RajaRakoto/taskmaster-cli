@@ -288,7 +288,11 @@ export const tmaiDeleteTasksMenu_prompt = [
 			},
 			{
 				name: `${emoji.get("wastebasket")} Delete all dependencies from a task`,
-				value: "tmai-deletealldepsfromtask",
+				value: "tmai-deletealldepssafelyfromtask",
+			},
+			{
+				name: `${emoji.get("wastebasket")} Delete all dependencies from a task (unsafe but fast)`,
+				value: "tmai-deletealldepsunsafefromtask",
 			},
 		],
 	},
