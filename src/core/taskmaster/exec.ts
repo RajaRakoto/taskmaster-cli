@@ -388,7 +388,20 @@ export async function tmaiBackupRestoreClearAsync() {
 	switch (tmaiBackupRestoreClearMenu) {
 		case "tmai-backup": {
 			const slot = await askBackupSlotAsync();
-			await tmai.backupAsync(slot);
+			const { confirm } = await inquirer.prompt({
+				type: "confirm",
+				name: "confirm",
+				message: chalk.yellow(
+					`Are you sure you want to create a backup in slot ${slot}?`,
+				),
+				default: false,
+			});
+
+			if (confirm) {
+				await tmai.backupAsync(slot);
+			} else {
+				console.log("Backup operation cancelled!");
+			}
 			break;
 		}
 		case "tmai-restore": {
