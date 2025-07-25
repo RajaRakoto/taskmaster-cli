@@ -977,7 +977,7 @@ export class TaskMaster {
 		subtaskId: number,
 		parentId: number,
 	): Promise<void> {
-		await this.deleteAllDepsSafelyFromTaskAsync(subtaskId.toString());
+		await this.deleteAllDepsUnsafeFromTaskAsync(subtaskId.toString());
 		await this._executeCommandAsync(
 			`Converting task ${subtaskId} to subtask of ${parentId}...`,
 			`Task ${subtaskId} converted to subtask successfully!`,
@@ -995,7 +995,7 @@ export class TaskMaster {
 	public async convertSubtaskToTaskAsync(
 		hierarchicalId: string,
 	): Promise<void> {
-		await this.deleteAllDepsSafelyFromTaskAsync(hierarchicalId);
+		await this.deleteAllDepsUnsafeFromTaskAsync(hierarchicalId);
 		await this._executeCommandAsync(
 			`Converting subtask ${hierarchicalId} to task...`,
 			`Subtask ${hierarchicalId} converted to task successfully!`,
@@ -1144,7 +1144,6 @@ export class TaskMaster {
 
 		await oraPromise(async () => {
 			const tasks = await this.getTasksContentAsync();
-
 			if (!taskId.includes(".")) {
 				// It's a main task
 				const idNum = Number.parseInt(taskId, 10);
