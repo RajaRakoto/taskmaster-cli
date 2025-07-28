@@ -538,5 +538,9 @@ export async function askModelsAsync(): Promise<{
 		},
 	]);
 
-	return { mainModel, researchModel, fallbackModel };
+	return {
+		mainModel,
+		researchModel,
+		fallbackModel,
+	};
 }
