@@ -64,13 +64,13 @@ export const TASKS_FILE_WARN: (path: string) => string = (path: string) =>
 // supported languages for TMAI responses
 export const LANG = [
 	"English",
+	"Chinese",
+	"Japanese",
 	"French",
 	"Spanish",
 	"German",
-	"Italian",
 	"Portuguese",
-	"Chinese",
-	"Japanese",
+	"Italian",
 ] as const;
 
 // ai models configuration
