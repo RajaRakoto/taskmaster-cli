@@ -6,13 +6,10 @@ import stripAnsi from "strip-ansi";
 import { MAIN_COMMAND, MAX_TITLE_TRUNC_LENGTH } from "@/constants";
 
 /* core */
-import { TaskMaster } from "@/core/taskmaster/TaskMaster";
+import { TaskMaster } from "@/core/TaskMaster";
 
 /* asks */
-import {
-	isValidTaskId,
-	isValidHierarchicalTaskId,
-} from "@/core/taskmaster/asks";
+import { isValidTaskId, isValidHierarchicalTaskId } from "@/core/asks";
 
 /* types */
 import type { I_Tasks, Task, Subtask, Priority, Status } from "@/@types/tasks";

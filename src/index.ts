@@ -9,7 +9,7 @@ import {
 	tmaiManageAsync,
 	tmaiDependenciesAsync,
 	tmaiBackupRestoreClearAsync,
-} from "@/core/taskmaster/exec";
+} from "@/core/exec";
 
 /* utils */
 import { bannerRendererAsync } from "@/utils/ascii";
