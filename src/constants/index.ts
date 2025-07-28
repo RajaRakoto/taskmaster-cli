@@ -64,17 +64,70 @@ export const TASKS_FILE_WARN: (path: string) => string = (path: string) =>
 // supported languages for TMAI responses
 export const LANG = [
 	"English",
+	"Chinese",
+	"Japanese",
 	"French",
 	"Spanish",
 	"German",
-	"Italian",
 	"Portuguese",
-	"Chinese",
-	"Japanese",
+	"Italian",
 ] as const;
 
 // ai models configuration
 export const AI_MODELS = [
 	{ name: "Gemini 2.5 Pro", value: "gemini-2.5-pro" },
 	{ name: "Gemini 2.5 Flash", value: "gemini-2.5-flash" },
+];
+
+// task conversion rules
+export const TASK_TO_SUBTASK_RULES = [
+	{
+		rule: "The task must not already be a subtask",
+		example:
+			"Task #3 cannot be converted to a subtask if it's already Task #1.2",
+	},
+	{
+		rule: "The target task must not depend on its future parent task",
+		example:
+			"Task #3 cannot depend on Task #1 if converting to subtask of Task #1",
+	},
+	{
+		rule: "The task must not depend on subtasks from other groups",
+		example:
+			"Task #3 cannot depend on Task #2.1 if converting to subtask of Task #1",
+	},
+	{
+		rule: "The conversion must not create circular dependencies",
+		example:
+			"Cannot convert Task #3 to subtask of Task #1 if Task #1 depends on Task #3",
+	},
+	{
+		rule: "All existing dependencies will be preserved",
+		example:
+			"If Task #3 depends on Task #2, it will still depend on Task #2 after conversion",
+	},
+];
+
+export const SUBTASK_TO_TASK_RULES = [
+	{
+		rule: "The subtask will be converted to a standalone task",
+		example: "Subtask #1.2 becomes Task #4 (new sequential ID)",
+	},
+	{
+		rule: "Dependencies on other tasks will be preserved",
+		example: "If #1.2 depends on #3, new Task #4 will still depend on #3",
+	},
+	{
+		rule: "Dependencies on other subtasks from the same group will be removed",
+		example: "If #1.2 depends on #1.1, this dependency is removed",
+	},
+	{
+		rule: "Dependent subtasks will be updated",
+		example:
+			"If #1.3 depends on #1.2, it will be updated to depend on new Task #4",
+	},
+	{
+		rule: "The new task will have a unique sequential ID",
+		example: "Subtask #1.2 becomes Task #4 (next available ID)",
+	},
 ];

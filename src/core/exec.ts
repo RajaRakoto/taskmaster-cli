@@ -6,7 +6,7 @@ import path from "node:path";
 import { MAIN_COMMAND, TASKS_PATH, TASKS_STATUSES } from "@/constants";
 
 /* core */
-import { TaskMaster } from "@/core/taskmaster/TaskMaster";
+import { TaskMaster } from "@/core/TaskMaster";
 import { restartAsync } from "@/core/restart";
 
 /* utils */
@@ -33,7 +33,7 @@ import {
 	askLangAsync,
 	askModelsAsync,
 	askStatusAsync,
-} from "@/core/taskmaster/asks";
+} from "@/core/asks";
 
 import chalk from "chalk";
 
@@ -320,10 +320,18 @@ export async function tmaiManageAsync() {
 					await tmai.listAsync(tasks, TASKS_STATUSES.join(","), true, true);
 					break;
 				}
-				case "tmai-deletealldepsfromtask": {
+				case "tmai-deletealldepssafelyfromtask": {
 					await tmai.listAsync(tasks, TASKS_STATUSES.join(","), true, true);
 					const taskId = await askHybridTaskIdAsync(mainIDs, subtasksIDs);
-					await tmai.deleteAllDepsFromTaskAsync(taskId);
+					await tmai.deleteAllDepsSafelyFromTaskAsync(taskId);
+					tasks = await tmai.getTasksContentAsync();
+					await tmai.listAsync(tasks, TASKS_STATUSES.join(","), true, true);
+					break;
+				}
+				case "tmai-deletealldepsunsafefromtask": {
+					await tmai.listAsync(tasks, TASKS_STATUSES.join(","), true, true);
+					const taskId = await askHybridTaskIdAsync(mainIDs, subtasksIDs);
+					await tmai.deleteAllDepsUnsafeFromTaskAsync(taskId);
 					tasks = await tmai.getTasksContentAsync();
 					await tmai.listAsync(tasks, TASKS_STATUSES.join(","), true, true);
 					break;
@@ -380,7 +388,20 @@ export async function tmaiBackupRestoreClearAsync() {
 	switch (tmaiBackupRestoreClearMenu) {
 		case "tmai-backup": {
 			const slot = await askBackupSlotAsync();
-			await tmai.backupAsync(slot);
+			const { confirm } = await inquirer.prompt({
+				type: "confirm",
+				name: "confirm",
+				message: chalk.yellow(
+					`Are you sure you want to create a backup in slot ${slot}?`,
+				),
+				default: false,
+			});
+
+			if (confirm) {
+				await tmai.backupAsync(slot);
+			} else {
+				console.log("Backup operation cancelled!");
+			}
 			break;
 		}
 		case "tmai-restore": {
