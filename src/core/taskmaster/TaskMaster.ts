@@ -3,6 +3,7 @@ import { oraPromise } from "ora";
 import { mkdir, writeFile, rm } from "node:fs/promises";
 import inquirer from "inquirer";
 import path from "node:path";
+import readline from "node:readline";
 import chalk from "chalk";
 import fs from "node:fs";
 import figures from "figures";
@@ -310,6 +311,216 @@ export class TaskMaster {
 				"Invalid tasks.json format. Could not find valid tasks and metadata to correct the file.",
 			);
 		}, oraOptions);
+	}
+
+	// TODO: done
+	/**
+	 * @description Validates conversion rules for task/subtask conversion
+	 * @param tasks The tasks data structure
+	 * @param taskId ID of the task to convert
+	 * @param targetParentId ID of the parent task if applicable
+	 * @param mode Type of conversion
+	 * @returns Validation result with validity status, error message, and affected task IDs
+	 */
+	public _validateConversionRules(
+		tasks: I_Tasks,
+		taskId: string,
+		targetParentId?: string,
+		mode: "toSubtask" | "toTask" = "toSubtask",
+	): { valid: boolean; message?: string; affectedTaskIds?: string[] } {
+		const affectedTaskIds: string[] = [];
+
+		// Helper function to check if a task ID is a subtask
+		const isSubtask = (id: string): boolean => id.includes(".");
+
+		// Helper function to get parent ID from hierarchical ID
+		const getParentId = (id: string): number => {
+			if (isSubtask(id)) {
+				return Number.parseInt(id.split(".")[0], 10);
+			}
+			return Number.parseInt(id, 10);
+		};
+
+		// Helper function to get task by ID
+		const getTask = (id: string) => {
+			if (isSubtask(id)) {
+				const [parentIdStr, subtaskIdStr] = id.split(".");
+				const parentId = Number.parseInt(parentIdStr, 10);
+				const subtaskIndex = Number.parseInt(subtaskIdStr, 10) - 1;
+				const parentTask = tasks.master.tasks.find((t) => t.id === parentId);
+				if (
+					!parentTask ||
+					!parentTask.subtasks ||
+					subtaskIndex < 0 ||
+					subtaskIndex >= parentTask.subtasks.length
+				) {
+					return null;
+				}
+				return parentTask.subtasks[subtaskIndex];
+			}
+
+			const idNum = Number.parseInt(id, 10);
+			return tasks.master.tasks.find((t) => t.id === idNum) || null;
+		};
+
+		// Helper function to get all dependencies for a task
+		const getAllDependencies = (id: string): string[] => {
+			const task = getTask(id);
+			if (!task) return [];
+
+			return task.dependencies.map((depId) => depId.toString());
+		};
+
+		// Check if parent is already a subtask (no nested subtasks allowed)
+		if (mode === "toSubtask" && targetParentId) {
+			if (isSubtask(targetParentId)) {
+				return {
+					valid: false,
+					message: `Cannot convert task to subtask of another subtask (${targetParentId}). Nested subtasks are not allowed.`,
+					affectedTaskIds,
+				};
+			}
+		}
+
+		// Check if task has dependencies
+		const taskDeps = getAllDependencies(taskId);
+		if (taskDeps.length > 0) {
+			affectedTaskIds.push(taskId);
+		}
+
+		if (mode === "toSubtask") {
+			// Validate task to subtask conversion
+			if (!targetParentId) {
+				return {
+					valid: false,
+					message:
+						"Target parent ID is required for task to subtask conversion.",
+					affectedTaskIds,
+				};
+			}
+
+			// Check if task depends on its future parent
+			if (taskDeps.includes(targetParentId)) {
+				return {
+					valid: false,
+					message: `Task ${taskId} cannot depend on its future parent ${targetParentId}. This would create a circular dependency.`,
+					affectedTaskIds,
+				};
+			}
+
+			// Check if task depends on subtasks of different groups
+			for (const depId of taskDeps) {
+				if (isSubtask(depId)) {
+					const depParentId = getParentId(depId);
+					const taskParentId = Number.parseInt(targetParentId, 10);
+					if (depParentId !== taskParentId) {
+						return {
+							valid: false,
+							message: `Task ${taskId} cannot depend on subtask ${depId} from different task group. This would create invalid cross-group dependencies.`,
+							affectedTaskIds,
+						};
+					}
+				}
+			}
+
+			// Check for circular dependencies
+			const visited = new Set<string>();
+			const checkCircular = (currentId: string, targetId: string): boolean => {
+				if (currentId === targetId) return true;
+				if (visited.has(currentId)) return false;
+
+				visited.add(currentId);
+				const deps = getAllDependencies(currentId);
+				for (const dep of deps) {
+					if (checkCircular(dep, targetId)) return true;
+				}
+				visited.delete(currentId);
+				return false;
+			};
+
+			// Check if converting would create circular dependency
+			// A circular dependency would be created if the target parent depends on the task being converted
+			if (checkCircular(targetParentId, taskId)) {
+				return {
+					valid: false,
+					message: `Converting task ${taskId} to subtask of ${targetParentId} would create circular dependency.`,
+					affectedTaskIds,
+				};
+			}
+		} else {
+			// Check if subtask depends on future tasks in order
+			if (isSubtask(taskId)) {
+				const [parentIdStr, subtaskIdStr] = taskId.split(".");
+				const parentId = Number.parseInt(parentIdStr, 10);
+				const subtaskId = Number.parseInt(subtaskIdStr, 10);
+				const parentTask = tasks.master.tasks.find((t) => t.id === parentId);
+
+				if (parentTask?.subtasks) {
+					// Check if any subtask in the same group depends on this subtask
+					for (const subtask of parentTask.subtasks) {
+						if (subtask.dependencies.includes(subtaskId)) {
+							return {
+								valid: false,
+								message: `Subtask ${subtask.id} depends on subtask ${subtaskId}. Converting ${taskId} to task would leave ${subtask.id} with dangling dependency.`,
+								affectedTaskIds,
+							};
+						}
+					}
+
+					// Check if this subtask depends on future subtasks in the same group
+					for (const depId of taskDeps) {
+						if (isSubtask(depId)) {
+							const [depParentIdStr, depSubtaskIdStr] = depId.split(".");
+							const depParentId = Number.parseInt(depParentIdStr, 10);
+							const depSubtaskId = Number.parseInt(depSubtaskIdStr, 10);
+
+							// If dependency is in same parent task and has higher or equal ID
+							if (depParentId === parentId && depSubtaskId >= subtaskId) {
+								return {
+									valid: false,
+									message: `Subtask ${taskId} cannot depend on future subtask ${depId} in logical order. This would create invalid dependency ordering.`,
+									affectedTaskIds,
+								};
+							}
+						}
+					}
+				}
+			}
+		}
+
+		// If we have dependencies and validation passes, include affected task IDs
+		return {
+			valid: true,
+			affectedTaskIds: affectedTaskIds.length > 0 ? affectedTaskIds : undefined,
+		};
+	}
+
+	// TODO: done
+	public _countdown(seconds: number) {
+		return new Promise((resolve) => {
+			let remaining = seconds;
+			const rl = readline.createInterface({
+				input: process.stdin,
+				output: process.stdout,
+			});
+			process.stdout.write(`Waiting ${remaining}s (press ENTER to skip)`);
+			const interval = setInterval(() => {
+				remaining--;
+				process.stdout.clearLine(0);
+				process.stdout.cursorTo(0);
+				process.stdout.write(`Waiting ${remaining}s (press ENTER to skip)`);
+				if (remaining <= 0) {
+					clearInterval(interval);
+					rl.close();
+					resolve(undefined);
+				}
+			}, 1000);
+			rl.on("line", () => {
+				clearInterval(interval);
+				rl.close();
+				resolve(undefined);
+			});
+		});
 	}
 
 	// ==============================================
@@ -917,11 +1128,7 @@ export class TaskMaster {
 		const subtaskIndex = Number.parseInt(subtaskIndexStr, 10) - 1;
 		const parentTask = tasks.master.tasks.find((t) => t.id === parentId);
 		const subtask = parentTask?.subtasks?.[subtaskIndex];
-		if (
-			subtask &&
-			subtask.status !== "pending" &&
-			subtask.status !== "in-progress"
-		) {
+		if (subtask?.status !== "pending" && subtask?.status !== "in-progress") {
 			await this.updateTaskStatusAsync([hierarchicalId], "pending", tag);
 		}
 
@@ -967,7 +1174,7 @@ export class TaskMaster {
 		);
 	}
 
-	// TODO: validate
+	// TODO: done
 	/**
 	 * @description Converts an existing task to a subtask
 	 * @param subtaskId ID of the task to convert into a subtask
@@ -977,7 +1184,48 @@ export class TaskMaster {
 		subtaskId: number,
 		parentId: number,
 	): Promise<void> {
-		await this.deleteAllDepsUnsafeFromTaskAsync(subtaskId.toString());
+		const { TASK_TO_SUBTASK_RULES } = await import("@/constants");
+
+		console.log(chalk.bold.blue("\nTask to Subtask Conversion Rules:"));
+		TASK_TO_SUBTASK_RULES.forEach((rule, index) => {
+			console.log(chalk.yellow(`  ${index + 1}. ${rule.rule}`));
+			console.log(chalk.gray(`     Example: ${rule.example}`));
+		});
+
+		const { confirm } = await inquirer.prompt({
+			type: "confirm",
+			name: "confirm",
+			message:
+				"Have you read and understood the rules above? Do you confirm the conversion?",
+			default: false,
+		});
+
+		if (!confirm) {
+			console.log(chalk.yellow("Conversion cancelled!"));
+			return;
+		}
+
+		const tasks = await this.getTasksContentAsync();
+		const validation = this._validateConversionRules(
+			tasks,
+			subtaskId.toString(),
+			parentId.toString(),
+			"toSubtask",
+		);
+
+		if (!validation.valid) {
+			console.error(
+				chalk.red(`Conversion validation failed: ${validation.message}`),
+			);
+			console.log(
+				chalk.yellow(
+					"You can force conversion by manually removing dependencies, but this is not recommended unless absolutely necessary. Consider if the conversion is truly important for your workflow.",
+				),
+			);
+			await this._countdown(20);
+			return;
+		}
+
 		await this._executeCommandAsync(
 			`Converting task ${subtaskId} to subtask of ${parentId}...`,
 			`Task ${subtaskId} converted to subtask successfully!`,
@@ -987,7 +1235,7 @@ export class TaskMaster {
 		);
 	}
 
-	// TODO: validate
+	// TODO: done
 	/**
 	 * @description Converts an existing subtask to a task
 	 * @param hierarchicalId Hierarchical ID of the subtask to convert to a task
@@ -995,7 +1243,48 @@ export class TaskMaster {
 	public async convertSubtaskToTaskAsync(
 		hierarchicalId: string,
 	): Promise<void> {
-		await this.deleteAllDepsUnsafeFromTaskAsync(hierarchicalId);
+		const { SUBTASK_TO_TASK_RULES } = await import("@/constants");
+
+		console.log(chalk.bold.blue("\nSubtask to Task Conversion Rules:"));
+		SUBTASK_TO_TASK_RULES.forEach((rule, index) => {
+			console.log(chalk.yellow(`  ${index + 1}. ${rule.rule}`));
+			console.log(chalk.gray(`     Example: ${rule.example}`));
+		});
+
+		const { confirm } = await inquirer.prompt({
+			type: "confirm",
+			name: "confirm",
+			message:
+				"Have you read and understood the rules above? Do you confirm the conversion?",
+			default: false,
+		});
+
+		if (!confirm) {
+			console.log(chalk.yellow("Conversion cancelled!"));
+			return;
+		}
+
+		const tasks = await this.getTasksContentAsync();
+		const validation = this._validateConversionRules(
+			tasks,
+			hierarchicalId,
+			undefined,
+			"toTask",
+		);
+
+		if (!validation.valid) {
+			console.error(
+				chalk.red(`Conversion validation failed: ${validation.message}`),
+			);
+			console.log(
+				chalk.yellow(
+					"You can force conversion by manually removing dependencies, but this is not recommended unless absolutely necessary. Consider if the conversion is truly important for your workflow.",
+				),
+			);
+			await this._countdown(20);
+			return;
+		}
+
 		await this._executeCommandAsync(
 			`Converting subtask ${hierarchicalId} to task...`,
 			`Subtask ${hierarchicalId} converted to task successfully!`,
@@ -1009,7 +1298,7 @@ export class TaskMaster {
 	// Deleting Methods
 	// ==============================================
 
-	// TODO: done
+	// TODO: validate
 	/**
 	 * @description Delete a task by ID (including subtasks)
 	 * @param id The ID of the task to remove
@@ -1034,7 +1323,7 @@ export class TaskMaster {
 		}
 	}
 
-	// TODO: done
+	// TODO: validate
 	/**
 	 * @description Delete a specific subtask
 	 * @param hierarchicalId The hierarchical ID of the subtask
@@ -1064,7 +1353,7 @@ export class TaskMaster {
 		}
 	}
 
-	// TODO: done
+	// TODO: validate
 	/**
 	 * @description Deletes all subtasks from a specific task
 	 * @param id The ID of the task to clear subtasks from
@@ -1094,7 +1383,7 @@ export class TaskMaster {
 		}
 	}
 
-	// TODO: done
+	// TODO: validate
 	/**
 	 * @description Clears all dependencies for the specified task or subtask.
 	 * @param taskId The task ID or hierarchical ID of the subtask
