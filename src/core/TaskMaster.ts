@@ -667,6 +667,11 @@ export class TaskMaster {
 	 * @param lang Language to set for TMAI responses
 	 */
 	public async setLangAsync(lang: string): Promise<void> {
+		console.log(
+			chalk.yellow(
+				"Note: Make sure the LLM used by TMAI supports the language you choose!",
+			),
+		);
 		await this._executeCommandAsync(
 			`Setting TMAI response language to ${chalk.bold(lang)}...`,
 			`Language set to ${lang} successfully!`,

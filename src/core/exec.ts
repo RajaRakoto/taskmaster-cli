@@ -6,7 +6,7 @@ import path from "node:path";
 import { MAIN_COMMAND, TASKS_PATH, TASKS_STATUSES } from "@/constants";
 
 /* core */
-import { TaskMaster } from "@/core/taskmaster/TaskMaster";
+import { TaskMaster } from "@/core/TaskMaster";
 import { restartAsync } from "@/core/restart";
 
 /* utils */
@@ -33,7 +33,7 @@ import {
 	askLangAsync,
 	askModelsAsync,
 	askStatusAsync,
-} from "@/core/taskmaster/asks";
+} from "@/core/asks";
 
 import chalk from "chalk";
 
