@@ -25,7 +25,7 @@ export const mainMenu_prompt = [
 				value: "tmai-gen",
 			},
 			{
-				name: `${emoji.get("heavy_check_mark")}  Task management`,
+				name: `${emoji.get("heavy_check_mark")}  Task management (CRUD)`,
 				value: "tmai-manage",
 			},
 			{
@@ -137,7 +137,7 @@ export const tmaiManageMenu_prompt = [
 		loop: true,
 		pageSize: 10,
 		choices: [
-			new inquirer.Separator("=== Task management ==="),
+			new inquirer.Separator("=== Task management (CRUD) ==="),
 			{
 				name: `${emoji.get("link")} List and Navigation`,
 				value: "tmai-listnav",
