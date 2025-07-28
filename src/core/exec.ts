@@ -3,7 +3,12 @@ import inquirer from "inquirer";
 import path from "node:path";
 
 /* constants */
-import { MAIN_COMMAND, TASKS_PATH, TASKS_STATUSES } from "@/constants";
+import {
+	AI_MODELS,
+	MAIN_COMMAND,
+	TASKS_PATH,
+	TASKS_STATUSES,
+} from "@/constants";
 
 /* core */
 import { TaskMaster } from "@/core/TaskMaster";
@@ -70,7 +75,29 @@ export async function tmaiInitAsync() {
 		await tmai.interactiveConfigModelAsync();
 	} else if (choice.tmaiInitMenu === "tmai-config") {
 		const { mainModel, researchModel, fallbackModel } = await askModelsAsync();
-		await tmai.configModelsAsync(mainModel, researchModel, fallbackModel);
+
+		// Get provider from AI_MODELS configuration
+		const mainModelObj = AI_MODELS.find((model) => model.value === mainModel);
+		const researchModelObj = AI_MODELS.find(
+			(model) => model.value === researchModel,
+		);
+		const fallbackModelObj = AI_MODELS.find(
+			(model) => model.value === fallbackModel,
+		);
+
+		// Use the first provider that is defined and not null
+		const provider =
+			mainModelObj?.provider ||
+			researchModelObj?.provider ||
+			fallbackModelObj?.provider ||
+			undefined;
+
+		await tmai.configModelsAsync(
+			mainModel,
+			researchModel,
+			fallbackModel,
+			provider,
+		);
 	} else if (choice.tmaiInitMenu === "tmai-lang") {
 		const lang = await askLangAsync();
 		await tmai.setLangAsync(lang);

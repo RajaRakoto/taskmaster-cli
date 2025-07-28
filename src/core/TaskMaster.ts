@@ -627,11 +627,13 @@ export class TaskMaster {
 	 * @param mainModel The main AI model to use
 	 * @param researchModel The research AI model to use
 	 * @param fallbackModel The fallback AI model to use
+	 * @param provider Optional provider for the models
 	 */
 	public async configModelsAsync(
 		mainModel: string,
 		researchModel: string,
 		fallbackModel: string,
+		provider?: string,
 	): Promise<void> {
 		const oraOptions = {
 			text: "Configuring AI models...",
@@ -640,24 +642,21 @@ export class TaskMaster {
 		};
 
 		await oraPromise(async () => {
-			await runCommandAsync(
-				this._mainCommand,
-				["models", "--set-main", mainModel],
-				false,
-				false,
-			);
-			await runCommandAsync(
-				this._mainCommand,
-				["models", "--set-research", researchModel],
-				false,
-				false,
-			);
-			await runCommandAsync(
-				this._mainCommand,
-				["models", "--set-fallback", fallbackModel],
-				false,
-				false,
-			);
+			const mainArgs = provider
+				? ["models", "--set-main", mainModel, `--${provider}`]
+				: ["models", "--set-main", mainModel];
+
+			const researchArgs = provider
+				? ["models", "--set-research", researchModel, `--${provider}`]
+				: ["models", "--set-research", researchModel];
+
+			const fallbackArgs = provider
+				? ["models", "--set-fallback", fallbackModel, `--${provider}`]
+				: ["models", "--set-fallback", fallbackModel];
+
+			await runCommandAsync(this._mainCommand, mainArgs, false, false);
+			await runCommandAsync(this._mainCommand, researchArgs, false, false);
+			await runCommandAsync(this._mainCommand, fallbackArgs, false, false);
 		}, oraOptions);
 	}
 

@@ -1,3 +1,11 @@
+/* libs */
+import chalk from "chalk";
+
+/* types */
+import type { I_AIModel } from "@/@types/index";
+
+// ===============================
+
 // dev
 export const DEV_MODE = true;
 
@@ -74,9 +82,22 @@ export const LANG = [
 ] as const;
 
 // ai models configuration
-export const AI_MODELS = [
-	{ name: "Gemini 2.5 Pro", value: "gemini-2.5-pro" },
-	{ name: "Gemini 2.5 Flash", value: "gemini-2.5-flash" },
+export const AI_MODELS: I_AIModel[] = [
+	{
+		name: `Gemini 2.5 Pro ${chalk.gray("(google | free)")}`,
+		value: "gemini-2.5-pro",
+		provider: null,
+	},
+	{
+		name: `Gemini 2.5 Flash ${chalk.gray("(google | free)")}`,
+		value: "gemini-2.5-flash",
+		provider: null,
+	},
+	{
+		name: `Qwen 3 coder ${chalk.gray("(openrouter | free)")}`,
+		value: "qwen/qwen3-coder:free",
+		provider: "openrouter",
+	},
 ];
 
 // task conversion rules
