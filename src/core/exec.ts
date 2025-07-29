@@ -388,7 +388,7 @@ export async function tmaiDependenciesAsync() {
 				subtasksIDs,
 			);
 			await tmai.addDependencyAsync(taskId, multipleTaskIds);
-			await tmai.listAsync(tasks, TASKS_STATUSES.join(","), false, true);
+			await tmai.listAsync(tasks, TASKS_STATUSES.join(","), true, true);
 			break;
 		}
 		case "tmai-validatedeps": {

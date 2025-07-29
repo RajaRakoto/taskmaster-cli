@@ -75,6 +75,7 @@ export class TaskMaster {
 	// Getters and Setters
 	// ==============================================
 
+	// TODO: done
 	/**
 	 * @description Retrieves the contents of the tasks.json file
 	 */
@@ -91,13 +92,32 @@ export class TaskMaster {
 		);
 	}
 
+	// TODO: done
 	/**
-	 * @description Sets the tasks file path to use for task-master operations
+	 * @description Extracts all main task IDs and subtask IDs from the tasks data
+	 * @param tasks Tasks data to process
+	 * @returns Object containing two arrays: mainIDs (numbers) and subtasksIDs (strings in the format "parentId.subtaskId")
 	 */
-	public setTasksFilePath(tasksFilePath: string): void {
-		this._tasksFilePath = tasksFilePath;
+	public async getAllTaskIdsAsync(tasks: I_Tasks): Promise<{
+		mainIDs: number[];
+		subtasksIDs: string[];
+	}> {
+		const mainIDs: number[] = [];
+		const subtasksIDs: string[] = [];
+
+		for (const task of tasks.master.tasks) {
+			mainIDs.push(task.id);
+			if (task.subtasks && task.subtasks.length > 0) {
+				for (const subtask of task.subtasks) {
+					subtasksIDs.push(`${task.id}.${subtask.id}`);
+				}
+			}
+		}
+
+		return { mainIDs, subtasksIDs };
 	}
 
+	// TODO: done
 	/**
 	 * @description Retrieves all dependencies for a given task or subtask.
 	 * @param tasks The tasks data structure
@@ -496,7 +516,7 @@ export class TaskMaster {
 	}
 
 	// TODO: done
-	public _countdown(seconds: number) {
+	private _countdown(seconds: number) {
 		return new Promise((resolve) => {
 			let remaining = seconds;
 			const rl = readline.createInterface({
@@ -871,31 +891,6 @@ export class TaskMaster {
 
 	// TODO: done
 	/**
-	 * @description Extracts all main task IDs and subtask IDs from the tasks data
-	 * @param tasks Tasks data to process
-	 * @returns Object containing two arrays: mainIDs (numbers) and subtasksIDs (strings in the format "parentId.subtaskId")
-	 */
-	public async getAllTaskIdsAsync(tasks: I_Tasks): Promise<{
-		mainIDs: number[];
-		subtasksIDs: string[];
-	}> {
-		const mainIDs: number[] = [];
-		const subtasksIDs: string[] = [];
-
-		for (const task of tasks.master.tasks) {
-			mainIDs.push(task.id);
-			if (task.subtasks && task.subtasks.length > 0) {
-				for (const subtask of task.subtasks) {
-					subtasksIDs.push(`${task.id}.${subtask.id}`);
-				}
-			}
-		}
-
-		return { mainIDs, subtasksIDs };
-	}
-
-	// TODO: done
-	/**
 	 * @description Lists tasks with optional status filtering and subtask display
 	 * @param quickly List tasks quickly
 	 * @param status Filter tasks by status (todo, in-progress, done, blocked, pending)
@@ -1039,7 +1034,7 @@ export class TaskMaster {
 	// Updating Methods
 	// ==============================================
 
-	// TODO: validate
+	// TODO: done
 	/**
 	 * @description Modifies a task using AI
 	 * @param id ID of the task to modify
@@ -1075,7 +1070,7 @@ export class TaskMaster {
 		);
 	}
 
-	// TODO: validate
+	// TODO: done
 	/**
 	 * @description Updates multiple tasks using AI from a starting ID
 	 * @param startingId Starting ID for the update
@@ -1111,7 +1106,7 @@ export class TaskMaster {
 		);
 	}
 
-	// TODO: validate
+	// TODO: done
 	/**
 	 * @description Modifies a subtask using AI
 	 * @param hierarchicalId Hierarchical ID of the subtask
@@ -1302,7 +1297,7 @@ export class TaskMaster {
 	// Deleting Methods
 	// ==============================================
 
-	// TODO: validate
+	// TODO: done
 	/**
 	 * @description Delete a task by ID (including subtasks)
 	 * @param id The ID of the task to remove
@@ -1327,7 +1322,7 @@ export class TaskMaster {
 		}
 	}
 
-	// TODO: validate
+	// TODO: done
 	/**
 	 * @description Delete a specific subtask
 	 * @param hierarchicalId The hierarchical ID of the subtask
@@ -1357,7 +1352,7 @@ export class TaskMaster {
 		}
 	}
 
-	// TODO: validate
+	// TODO: done
 	/**
 	 * @description Deletes all subtasks from a specific task
 	 * @param id The ID of the task to clear subtasks from
@@ -1387,7 +1382,7 @@ export class TaskMaster {
 		}
 	}
 
-	// TODO: validate
+	// TODO: done
 	/**
 	 * @description Clears all dependencies for the specified task or subtask.
 	 * @param taskId The task ID or hierarchical ID of the subtask
@@ -1401,14 +1396,12 @@ export class TaskMaster {
 			return;
 		}
 
-		// For subtasks, dependency IDs are already in the correct format
-		// For main tasks, dependency IDs are numbers that need to be converted to string
 		const isSubtask = taskId.includes(".");
 
 		for (const dependencyId of dependencyIds) {
 			const dependsOnId = isSubtask
-				? dependencyId.toString() // For subtasks, dependencyId is already the full ID
-				: dependencyId.toString(); // For main tasks, convert number to string
+				? dependencyId.toString()
+				: dependencyId.toString();
 
 			await this._executeCommandAsync(
 				`Removing dependency ${dependsOnId} from task ${taskId}...`,

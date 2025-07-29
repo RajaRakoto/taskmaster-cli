@@ -309,12 +309,6 @@ describe("TaskMaster Class", () => {
 		});
 	});
 
-	// describe("_fixIdsToSequentialAsync", () => {
-	// 	test("fixes sequential IDs", async () => {
-	// 		await tmai._fixIdsToSequentialAsync();
-	// 	});
-	// });
-
 	describe("_validateConversionRules", () => {
 		test("should validate task to subtask conversion with no dependencies", () => {
 			const tasks: I_Tasks = {
