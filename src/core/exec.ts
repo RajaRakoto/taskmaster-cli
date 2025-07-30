@@ -63,7 +63,6 @@ const tmai = new TaskMaster({
 	isTestMode: false,
 });
 
-// TODO: done
 export async function tmaiInitAsync() {
 	const choice = await inquirer.prompt(tmaiInitMenu_prompt);
 
@@ -106,7 +105,6 @@ export async function tmaiInitAsync() {
 	await restartAsync();
 }
 
-// TODO: done
 export async function tmaiGenAsync() {
 	const choice = await inquirer.prompt(tmaiGenDecMenu_prompt);
 
@@ -147,7 +145,6 @@ export async function tmaiGenAsync() {
 	await restartAsync();
 }
 
-// TODO: in-progress
 export async function tmaiManageAsync() {
 	let tasks = await tmai.getTasksContentAsync();
 	const { mainIDs, subtasksIDs } = await tmai.getAllTaskIdsAsync(tasks);
@@ -373,21 +370,26 @@ export async function tmaiManageAsync() {
 	await restartAsync();
 }
 
-// TODO: in-progress
 export async function tmaiDependenciesAsync() {
+	let tasks = await tmai.getTasksContentAsync();
 	const { tmaiDepsMenu } = await inquirer.prompt(tmaiDepsMenu_prompt);
-	const tasks = await tmai.getTasksContentAsync();
 	const { mainIDs, subtasksIDs } = await tmai.getAllTaskIdsAsync(tasks);
 
 	switch (tmaiDepsMenu) {
 		case "tmai-adddeps": {
 			await tmai.listAsync(tasks, TASKS_STATUSES.join(","), true, true);
-			const taskId = await askHybridTaskIdAsync(mainIDs, subtasksIDs);
+			const taskId = await askHybridTaskIdAsync(
+				mainIDs,
+				subtasksIDs,
+				"Select the task ID to which you want to add dependencies (integer or hierarchical):",
+			);
 			const multipleTaskIds = await askMultipleTaskIdAsync(
 				mainIDs,
 				subtasksIDs,
+				"Select the dependencies IDs to add (comma-separated):",
 			);
 			await tmai.addDependencyAsync(taskId, multipleTaskIds);
+			tasks = await tmai.getTasksContentAsync();
 			await tmai.listAsync(tasks, TASKS_STATUSES.join(","), true, true);
 			break;
 		}
@@ -406,7 +408,6 @@ export async function tmaiDependenciesAsync() {
 	await restartAsync();
 }
 
-// TODO: done
 export async function tmaiBackupRestoreClearAsync() {
 	const { tmaiBackupRestoreClearMenu } = await inquirer.prompt(
 		tmaiBackupRestoreClearClear_prompt,

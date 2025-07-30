@@ -1468,7 +1468,7 @@ export class TaskMaster {
 	// Dependencies Methods
 	// ==============================================
 
-	// TODO: in-progress
+	// TODO: done
 	/**
 	 * @description Adds a dependency to a task
 	 * @param taskId ID of the task to modify
@@ -1478,15 +1478,15 @@ export class TaskMaster {
 		taskId: string,
 		dependencyIds: string[],
 	): Promise<void> {
-		const formatedDepsIds =
-			dependencyIds.length > 1 ? dependencyIds.join(",") : dependencyIds[0];
-		await this._executeCommandAsync(
-			`Adding dependency ${formatedDepsIds} to task ${taskId}...`,
-			`Dependency ${formatedDepsIds} added successfully to task ${taskId}!`,
-			`Failed to add dependency ${formatedDepsIds} to task ${taskId}`,
-			this._mainCommand,
-			["add-dependency", `--id=${taskId}`, `--depends-on=${formatedDepsIds}`],
-		);
+		for (const dependencyId of dependencyIds) {
+			await this._executeCommandAsync(
+				`Adding dependency ${dependencyId} to task ${taskId}...`,
+				`Dependency ${dependencyId} added successfully to task ${taskId}!`,
+				`Failed to add dependency ${dependencyId} to task ${taskId}`,
+				this._mainCommand,
+				["add-dependency", `--id=${taskId}`, `--depends-on=${dependencyId}`],
+			);
+		}
 	}
 
 	// TODO: done
