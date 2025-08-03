@@ -38,6 +38,7 @@ import {
 	askLangAsync,
 	askModelsAsync,
 	askStatusAsync,
+	askWithSubtasksAsync,
 } from "@/core/asks";
 
 import chalk from "chalk";
@@ -52,6 +53,7 @@ import {
 	tmaiUpdateTasksMenu_prompt,
 	tmaiDeleteTasksMenu_prompt,
 	tmaiDepsMenu_prompt,
+	tmaiAnalysisReportDocs_prompt,
 	tmaiBackupRestoreClearClear_prompt,
 } from "@/prompt";
 
@@ -399,6 +401,36 @@ export async function tmaiDependenciesAsync() {
 		}
 		case "tmai-fixdeps": {
 			await tmai.fixDependenciesAsync();
+			break;
+		}
+		default:
+			console.log("Invalid option selected.");
+	}
+
+	await restartAsync();
+}
+
+export async function tmaiAnalysisReportDocsAsync() {
+	const { tmaiAnalysisReportDocsMenu } = await inquirer.prompt(
+		tmaiAnalysisReportDocs_prompt,
+	);
+
+	switch (tmaiAnalysisReportDocsMenu) {
+		case "tmai-analyze": {
+			const research = await askAdvancedResearchConfirmationAsync();
+			const tag = await askTaskTagAsync();
+			await tmai.analyzeComplexityAsync(research, tag);
+			break;
+		}
+		case "tmai-report": {
+			const tag = await askTaskTagAsync();
+			await tmai.showComplexityReportAsync(tag);
+			break;
+		}
+		case "tmai-sync": {
+			const withSubtasks = await askWithSubtasksAsync();
+			const tag = await askTaskTagAsync();
+			await tmai.syncReadmeAsync(withSubtasks, tag);
 			break;
 		}
 		default:

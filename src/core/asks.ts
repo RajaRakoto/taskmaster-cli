@@ -544,3 +544,16 @@ export async function askModelsAsync(): Promise<{
 		fallbackModel,
 	};
 }
+
+/**
+ * @description Asks the user for confirmation to include subtasks
+ */
+export async function askWithSubtasksAsync(): Promise<boolean> {
+	const { withSubtasks } = await inquirer.prompt({
+		type: "confirm",
+		name: "withSubtasks",
+		message: "Include subtasks?",
+		default: false,
+	});
+	return withSubtasks;
+}

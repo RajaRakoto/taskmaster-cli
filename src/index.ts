@@ -8,6 +8,7 @@ import {
 	tmaiGenAsync,
 	tmaiManageAsync,
 	tmaiDependenciesAsync,
+	tmaiAnalysisReportDocsAsync,
 	tmaiBackupRestoreClearAsync,
 } from "@/core/exec";
 
@@ -52,13 +53,7 @@ export async function taskmasterCLI(): Promise<void> {
 			await tmaiDependenciesAsync();
 			break;
 		case "tmai-analysis":
-			console.log("TM operations for analysis ...");
-			break;
-		case "tmai-docs":
-			console.log("TM operations for documentation ...");
-			break;
-		case "tmai-dev":
-			console.log("TM operations for development ...");
+			await tmaiAnalysisReportDocsAsync();
 			break;
 		case "tmai-bckrestore":
 			await tmaiBackupRestoreClearAsync();

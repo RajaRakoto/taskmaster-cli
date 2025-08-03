@@ -15,6 +15,8 @@ export const PRD_PATH = DEV_MODE ? "docs/PRD-todo.md" : "docs/PRD.md";
 export const TASKS_PATH = ".taskmaster/tasks/tasks.json";
 export const TASKS_SRC_PATH = ".taskmaster";
 export const TASKS_BCK_DEST_PATH = "backups/tmai-backup";
+export const REPORT_PATH = ".taskmaster/reports/task-complexity-report.json";
+export const README_PATH = "README.md";
 
 // tasks
 export const MAIN_COMMAND = "task-master";

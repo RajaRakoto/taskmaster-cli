@@ -4,7 +4,7 @@ import chalk from "chalk";
 import * as emoji from "node-emoji";
 
 // ==============================
-// Main menu
+// Main Menu
 // ==============================
 
 export const mainMenu_prompt = [
@@ -50,7 +50,7 @@ export const mainMenu_prompt = [
 ];
 
 // ==============================
-// Initialization and Configuration menu
+// Initialization and Configuration Menu
 // ==============================
 
 export const tmaiInitMenu_prompt = [
@@ -95,7 +95,7 @@ export const tmaiInitMenu_prompt = [
 ];
 
 // ==============================
-// Generation and Decomposition menu
+// Generation and Decomposition Menu
 // ==============================
 
 export const tmaiGenDecMenu_prompt = [
@@ -126,7 +126,7 @@ export const tmaiGenDecMenu_prompt = [
 ];
 
 // ==============================
-// Task management menu
+// Task management Menu
 // ==============================
 
 export const tmaiManageMenu_prompt = [
@@ -159,7 +159,7 @@ export const tmaiManageMenu_prompt = [
 ];
 
 // ==============================
-// Task list and navigation menu
+// Task list and navigation Menu
 // ==============================
 
 export const tmaiListNavMenu_prompt = [
@@ -188,7 +188,7 @@ export const tmaiListNavMenu_prompt = [
 ];
 
 // ==============================
-// Adding tasks menu
+// Adding tasks Menu
 // ==============================
 
 export const tmaiAddTasksMenu_prompt = [
@@ -221,7 +221,7 @@ export const tmaiAddTasksMenu_prompt = [
 ];
 
 // ==============================
-// Modifying tasks menu
+// Modifying tasks Menu
 // ==============================
 
 export const tmaiUpdateTasksMenu_prompt = [
@@ -262,7 +262,7 @@ export const tmaiUpdateTasksMenu_prompt = [
 ];
 
 // ==============================
-// Deleting tasks menu
+// Deleting tasks Menu
 // ==============================
 
 export const tmaiDeleteTasksMenu_prompt = [
@@ -299,7 +299,7 @@ export const tmaiDeleteTasksMenu_prompt = [
 ];
 
 // ==============================
-// Dependencies menu
+// Dependencies Menu
 // ==============================
 
 export const tmaiDepsMenu_prompt = [
@@ -327,9 +327,8 @@ export const tmaiDepsMenu_prompt = [
 	},
 ];
 
-// TODO: pending
 // ==============================
-// Analysis menu
+// Analysis, Report and Documentation Menu
 // ==============================
 
 export const tmaiAnalysisReportDocs_prompt = [
@@ -343,22 +342,22 @@ export const tmaiAnalysisReportDocs_prompt = [
 			new inquirer.Separator("=== Analysis, Report and Documentation ==="),
 			{
 				name: `${emoji.get("bar_chart")} Analyze task complexity`,
-				value: "tmai-analysis-complexity",
+				value: "tmai-analyze",
 			},
 			{
 				name: `${emoji.get("page_with_curl")} Show complexity report`,
-				value: "tmai-analysis-complexity-report",
+				value: "tmai-report",
 			},
 			{
 				name: `${emoji.get("books")} Sync tasks with README.md`,
-				value: "tmai-docs-sync-readme",
+				value: "tmai-sync",
 			},
 		],
 	},
 ];
 
 // ==============================
-// Backup, Restore and Clear menu
+// Backup, Restore and Clear Menu
 // ==============================
 
 export const tmaiBackupRestoreClearClear_prompt = [

@@ -18,6 +18,8 @@ import {
 	TASKS_FILE_WARN,
 	TASKS_BCK_DEST_PATH,
 	TASKS_SRC_PATH,
+	REPORT_PATH,
+	README_PATH,
 	TASKS_FILES,
 } from "@/constants";
 
@@ -26,6 +28,7 @@ import {
 	existsAsync,
 	runCommandAsync,
 	readJsonFileAsync,
+	createFileIfNotExistsAsync,
 } from "@/utils/extras";
 
 /* types */
@@ -62,7 +65,7 @@ export class TaskMaster {
 
 		if (!this._isTestMode) {
 			if (!fs.existsSync(this._tasksFilePath)) {
-				console.warn(chalk.bgYellow(TASKS_FILE_WARN(this._tasksFilePath)));
+				console.log(chalk.bgYellow(TASKS_FILE_WARN(this._tasksFilePath)));
 			} else {
 				console.info(
 					chalk.bgGreen(`Found tasks.json at "${this._tasksFilePath}"`),
@@ -187,9 +190,9 @@ export class TaskMaster {
 		);
 
 		const oraOptions = {
-			text: text,
-			successText: chalk.bgGreen(successText),
-			failText: chalk.bgRed(failText),
+			text: `${text}\n`,
+			successText: `\n${chalk.bgGreen(successText)}\n`,
+			failText: `\n${chalk.bgRed(failText)}\n`,
 		};
 
 		await oraPromise(
@@ -1518,6 +1521,89 @@ export class TaskMaster {
 	}
 
 	// ==============================================
+	// Analysis, Report and Documentation Methods
+	// ==============================================
+
+	/**
+	 * @description Analyzes the complexity of tasks and generates a complexity report
+	 * @param allowAdvancedResearch Use advanced research
+	 * @param tag Context tag
+	 */
+	public async analyzeComplexityAsync(
+		allowAdvancedResearch: boolean,
+		tag?: string,
+	): Promise<void> {
+		await createFileIfNotExistsAsync(REPORT_PATH);
+
+		const args = ["analyze-complexity"];
+		if (allowAdvancedResearch) args.push("--research");
+		if (tag) args.push(`--tag=${tag}`);
+
+		await this._executeCommandAsync(
+			"Analyzing task complexity...",
+			"Task complexity analysis completed successfully!",
+			"Failed to analyze task complexity",
+			this._mainCommand,
+			args,
+		);
+	}
+
+	/**
+	 * @description Displays the task complexity report
+	 * @param tag Context tag
+	 */
+	public async showComplexityReportAsync(tag?: string): Promise<void> {
+		const reportExists = fs.existsSync(REPORT_PATH);
+		const { generateReport } = await inquirer.prompt([
+			{
+				type: "confirm",
+				name: "generateReport",
+				message: reportExists
+					? "Do you want to update the complexity report?"
+					: "No complexity report found. Do you want to generate one?",
+				default: true,
+			},
+		]);
+
+		if (generateReport) await this.analyzeComplexityAsync(false, tag);
+
+		const args = ["complexity-report"];
+		if (tag) args.push(`--tag=${tag}`);
+
+		await this._executeCommandAsync(
+			"Generating complexity report...",
+			"Complexity report generated successfully!",
+			"Failed to generate complexity report",
+			this._mainCommand,
+			args,
+		);
+	}
+
+	/**
+	 * @description Synchronizes tasks with the README.md file
+	 * @param withSubtasks Whether to include subtasks in the synchronization
+	 * @param tag Context tag
+	 */
+	public async syncReadmeAsync(
+		withSubtasks = false,
+		tag?: string,
+	): Promise<void> {
+		await createFileIfNotExistsAsync(README_PATH);
+
+		const args = ["sync-readme"];
+		if (withSubtasks) args.push("--with-subtasks");
+		if (tag) args.push(`--tag=${tag}`);
+
+		await this._executeCommandAsync(
+			"Synchronizing tasks with README.md...",
+			"Tasks synchronized with README.md successfully!",
+			"Failed to synchronize tasks with README.md",
+			this._mainCommand,
+			args,
+		);
+	}
+
+	// ==============================================
 	// Backup, Restore and Clear Methods
 	// ==============================================
 
@@ -1536,7 +1622,7 @@ export class TaskMaster {
 
 		// Vérifier si le répertoire source existe
 		if (!fs.existsSync(TASKS_SRC_PATH)) {
-			console.warn(
+			console.log(
 				chalk.yellow(
 					`Source directory ${TASKS_SRC_PATH} does not exist. Skipping backup.`,
 				),
@@ -1566,7 +1652,7 @@ export class TaskMaster {
 		const backupPath = path.join(TASKS_BCK_DEST_PATH, `slot_${slot}.zip`);
 
 		if (!fs.existsSync(backupPath)) {
-			console.warn(
+			console.log(
 				chalk.yellow(`No backup found in slot ${slot}. Skipping restore.`),
 			);
 			return;
