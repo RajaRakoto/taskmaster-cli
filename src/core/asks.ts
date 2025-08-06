@@ -10,7 +10,7 @@ import {
 	DEFAULT_SUBTASKS_TO_GENERATE,
 	DEFAULT_TAG,
 	DEFAULT_TASKS_TO_GENERATE,
-	LANG,
+	LANGS,
 	MAX_DESCRIPTION_LENGTH,
 	MAX_PROMPT_LENGTH,
 	MAX_SUBTASKS_TO_GENERATE,
@@ -22,6 +22,7 @@ import {
 	TASKS_STATUSES,
 	TASKS_BCK_DEST_PATH,
 	AI_MODELS,
+	NOTE_MODELS,
 } from "@/constants";
 
 /* utils */
@@ -492,14 +493,14 @@ export async function askLangAsync(): Promise<string> {
 		type: "list",
 		name: "lang",
 		message: "Select the language for TMAI responses:",
-		choices: LANG,
+		choices: LANGS,
 	});
 	return lang;
 }
 
 /**
  * @description Prompts the user to select AI models for main, research, and fallback
- * Note: This list is designed for faster TMAI testing using free or generously quota'd models.
+ * This list is designed for faster TMAI testing using free or generously quota'd models.
  * For a wider selection, use the standard interactive configuration mode.
  */
 export async function askModelsAsync(): Promise<{
@@ -507,11 +508,7 @@ export async function askModelsAsync(): Promise<{
 	researchModel: string;
 	fallbackModel: string;
 }> {
-	console.log(
-		chalk.blue(
-			"Note: This list is optimized for quicker TMAI testing with free or high-quota models. These models are fully suitable for real projects too. For more options, use the standard interactive configuration mode.",
-		),
-	);
+	console.log(chalk.blue(NOTE_MODELS));
 
 	const { mainModel, researchModel, fallbackModel } = await inquirer.prompt<{
 		mainModel: string;

@@ -51,53 +51,71 @@ export const MAX_TITLE_TRUNC_LENGTH = 40;
 export const MAX_DESCRIPTION_LENGTH = 250;
 export const MAX_PROMPT_LENGTH = 1024;
 
-// status configuration
-export const STATUS_CONFIG = {
-	todo: { icon: "○", color: "gray" },
-	"in-progress": { icon: "▶", color: "yellow" },
-	done: { icon: "✓", color: "green" },
-	blocked: { icon: "✗", color: "red" },
-	pending: { icon: "…", color: "gray" },
-	review: { icon: "★", color: "blue" },
-	deferred: { icon: "↓", color: "magenta" },
-	cancelled: { icon: "✗", color: "redBright" },
-};
-
-// package managers
-export const PACKAGE_MANAGERS = ["npm", "pnpm", "bun"] as const;
-
 // common messages
 export const TASKMASTER_INIT_MSG = "TaskMaster AI Core initialized";
 export const TASKS_FILE_WARN: (path: string) => string = (path: string) =>
 	`tasks.json not found at "${path}". Please generate tasks from PRD first.`;
 
-// supported languages for TMAI responses
-export const LANG = [
-	"English",
-	"Chinese",
-	"Japanese",
-	"French",
-	"Spanish",
-	"German",
-	"Portuguese",
-	"Italian",
-] as const;
-
 // ai models configuration
 export const AI_MODELS: I_AIModel[] = [
 	{
-		name: `Gemini 2.5 Pro ${chalk.gray("(google | free)")}`,
-		value: "gemini-2.5-pro",
-		provider: null,
-	},
-	{
-		name: `Gemini 2.5 Flash ${chalk.gray("(google | free)")}`,
+		name: `Gemini 2.5 Flash (free) ${chalk.gray("(google > free | 1M context)")}`,
 		value: "gemini-2.5-flash",
 		provider: null,
 	},
 	{
-		name: `Qwen 3 coder ${chalk.gray("(openrouter | free)")}`,
-		value: "qwen/qwen3-coder:free",
+		name: `Gemini 2.5 Pro (free) ${chalk.gray("(google > free | 1M context)")}`,
+		value: "gemini-2.5-pro",
+		provider: null,
+	},
+	{
+		name: `Qwen 3 Coder ${chalk.gray("(openrouter > $0.20/M input | $0.80/M output | 262k context)")}`,
+		value: "qwen/qwen3-coder",
+		provider: "openrouter",
+	},
+	{
+		name: `Qwen Turbo ${chalk.gray("(openrouter > $0.05/M input | $0.20/M output | 1M context)")}`,
+		value: "qwen/qwen-turbo",
+		provider: "openrouter",
+	},
+	{
+		name: `DeepSeek R1‑0528 ${chalk.gray("(openrouter > $0.18/M input | $0.72/M output | 163k context)")}`,
+		value: "deepseek/deepseek-r1-0528",
+		provider: "openrouter",
+	},
+	{
+		name: `DeepSeek R1‑0528 (free) ${chalk.gray("(openrouter > free | 163k context)")}`,
+		value: "deepseek/deepseek-r1-0528:free",
+		provider: "openrouter",
+	},
+	{
+		name: `DeepSeek Chat V3‑0324 ${chalk.gray("(openrouter > $0.18/M input | $0.72/M output | 163k context)")}`,
+		value: "deepseek/deepseek-chat-v3-0324",
+		provider: "openrouter",
+	},
+	{
+		name: `DeepSeek Chat V3‑0324 (free) ${chalk.gray("(openrouter > fre | 163k context)")}`,
+		value: "deepseek/deepseek-chat-v3-0324:free",
+		provider: "openrouter",
+	},
+	{
+		name: `Mistral DevStral Small 1.1 ${chalk.gray("(openrouter > $0.07/M input | $0.28/M output | 128k context)")}`,
+		value: "mistralai/devstral-small",
+		provider: "openrouter",
+	},
+	{
+		name: `Horizon Beta (free) ${chalk.gray("(openrouter > free | 256k context | training)")}`,
+		value: "openrouter/horizon-beta",
+		provider: "openrouter",
+	},
+	{
+		name: `Kimi K2 ${chalk.gray("(openrouter > $0.14/M input | $2.49/M output | 63k context)")}`,
+		value: "moonshotai/kimi-k2",
+		provider: "openrouter",
+	},
+	{
+		name: `Kimi K2 (free) ${chalk.gray("(openrouter > free | 32k context)")}`,
+		value: "moonshotai/kimi-k2:free",
 		provider: "openrouter",
 	},
 ];
@@ -154,3 +172,33 @@ export const SUBTASK_TO_TASK_RULES = [
 		example: "Subtask #1.2 becomes Task #4 (next available ID)",
 	},
 ];
+
+// notes
+export const NOTE_MODELS =
+	"Note: This list is optimized for faster TMAI testing using free or high-quota models. These models are also fully suitable for real-world projects. Additional models — including popular paid options with highly competitive pricing — are also available, mostly via the OpenRouter provider";
+export const NOTE_LANGS =
+	"Note: Make sure the LLM used by TMAI supports the language you choose!";
+
+// extras
+export const DEFAULT_COUNTDOWN = 10;
+export const PACKAGE_MANAGERS = ["npm", "pnpm", "bun"] as const;
+export const LANGS = [
+	"English",
+	"Chinese",
+	"Japanese",
+	"French",
+	"Spanish",
+	"German",
+	"Portuguese",
+	"Italian",
+] as const;
+export const STATUS_CONFIG = {
+	todo: { icon: "○", color: "gray" },
+	"in-progress": { icon: "▶", color: "yellow" },
+	done: { icon: "✓", color: "green" },
+	blocked: { icon: "✗", color: "red" },
+	pending: { icon: "…", color: "gray" },
+	review: { icon: "★", color: "blue" },
+	deferred: { icon: "↓", color: "magenta" },
+	cancelled: { icon: "✗", color: "redBright" },
+};
