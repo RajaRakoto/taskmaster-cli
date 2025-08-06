@@ -21,6 +21,7 @@ import {
 	REPORT_PATH,
 	README_PATH,
 	TASKS_FILES,
+	NOTE_LANGS,
 } from "@/constants";
 
 /* extras */
@@ -122,7 +123,7 @@ export class TaskMaster {
 
 	// TODO: done
 	/**
-	 * @description Retrieves all dependencies for a given task or subtask.
+	 * @description Extracts all dependencies for a given task or subtask.
 	 * @param tasks The tasks data structure
 	 * @param taskId The task ID (either a simple number as string or hierarchical like "1.2")
 	 */
@@ -160,6 +161,122 @@ export class TaskMaster {
 
 		const subtask = parentTask.subtasks[subtaskIndex];
 		return subtask.dependencies;
+	}
+
+	// TODO: done
+	/**
+	 * @description Fixes the format of the tasks.json file if necessary
+	 * by encapsulating the 'tasks' and 'metadata' keys under a 'master' key
+	 * @param mode Operation mode: 'init' for initialization or 'repair' for fixing existing file
+	 */
+	public async _fixTasksFileFormatAsync(
+		mode: "init" | "repair" = "repair",
+	): Promise<void> {
+		const isInitMode = mode === "init";
+		const oraOptions = {
+			text: isInitMode
+				? "Initializing tasks.json file..."
+				: "Verifying tasks.json file format...",
+			successText: isInitMode
+				? chalk.bgGreen(
+						"tasks.json initialized successfully with default structure.",
+					)
+				: chalk.bgGreen("tasks.json format validated successfully!"),
+			failText: isInitMode
+				? chalk.bgRed("Failed to initialize tasks.json file")
+				: chalk.bgRed("Failed to validate tasks.json format"),
+		};
+
+		await oraPromise(async () => {
+			// Handle init mode - create default structure
+			if (isInitMode) {
+				const defaultContent = {
+					master: {
+						tasks: [],
+						metadata: {},
+					},
+				};
+
+				await writeFile(
+					this._tasksFilePath,
+					JSON.stringify(defaultContent, null, 2),
+				);
+				return;
+			}
+
+			// Handle repair mode - fix existing file format
+			const currentContent = await readJsonFileAsync<Record<string, unknown>>(
+				this._tasksFilePath,
+			);
+
+			interface MasterStructure {
+				tasks?: unknown;
+				metadata?: unknown;
+			}
+
+			let tasksToSave: unknown[] | null = null;
+			let metadataToSave: object | null = null;
+			let masterKey: string | null = null;
+
+			if (currentContent.master) {
+				const masterData = currentContent.master as MasterStructure;
+				if (
+					Array.isArray(masterData.tasks) &&
+					typeof masterData.metadata === "object"
+				) {
+					masterKey = "master";
+					tasksToSave = masterData.tasks;
+					metadataToSave = masterData.metadata;
+				}
+			}
+
+			if (!masterKey) {
+				for (const key of Object.keys(currentContent)) {
+					const value = currentContent[key];
+					if (typeof value === "object" && !Array.isArray(value)) {
+						const data = value as MasterStructure;
+						if (
+							Array.isArray(data.tasks) &&
+							typeof data.metadata === "object"
+						) {
+							masterKey = key;
+							tasksToSave = data.tasks;
+							metadataToSave = data.metadata;
+							break;
+						}
+					}
+				}
+			}
+
+			if (!masterKey) {
+				if (
+					Array.isArray(currentContent?.tasks) &&
+					typeof currentContent?.metadata === "object"
+				) {
+					tasksToSave = currentContent.tasks;
+					metadataToSave = currentContent.metadata;
+				}
+			}
+
+			if (tasksToSave !== null && metadataToSave !== null) {
+				const correctedContent = {
+					master: {
+						tasks: tasksToSave,
+						metadata: metadataToSave,
+					},
+				};
+
+				await writeFile(
+					this._tasksFilePath,
+					JSON.stringify(correctedContent, null, 2),
+				);
+				return;
+			}
+
+			throw new Error(
+				"Invalid tasks.json format. Could not find valid tasks and metadata to correct the file.",
+			);
+		}, oraOptions);
 	}
 
 	// ==============================================
@@ -246,93 +363,6 @@ export class TaskMaster {
 
 			// Update the internal tasks file path if needed
 			this._tasksFilePath = this._tasksFilePath;
-		}, oraOptions);
-	}
-
-	// TODO: done
-	/**
-	 * @description Fixes the format of the tasks.json file if necessary
-	 * by encapsulating the 'tasks' and 'metadata' keys under a 'master' key
-	 */
-	public async _fixTasksFileFormatAsync(): Promise<void> {
-		const oraOptions = {
-			text: "Verifying tasks.json file format...",
-			successText: chalk.bgGreen("tasks.json format validated successfully!"),
-			failText: chalk.bgRed("Failed to validate tasks.json format"),
-		};
-
-		await oraPromise(async () => {
-			const currentContent = await readJsonFileAsync<Record<string, unknown>>(
-				this._tasksFilePath,
-			);
-
-			interface MasterStructure {
-				tasks?: unknown;
-				metadata?: unknown;
-			}
-
-			let tasksToSave: unknown[] | null = null;
-			let metadataToSave: object | null = null;
-			let masterKey: string | null = null;
-
-			if (currentContent.master) {
-				const masterData = currentContent.master as MasterStructure;
-				if (
-					Array.isArray(masterData.tasks) &&
-					typeof masterData.metadata === "object"
-				) {
-					masterKey = "master";
-					tasksToSave = masterData.tasks;
-					metadataToSave = masterData.metadata;
-				}
-			}
-
-			if (!masterKey) {
-				for (const key of Object.keys(currentContent)) {
-					const value = currentContent[key];
-					if (typeof value === "object" && !Array.isArray(value)) {
-						const data = value as MasterStructure;
-						if (
-							Array.isArray(data.tasks) &&
-							typeof data.metadata === "object"
-						) {
-							masterKey = key;
-							tasksToSave = data.tasks;
-							metadataToSave = data.metadata;
-							break;
-						}
-					}
-				}
-			}
-
-			if (!masterKey) {
-				if (
-					Array.isArray(currentContent?.tasks) &&
-					typeof currentContent?.metadata === "object"
-				) {
-					tasksToSave = currentContent.tasks;
-					metadataToSave = currentContent.metadata;
-				}
-			}
-
-			if (tasksToSave !== null && metadataToSave !== null) {
-				const correctedContent = {
-					master: {
-						tasks: tasksToSave,
-						metadata: metadataToSave,
-					},
-				};
-
-				await writeFile(
-					this._tasksFilePath,
-					JSON.stringify(correctedContent, null, 2),
-				);
-				return;
-			}
-
-			throw new Error(
-				"Invalid tasks.json format. Could not find valid tasks and metadata to correct the file.",
-			);
 		}, oraOptions);
 	}
 
@@ -519,8 +549,12 @@ export class TaskMaster {
 	}
 
 	// TODO: done
-	private _countdown(seconds: number) {
-		return new Promise((resolve) => {
+	/**
+	 * @description Starts a countdown timer
+	 * @param seconds The number of seconds to count down
+	 */
+	public async countdownAsync(seconds: number) {
+		return await new Promise((resolve) => {
 			let remaining = seconds;
 			const rl = readline.createInterface({
 				input: process.stdin,
@@ -689,11 +723,7 @@ export class TaskMaster {
 	 * @param lang Language to set for TMAI responses
 	 */
 	public async setLangAsync(lang: string): Promise<void> {
-		console.log(
-			chalk.yellow(
-				"Note: Make sure the LLM used by TMAI supports the language you choose!",
-			),
-		);
+		console.log(chalk.yellow(NOTE_LANGS));
 		await this._executeCommandAsync(
 			`Setting TMAI response language to ${chalk.bold(lang)}...`,
 			`Language set to ${lang} successfully!`,
@@ -1224,7 +1254,7 @@ export class TaskMaster {
 					"You can force conversion by manually removing dependencies, but this is not recommended unless absolutely necessary. Consider if the conversion is truly important for your workflow.",
 				),
 			);
-			await this._countdown(20);
+			await this.countdownAsync(20);
 			return;
 		}
 
@@ -1283,7 +1313,7 @@ export class TaskMaster {
 					"You can force conversion by manually removing dependencies, but this is not recommended unless absolutely necessary. Consider if the conversion is truly important for your workflow.",
 				),
 			);
-			await this._countdown(20);
+			await this.countdownAsync(20);
 			return;
 		}
 

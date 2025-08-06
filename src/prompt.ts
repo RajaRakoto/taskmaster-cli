@@ -90,6 +90,10 @@ export const tmaiInitMenu_prompt = [
 				)} 4 - Set the response language for AI-generated content in TMAI`,
 				value: "tmai-lang",
 			},
+			{
+				name: `${emoji.get("arrow_left")}  Back`,
+				value: "back",
+			},
 		],
 	},
 ];
@@ -120,6 +124,10 @@ export const tmaiGenDecMenu_prompt = [
 			{
 				name: `${emoji.get("factory")} 3 - Decompose all tasks (AI)`,
 				value: "tmai-dec",
+			},
+			{
+				name: `${emoji.get("arrow_left")}  Back`,
+				value: "back",
 			},
 		],
 	},
@@ -154,6 +162,10 @@ export const tmaiManageMenu_prompt = [
 				name: `${emoji.get("wastebasket")}  Delete tasks`,
 				value: "tmai-deletetasks",
 			},
+			{
+				name: `${emoji.get("arrow_left")}  Back`,
+				value: "back",
+			},
 		],
 	},
 ];
@@ -182,6 +194,10 @@ export const tmaiListNavMenu_prompt = [
 			{
 				name: `${emoji.get("arrow_forward")}  Show next task`,
 				value: "tmai-next",
+			},
+			{
+				name: `${emoji.get("arrow_left")}  Back`,
+				value: "back",
 			},
 		],
 	},
@@ -215,6 +231,10 @@ export const tmaiAddTasksMenu_prompt = [
 			{
 				name: `${emoji.get("heavy_plus_sign")} Add subtask (manually)`,
 				value: "tmai-addsubtaskmanual",
+			},
+			{
+				name: `${emoji.get("arrow_left")}  Back`,
+				value: "back",
 			},
 		],
 	},
@@ -257,6 +277,10 @@ export const tmaiUpdateTasksMenu_prompt = [
 				name: `${emoji.get("pencil2")}  Convert subtask to task`,
 				value: "tmai-convertsubtasktotask",
 			},
+			{
+				name: `${emoji.get("arrow_left")}  Back`,
+				value: "back",
+			},
 		],
 	},
 ];
@@ -294,6 +318,10 @@ export const tmaiDeleteTasksMenu_prompt = [
 				name: `${emoji.get("wastebasket")} Delete all dependencies from a task (unsafe but fast)`,
 				value: "tmai-deletealldepsunsafefromtask",
 			},
+			{
+				name: `${emoji.get("arrow_left")}  Back`,
+				value: "back",
+			},
 		],
 	},
 ];
@@ -323,6 +351,10 @@ export const tmaiDepsMenu_prompt = [
 				name: `${emoji.get("wrench")} Fix dependencies`,
 				value: "tmai-fixdeps",
 			},
+			{
+				name: `${emoji.get("arrow_left")}  Back`,
+				value: "back",
+			},
 		],
 	},
 ];
@@ -351,6 +383,10 @@ export const tmaiAnalysisReportDocs_prompt = [
 			{
 				name: `${emoji.get("books")} Sync tasks with README.md`,
 				value: "tmai-sync",
+			},
+			{
+				name: `${emoji.get("arrow_left")}  Back`,
+				value: "back",
 			},
 		],
 	},
@@ -396,6 +432,10 @@ export const tmaiBackupRestoreClearClear_prompt = [
 					`${emoji.get("broom")} Clear all current tasks (including subtasks) and all related tmai files`,
 				),
 				value: "tmai-clearall",
+			},
+			{
+				name: `${emoji.get("arrow_left")}  Back`,
+				value: "back",
 			},
 		],
 	},

@@ -2,12 +2,16 @@
 import inquirer from "inquirer";
 import path from "node:path";
 
+/* index */
+import { taskmasterCLI } from "@/index";
+
 /* constants */
 import {
 	AI_MODELS,
 	MAIN_COMMAND,
 	TASKS_PATH,
 	TASKS_STATUSES,
+	DEFAULT_COUNTDOWN,
 } from "@/constants";
 
 /* core */
@@ -65,8 +69,20 @@ const tmai = new TaskMaster({
 	isTestMode: false,
 });
 
+/**
+ * @description Handles the initialization menu for TMAI, providing options for installation,
+ * configuration, and language setting. Depending on the user's choice, it executes the corresponding
+ * action such as installing/upgrading TMAI, initializing TMAI with updated rules, configuring AI models
+ * interactively or quickly, and setting the response language for AI-generated content.
+ * If the "back" option is selected, it returns to the main CLI menu.
+ * After executing the selected action, it continues to prompt the user for further actions.
+ */
 export async function tmaiInitAsync() {
 	const choice = await inquirer.prompt(tmaiInitMenu_prompt);
+
+	if (choice.tmaiInitMenu === "back") {
+		return taskmasterCLI();
+	}
 
 	if (choice.tmaiInitMenu === "tmai-install") {
 		await tmai.installAsync();
@@ -104,11 +120,23 @@ export async function tmaiInitAsync() {
 		await tmai.setLangAsync(lang);
 	}
 
-	await restartAsync();
+	await tmai.countdownAsync(DEFAULT_COUNTDOWN);
+	await tmaiInitAsync();
 }
 
+/**
+ * @description The main entry point for the generation and decomposition menu.
+ * It will prompt the user to select one of the following options:
+ * - Generate tasks from a PRD file
+ * - Generate task files
+ * - Decompose all tasks
+ */
 export async function tmaiGenAsync() {
 	const choice = await inquirer.prompt(tmaiGenDecMenu_prompt);
+
+	if (choice.tmaiGenDecMenu === "back") {
+		return taskmasterCLI();
+	}
 
 	if (choice.tmaiGenDecMenu === "tmai-parse") {
 		const tasksJsonPath = path.join(".taskmaster", "tasks", "tasks.json");
@@ -137,24 +165,43 @@ export async function tmaiGenAsync() {
 		const confirmDecomposition = await askDecompositionConfirmationAsync();
 		if (!confirmDecomposition) {
 			console.log("Decomposition of tasks cancelled!");
-			return restartAsync();
+			await tmai.countdownAsync(DEFAULT_COUNTDOWN);
+			return await tmaiGenAsync();
 		}
 
 		const tag = await askTaskTagAsync();
 		await tmai.decomposeAsync(tag);
 	}
 
-	await restartAsync();
+	await tmai.countdownAsync(DEFAULT_COUNTDOWN);
+	await tmaiGenAsync();
 }
 
+/**
+ * @description The main entry point for the task management menu (CRUD).
+ * It will prompt the user to select one of the following options:
+ * - List and navigation
+ * - Add tasks
+ * - Update tasks
+ * - Delete tasks
+ */
 export async function tmaiManageAsync() {
 	let tasks = await tmai.getTasksContentAsync();
 	const { mainIDs, subtasksIDs } = await tmai.getAllTaskIdsAsync(tasks);
 	const { tmaiManageMenu } = await inquirer.prompt(tmaiManageMenu_prompt);
 
+	if (tmaiManageMenu === "back") {
+		return taskmasterCLI();
+	}
+
 	switch (tmaiManageMenu) {
 		case "tmai-listnav": {
 			const { tmaiListNavMenu } = await inquirer.prompt(tmaiListNavMenu_prompt);
+
+			if (tmaiListNavMenu === "back") {
+				return await tmaiManageAsync();
+			}
+
 			if (tmaiListNavMenu === "tmai-list") {
 				const validatedStatus = await askStatusSelectionAsync();
 				const { quickly, withSubtasks } = await askDisplayOptionsAsync();
@@ -172,6 +219,11 @@ export async function tmaiManageAsync() {
 			const { tmaiAddTasksMenu } = await inquirer.prompt(
 				tmaiAddTasksMenu_prompt,
 			);
+
+			if (tmaiAddTasksMenu === "back") {
+				return await tmaiManageAsync();
+			}
+
 			const tag = await askTaskTagAsync();
 
 			switch (tmaiAddTasksMenu) {
@@ -228,6 +280,11 @@ export async function tmaiManageAsync() {
 			const { tmaiUpdateTasksMenu } = await inquirer.prompt(
 				tmaiUpdateTasksMenu_prompt,
 			);
+
+			if (tmaiUpdateTasksMenu === "back") {
+				return await tmaiManageAsync();
+			}
+
 			const tag = await askTaskTagAsync();
 
 			switch (tmaiUpdateTasksMenu) {
@@ -318,6 +375,11 @@ export async function tmaiManageAsync() {
 			const { tmaiDeleteTasksMenu } = await inquirer.prompt(
 				tmaiDeleteTasksMenu_prompt,
 			);
+
+			if (tmaiDeleteTasksMenu === "back") {
+				return await tmaiManageAsync();
+			}
+
 			const { mainIDs, subtasksIDs } = await tmai.getAllTaskIdsAsync(tasks);
 			const tag = await askTaskTagAsync();
 
@@ -369,12 +431,23 @@ export async function tmaiManageAsync() {
 			console.log("Invalid option selected.");
 	}
 
-	await restartAsync();
+	await tmai.countdownAsync(DEFAULT_COUNTDOWN);
+	await tmaiManageAsync();
 }
 
+/**
+ * @description Handles the dependencies menu for task management. This function prompts the user to
+ * select an operation related to task dependencies, such as adding, validating, or fixing
+ * dependencies. Based on the user's choice, it executes the corresponding operation.
+ */
 export async function tmaiDependenciesAsync() {
 	let tasks = await tmai.getTasksContentAsync();
 	const { tmaiDepsMenu } = await inquirer.prompt(tmaiDepsMenu_prompt);
+
+	if (tmaiDepsMenu === "back") {
+		return taskmasterCLI();
+	}
+
 	const { mainIDs, subtasksIDs } = await tmai.getAllTaskIdsAsync(tasks);
 
 	switch (tmaiDepsMenu) {
@@ -407,13 +480,25 @@ export async function tmaiDependenciesAsync() {
 			console.log("Invalid option selected.");
 	}
 
-	await restartAsync();
+	await tmai.countdownAsync(DEFAULT_COUNTDOWN);
+	await tmaiDependenciesAsync();
 }
 
+/**
+ * @description Handles the analysis, report and documentation menu for task management.
+ * This function prompts the user to select an operation related to task complexity
+ * analysis, report, and documentation, such as analyzing task complexity, showing
+ * the complexity report, or synchronizing the README file. Based on the user's
+ * choice, it executes the corresponding operation.
+ */
 export async function tmaiAnalysisReportDocsAsync() {
 	const { tmaiAnalysisReportDocsMenu } = await inquirer.prompt(
 		tmaiAnalysisReportDocs_prompt,
 	);
+
+	if (tmaiAnalysisReportDocsMenu === "back") {
+		return taskmasterCLI();
+	}
 
 	switch (tmaiAnalysisReportDocsMenu) {
 		case "tmai-analyze": {
@@ -437,13 +522,23 @@ export async function tmaiAnalysisReportDocsAsync() {
 			console.log("Invalid option selected.");
 	}
 
-	await restartAsync();
+	await tmai.countdownAsync(DEFAULT_COUNTDOWN);
+	await tmaiAnalysisReportDocsAsync();
 }
 
+/**
+ * @description This function prompts the user to select an operation related to backup, restore, and clearing data,
+ * such as creating a backup, restoring a backup, clearing all dependencies, clearing all subtasks,
+ * or clearing all tasks. Based on the user's choice, it executes the corresponding operation.
+ */
 export async function tmaiBackupRestoreClearAsync() {
 	const { tmaiBackupRestoreClearMenu } = await inquirer.prompt(
 		tmaiBackupRestoreClearClear_prompt,
 	);
+
+	if (tmaiBackupRestoreClearMenu === "back") {
+		return taskmasterCLI();
+	}
 
 	switch (tmaiBackupRestoreClearMenu) {
 		case "tmai-backup": {
@@ -498,5 +593,6 @@ export async function tmaiBackupRestoreClearAsync() {
 			console.log("Invalid option selected.");
 	}
 
-	await restartAsync();
+	await tmai.countdownAsync(DEFAULT_COUNTDOWN);
+	await tmaiBackupRestoreClearAsync();
 }
