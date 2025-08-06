@@ -6,7 +6,7 @@ import chalk from "chalk";
 import pkg from "../../package.json";
 
 /* constants */
-import { DEV_MODE, FONT_PATH } from "@/constants";
+import { DEV_MODE, FONT_PATH, GITHUB_URL } from "@/constants";
 
 /* utils */
 import { resolveRealPathAsync, readFileAsync } from "@/utils/extras";
@@ -35,7 +35,13 @@ export async function bannerRendererAsync(
 			});
 			const coloredBanner = chalk.magenta(rendered);
 			const packageVersion = pkg.version;
-			const result = `${coloredBanner}\n ${chalk.underline("version:")} ${packageVersion}${DEV_MODE ? ` ${chalk.yellow("(dev mode)")}` : ""}\n\n ${description}`;
+			const result = [
+				coloredBanner,
+				`\n ${chalk.underline("version:")} ${chalk.bgGray(packageVersion)}`,
+				DEV_MODE ? ` ${chalk.yellow("(dev mode)")}` : "",
+				`\n ${chalk.underline("github:")} ${chalk.bgGray(GITHUB_URL)}`,
+				`\n\n ${description}`,
+			].join("");
 			resolve(result);
 		} catch (error) {
 			reject(
