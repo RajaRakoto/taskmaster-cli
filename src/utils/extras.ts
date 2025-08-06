@@ -208,3 +208,31 @@ export async function readJsonFileAsync<T = unknown>(
 		throw error;
 	}
 }
+
+/**
+ * @description Create a file if it doesn't exist
+ * @param filePath The path to the file to create
+ * @param content The content to write to the file (default: empty string)
+ */
+export async function createFileIfNotExistsAsync(
+	filePath: string,
+	content = "",
+): Promise<void> {
+	try {
+		const fileExists = await existsAsync(filePath);
+		if (!fileExists) {
+			const dirPath = path.dirname(filePath);
+			if (dirPath !== ".") {
+				await mkdirAsync(dirPath, { recursive: true });
+			}
+			await writeFileAsync(filePath, content);
+		}
+	} catch (error) {
+		if (error instanceof Error) {
+			throw new Error(
+				`[error]: error during file creation: \n${error.message}`,
+			);
+		}
+		throw error;
+	}
+}

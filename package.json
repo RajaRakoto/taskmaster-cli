@@ -74,11 +74,11 @@
 		"qtype:tasks": "quicktype .taskmaster/tasks/tasks.json -o src/@types/tasks.d.ts --just-types"
 	},
 	"dependencies": {
-		"chalk": "^5.4.1",
+		"chalk": "^5.5.0",
 		"commander": "^14.0.0",
 		"compressing": "^1.10.3",
 		"execa": "^9.6.0",
-		"figlet": "^1.8.1",
+		"figlet": "^1.8.2",
 		"figures": "^6.1.0",
 		"inquirer": "^9.2.15",
 		"node-emoji": "^2.2.0",
@@ -101,11 +101,11 @@
 		"grunt": "^1.6.1",
 		"grunt-contrib-compress": "^2.0.0",
 		"grunt-shell": "^4.0.0",
-		"jest": "^30.0.0",
+		"jest": "^30.0.5",
 		"load-grunt-tasks": "^5.1.0",
-		"npm-check-updates": "^18.0.1",
+		"npm-check-updates": "^18.0.2",
 		"rimraf": "^6.0.1",
-		"ts-jest": "^29.4.0",
+		"ts-jest": "^29.4.1",
 		"ungit": "^1.5.28"
 	},
 	"peerDependencies": {

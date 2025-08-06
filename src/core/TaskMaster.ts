@@ -18,7 +18,10 @@ import {
 	TASKS_FILE_WARN,
 	TASKS_BCK_DEST_PATH,
 	TASKS_SRC_PATH,
+	REPORT_PATH,
+	README_PATH,
 	TASKS_FILES,
+	NOTE_LANGS,
 } from "@/constants";
 
 /* extras */
@@ -26,6 +29,7 @@ import {
 	existsAsync,
 	runCommandAsync,
 	readJsonFileAsync,
+	createFileIfNotExistsAsync,
 } from "@/utils/extras";
 
 /* types */
@@ -62,7 +66,7 @@ export class TaskMaster {
 
 		if (!this._isTestMode) {
 			if (!fs.existsSync(this._tasksFilePath)) {
-				console.warn(chalk.bgYellow(TASKS_FILE_WARN(this._tasksFilePath)));
+				console.log(chalk.bgYellow(TASKS_FILE_WARN(this._tasksFilePath)));
 			} else {
 				console.info(
 					chalk.bgGreen(`Found tasks.json at "${this._tasksFilePath}"`),
@@ -75,6 +79,7 @@ export class TaskMaster {
 	// Getters and Setters
 	// ==============================================
 
+	// TODO: done
 	/**
 	 * @description Retrieves the contents of the tasks.json file
 	 */
@@ -91,15 +96,34 @@ export class TaskMaster {
 		);
 	}
 
+	// TODO: done
 	/**
-	 * @description Sets the tasks file path to use for task-master operations
+	 * @description Extracts all main task IDs and subtask IDs from the tasks data
+	 * @param tasks Tasks data to process
+	 * @returns Object containing two arrays: mainIDs (numbers) and subtasksIDs (strings in the format "parentId.subtaskId")
 	 */
-	public setTasksFilePath(tasksFilePath: string): void {
-		this._tasksFilePath = tasksFilePath;
+	public async getAllTaskIdsAsync(tasks: I_Tasks): Promise<{
+		mainIDs: number[];
+		subtasksIDs: string[];
+	}> {
+		const mainIDs: number[] = [];
+		const subtasksIDs: string[] = [];
+
+		for (const task of tasks.master.tasks) {
+			mainIDs.push(task.id);
+			if (task.subtasks && task.subtasks.length > 0) {
+				for (const subtask of task.subtasks) {
+					subtasksIDs.push(`${task.id}.${subtask.id}`);
+				}
+			}
+		}
+
+		return { mainIDs, subtasksIDs };
 	}
 
+	// TODO: done
 	/**
-	 * @description Retrieves all dependencies for a given task or subtask.
+	 * @description Extracts all dependencies for a given task or subtask.
 	 * @param tasks The tasks data structure
 	 * @param taskId The task ID (either a simple number as string or hierarchical like "1.2")
 	 */
@@ -139,106 +163,48 @@ export class TaskMaster {
 		return subtask.dependencies;
 	}
 
-	// ==============================================
-	// Helpers
-	// ==============================================
-
-	// TODO: done
-	/**
-	 * @description Helper method to execute commands with consistent ora handling
-	 * @param text Loading text for ora spinner
-	 * @param successText Success message
-	 * @param failText Failure message
-	 * @param command Main command to execute
-	 * @param args Command arguments
-	 * @note Escapes command arguments to prevent shell injection
-	 * Handles both quotes and dollar signs which could be dangerous in shell commands
-	 */
-	private async _executeCommandAsync(
-		text: string,
-		successText: string,
-		failText: string,
-		command: string,
-		args: string[] = [],
-	): Promise<void> {
-		// Escape the arguments to prevent injections
-		const escapedArgs = args.map((arg) =>
-			arg.replace(/"/g, '\\"').replace(/\$/g, "\\$"),
-		);
-
-		const oraOptions = {
-			text: text,
-			successText: chalk.bgGreen(successText),
-			failText: chalk.bgRed(failText),
-		};
-
-		await oraPromise(
-			runCommandAsync(command, escapedArgs, false, false),
-			oraOptions,
-		);
-	}
-
-	// TODO: done
-	/**
-	 * @description Fixes the IDs of all tasks and subtasks in tasks.json to be sequential
-	 * by reorganizing them incrementally starting from 1.
-	 * This method ensures better organization and readability of the task list.
-	 */
-	public async _fixIdsToSequentialAsync(): Promise<void> {
-		const oraOptions = {
-			text: "Fixing task IDs...",
-			successText: chalk.bgGreen("Task IDs fixed successfully!"),
-			failText: chalk.bgRed("Failed to fix task IDs"),
-		};
-
-		await oraPromise(async () => {
-			// Read the current tasks
-			const tasks = await this.getTasksContentAsync();
-
-			// Sort tasks by their current ID to maintain logical order
-			tasks.master.tasks.sort((a, b) => a.id - b.id);
-
-			// Fix main task IDs
-			const idMap = new Map<number, number>();
-			for (const [index, task] of tasks.master.tasks.entries()) {
-				const oldId = task.id;
-				const newId = index + 1;
-				if (oldId !== newId) {
-					idMap.set(oldId, newId);
-					task.id = newId;
-				}
-			}
-
-			// Fix subtask IDs and update dependencies
-			for (const task of tasks.master.tasks) {
-				if (task.subtasks && task.subtasks.length > 0) {
-					for (const [index, subtask] of task.subtasks.entries()) {
-						subtask.id = index + 1;
-					}
-				}
-			}
-
-			// Write the updated tasks back to the file
-			await writeFile(this._tasksFilePath, JSON.stringify(tasks, null, 2));
-
-			// Update the internal tasks file path if needed
-			this._tasksFilePath = this._tasksFilePath;
-		}, oraOptions);
-	}
-
 	// TODO: done
 	/**
 	 * @description Fixes the format of the tasks.json file if necessary
 	 * by encapsulating the 'tasks' and 'metadata' keys under a 'master' key
+	 * @param mode Operation mode: 'init' for initialization or 'repair' for fixing existing file
 	 */
-	public async _fixTasksFileFormatAsync(): Promise<void> {
+	private async _fixTasksFileFormatAsync(
+		mode: "init" | "repair" = "repair",
+	): Promise<void> {
+		const isInitMode = mode === "init";
 		const oraOptions = {
-			text: "Verifying tasks.json file format...",
-			successText: chalk.bgGreen("tasks.json format validated successfully!"),
-			failText: chalk.bgRed("Failed to validate tasks.json format"),
+			text: isInitMode
+				? "Initializing tasks.json file..."
+				: "Verifying tasks.json file format...",
+			successText: isInitMode
+				? chalk.bgGreen(
+						"tasks.json initialized successfully with default structure.",
+					)
+				: chalk.bgGreen("tasks.json format validated successfully!"),
+			failText: isInitMode
+				? chalk.bgRed("Failed to initialize tasks.json file")
+				: chalk.bgRed("Failed to validate tasks.json format"),
 		};
 
 		await oraPromise(async () => {
+			// Handle init mode - create default structure
+			if (isInitMode) {
+				const defaultContent = {
+					master: {
+						tasks: [],
+						metadata: {},
+					},
+				};
+
+				await writeFile(
+					this._tasksFilePath,
+					JSON.stringify(defaultContent, null, 2),
+				);
+				return;
+			}
+
+			// Handle repair mode - fix existing file format
 			const currentContent = await readJsonFileAsync<Record<string, unknown>>(
 				this._tasksFilePath,
 			);
@@ -310,6 +276,152 @@ export class TaskMaster {
 			throw new Error(
 				"Invalid tasks.json format. Could not find valid tasks and metadata to correct the file.",
 			);
+		}, oraOptions);
+	}
+
+	// ==============================================
+	// Helpers
+	// ==============================================
+
+	// TODO: done
+	/**
+	 * @description Helper method to execute commands with consistent ora handling
+	 * @param text Loading text for ora spinner
+	 * @param successText Success message
+	 * @param failText Failure message
+	 * @param command Main command to execute
+	 * @param args Command arguments
+	 * @note Escapes command arguments to prevent shell injection
+	 * Handles both quotes and dollar signs which could be dangerous in shell commands
+	 */
+	private async _executeCommandAsync(
+		text: string,
+		successText: string,
+		failText: string,
+		command: string,
+		args: string[] = [],
+	): Promise<void> {
+		// Escape the arguments to prevent injections
+		const escapedArgs = args.map((arg) =>
+			arg.replace(/"/g, '\\"').replace(/\$/g, "\\$"),
+		);
+
+		const oraOptions = {
+			text: `${text}\n`,
+			successText: `\n${chalk.bgGreen(successText)}\n`,
+			failText: `\n${chalk.bgRed(failText)}\n`,
+		};
+
+		await oraPromise(
+			runCommandAsync(command, escapedArgs, false, false),
+			oraOptions,
+		);
+	}
+
+	// TODO: done
+	/**
+	 * @description Validates that tasks are ready (file exists and has at least one task)
+	 * @returns True if tasks are ready, false otherwise
+	 */
+	public async validateTasksReadyAsync(): Promise<boolean> {
+		// Check if tasks.json file exists
+		if (!fs.existsSync(this._tasksFilePath)) {
+			console.log(
+				chalk.yellow(
+					"TMAI is not initialized. Please run the initialization process and generate at least one task.",
+				),
+			);
+			await this.countdownAsync(10);
+			return false;
+		}
+
+		try {
+			// Read the tasks file
+			const tasks = await this.getTasksContentAsync();
+
+			// Check if tasks object and master property exist
+			if (!tasks || !tasks.master) {
+				console.log(
+					chalk.yellow(
+						"TMAI is not initialized. Please run the initialization process and generate at least one task.",
+					),
+				);
+				await this.countdownAsync(10);
+				return false;
+			}
+
+			// Check if there's at least one task in master.tasks
+			if (
+				!tasks.master.tasks ||
+				!Array.isArray(tasks.master.tasks) ||
+				tasks.master.tasks.length === 0
+			) {
+				console.log(
+					chalk.yellow(
+						"TMAI is not initialized. Please generate at least one task.",
+					),
+				);
+				await this.countdownAsync(10);
+				return false;
+			}
+
+			return true;
+		} catch {
+			console.log(
+				chalk.yellow(
+					"TMAI is not initialized. Please run the initialization process and generate at least one task.",
+				),
+			);
+			await this.countdownAsync(10);
+			return false;
+		}
+	}
+
+	// TODO: done
+	/**
+	 * @description Fixes the IDs of all tasks and subtasks in tasks.json to be sequential
+	 * by reorganizing them incrementally starting from 1.
+	 * This method ensures better organization and readability of the task list.
+	 */
+	public async _fixIdsToSequentialAsync(): Promise<void> {
+		const oraOptions = {
+			text: "Fixing task IDs...",
+			successText: chalk.bgGreen("Task IDs fixed successfully!"),
+			failText: chalk.bgRed("Failed to fix task IDs"),
+		};
+
+		await oraPromise(async () => {
+			// Read the current tasks
+			const tasks = await this.getTasksContentAsync();
+
+			// Sort tasks by their current ID to maintain logical order
+			tasks.master.tasks.sort((a, b) => a.id - b.id);
+
+			// Fix main task IDs
+			const idMap = new Map<number, number>();
+			for (const [index, task] of tasks.master.tasks.entries()) {
+				const oldId = task.id;
+				const newId = index + 1;
+				if (oldId !== newId) {
+					idMap.set(oldId, newId);
+					task.id = newId;
+				}
+			}
+
+			// Fix subtask IDs and update dependencies
+			for (const task of tasks.master.tasks) {
+				if (task.subtasks && task.subtasks.length > 0) {
+					for (const [index, subtask] of task.subtasks.entries()) {
+						subtask.id = index + 1;
+					}
+				}
+			}
+
+			// Write the updated tasks back to the file
+			await writeFile(this._tasksFilePath, JSON.stringify(tasks, null, 2));
+
+			// Update the internal tasks file path if needed
+			this._tasksFilePath = this._tasksFilePath;
 		}, oraOptions);
 	}
 
@@ -496,8 +608,12 @@ export class TaskMaster {
 	}
 
 	// TODO: done
-	public _countdown(seconds: number) {
-		return new Promise((resolve) => {
+	/**
+	 * @description Starts a countdown timer
+	 * @param seconds The number of seconds to count down
+	 */
+	public async countdownAsync(seconds: number) {
+		return await new Promise((resolve) => {
 			let remaining = seconds;
 			const rl = readline.createInterface({
 				input: process.stdin,
@@ -605,6 +721,7 @@ export class TaskMaster {
 
 		await runCommandAsync(this._mainCommand, ["init"], false, false);
 		console.log(chalk.bgGreen("Task-master project initialized successfully!"));
+		await this._fixTasksFileFormatAsync("init");
 	}
 
 	// TODO: done
@@ -613,7 +730,7 @@ export class TaskMaster {
 	 */
 	public async interactiveConfigModelAsync(): Promise<void> {
 		await this._executeCommandAsync(
-			"Configuring AI models...",
+			"Configuring AI models...\n",
 			"AI models configured successfully!",
 			"AI model configuration failed",
 			this._mainCommand,
@@ -627,37 +744,36 @@ export class TaskMaster {
 	 * @param mainModel The main AI model to use
 	 * @param researchModel The research AI model to use
 	 * @param fallbackModel The fallback AI model to use
+	 * @param provider Optional provider for the models
 	 */
 	public async configModelsAsync(
 		mainModel: string,
 		researchModel: string,
 		fallbackModel: string,
+		provider?: string,
 	): Promise<void> {
 		const oraOptions = {
-			text: "Configuring AI models...",
+			text: "Configuring AI models...\n",
 			successText: chalk.bgGreen("AI models configured successfully!"),
 			failText: chalk.bgRed("AI model configuration failed"),
 		};
 
 		await oraPromise(async () => {
-			await runCommandAsync(
-				this._mainCommand,
-				["models", "--set-main", mainModel],
-				false,
-				false,
-			);
-			await runCommandAsync(
-				this._mainCommand,
-				["models", "--set-research", researchModel],
-				false,
-				false,
-			);
-			await runCommandAsync(
-				this._mainCommand,
-				["models", "--set-fallback", fallbackModel],
-				false,
-				false,
-			);
+			const mainArgs = provider
+				? ["models", "--set-main", mainModel, `--${provider}`]
+				: ["models", "--set-main", mainModel];
+
+			const researchArgs = provider
+				? ["models", "--set-research", researchModel, `--${provider}`]
+				: ["models", "--set-research", researchModel];
+
+			const fallbackArgs = provider
+				? ["models", "--set-fallback", fallbackModel, `--${provider}`]
+				: ["models", "--set-fallback", fallbackModel];
+
+			await runCommandAsync(this._mainCommand, mainArgs, false, false);
+			await runCommandAsync(this._mainCommand, researchArgs, false, false);
+			await runCommandAsync(this._mainCommand, fallbackArgs, false, false);
 		}, oraOptions);
 	}
 
@@ -667,11 +783,7 @@ export class TaskMaster {
 	 * @param lang Language to set for TMAI responses
 	 */
 	public async setLangAsync(lang: string): Promise<void> {
-		console.log(
-			chalk.yellow(
-				"Note: Make sure the LLM used by TMAI supports the language you choose!",
-			),
-		);
+		console.log(chalk.yellow(NOTE_LANGS));
 		await this._executeCommandAsync(
 			`Setting TMAI response language to ${chalk.bold(lang)}...`,
 			`Language set to ${lang} successfully!`,
@@ -872,31 +984,6 @@ export class TaskMaster {
 
 	// TODO: done
 	/**
-	 * @description Extracts all main task IDs and subtask IDs from the tasks data
-	 * @param tasks Tasks data to process
-	 * @returns Object containing two arrays: mainIDs (numbers) and subtasksIDs (strings in the format "parentId.subtaskId")
-	 */
-	public async getAllTaskIdsAsync(tasks: I_Tasks): Promise<{
-		mainIDs: number[];
-		subtasksIDs: string[];
-	}> {
-		const mainIDs: number[] = [];
-		const subtasksIDs: string[] = [];
-
-		for (const task of tasks.master.tasks) {
-			mainIDs.push(task.id);
-			if (task.subtasks && task.subtasks.length > 0) {
-				for (const subtask of task.subtasks) {
-					subtasksIDs.push(`${task.id}.${subtask.id}`);
-				}
-			}
-		}
-
-		return { mainIDs, subtasksIDs };
-	}
-
-	// TODO: done
-	/**
 	 * @description Lists tasks with optional status filtering and subtask display
 	 * @param quickly List tasks quickly
 	 * @param status Filter tasks by status (todo, in-progress, done, blocked, pending)
@@ -1040,7 +1127,7 @@ export class TaskMaster {
 	// Updating Methods
 	// ==============================================
 
-	// TODO: validate
+	// TODO: done
 	/**
 	 * @description Modifies a task using AI
 	 * @param id ID of the task to modify
@@ -1076,7 +1163,7 @@ export class TaskMaster {
 		);
 	}
 
-	// TODO: validate
+	// TODO: done
 	/**
 	 * @description Updates multiple tasks using AI from a starting ID
 	 * @param startingId Starting ID for the update
@@ -1112,7 +1199,7 @@ export class TaskMaster {
 		);
 	}
 
-	// TODO: validate
+	// TODO: done
 	/**
 	 * @description Modifies a subtask using AI
 	 * @param hierarchicalId Hierarchical ID of the subtask
@@ -1227,7 +1314,7 @@ export class TaskMaster {
 					"You can force conversion by manually removing dependencies, but this is not recommended unless absolutely necessary. Consider if the conversion is truly important for your workflow.",
 				),
 			);
-			await this._countdown(20);
+			await this.countdownAsync(20);
 			return;
 		}
 
@@ -1286,7 +1373,7 @@ export class TaskMaster {
 					"You can force conversion by manually removing dependencies, but this is not recommended unless absolutely necessary. Consider if the conversion is truly important for your workflow.",
 				),
 			);
-			await this._countdown(20);
+			await this.countdownAsync(20);
 			return;
 		}
 
@@ -1303,7 +1390,7 @@ export class TaskMaster {
 	// Deleting Methods
 	// ==============================================
 
-	// TODO: validate
+	// TODO: done
 	/**
 	 * @description Delete a task by ID (including subtasks)
 	 * @param id The ID of the task to remove
@@ -1328,7 +1415,7 @@ export class TaskMaster {
 		}
 	}
 
-	// TODO: validate
+	// TODO: done
 	/**
 	 * @description Delete a specific subtask
 	 * @param hierarchicalId The hierarchical ID of the subtask
@@ -1358,7 +1445,7 @@ export class TaskMaster {
 		}
 	}
 
-	// TODO: validate
+	// TODO: done
 	/**
 	 * @description Deletes all subtasks from a specific task
 	 * @param id The ID of the task to clear subtasks from
@@ -1388,7 +1475,7 @@ export class TaskMaster {
 		}
 	}
 
-	// TODO: validate
+	// TODO: done
 	/**
 	 * @description Clears all dependencies for the specified task or subtask.
 	 * @param taskId The task ID or hierarchical ID of the subtask
@@ -1402,14 +1489,12 @@ export class TaskMaster {
 			return;
 		}
 
-		// For subtasks, dependency IDs are already in the correct format
-		// For main tasks, dependency IDs are numbers that need to be converted to string
 		const isSubtask = taskId.includes(".");
 
 		for (const dependencyId of dependencyIds) {
 			const dependsOnId = isSubtask
-				? dependencyId.toString() // For subtasks, dependencyId is already the full ID
-				: dependencyId.toString(); // For main tasks, convert number to string
+				? dependencyId.toString()
+				: dependencyId.toString();
 
 			await this._executeCommandAsync(
 				`Removing dependency ${dependsOnId} from task ${taskId}...`,
@@ -1476,7 +1561,7 @@ export class TaskMaster {
 	// Dependencies Methods
 	// ==============================================
 
-	// TODO: in-progress
+	// TODO: done
 	/**
 	 * @description Adds a dependency to a task
 	 * @param taskId ID of the task to modify
@@ -1486,15 +1571,15 @@ export class TaskMaster {
 		taskId: string,
 		dependencyIds: string[],
 	): Promise<void> {
-		const formatedDepsIds =
-			dependencyIds.length > 1 ? dependencyIds.join(",") : dependencyIds[0];
-		await this._executeCommandAsync(
-			`Adding dependency ${formatedDepsIds} to task ${taskId}...`,
-			`Dependency ${formatedDepsIds} added successfully to task ${taskId}!`,
-			`Failed to add dependency ${formatedDepsIds} to task ${taskId}`,
-			this._mainCommand,
-			["add-dependency", `--id=${taskId}`, `--depends-on=${formatedDepsIds}`],
-		);
+		for (const dependencyId of dependencyIds) {
+			await this._executeCommandAsync(
+				`Adding dependency ${dependencyId} to task ${taskId}...`,
+				`Dependency ${dependencyId} added successfully to task ${taskId}!`,
+				`Failed to add dependency ${dependencyId} to task ${taskId}`,
+				this._mainCommand,
+				["add-dependency", `--id=${taskId}`, `--depends-on=${dependencyId}`],
+			);
+		}
 	}
 
 	// TODO: done
@@ -1526,6 +1611,89 @@ export class TaskMaster {
 	}
 
 	// ==============================================
+	// Analysis, Report and Documentation Methods
+	// ==============================================
+
+	/**
+	 * @description Analyzes the complexity of tasks and generates a complexity report
+	 * @param allowAdvancedResearch Use advanced research
+	 * @param tag Context tag
+	 */
+	public async analyzeComplexityAsync(
+		allowAdvancedResearch: boolean,
+		tag?: string,
+	): Promise<void> {
+		await createFileIfNotExistsAsync(REPORT_PATH);
+
+		const args = ["analyze-complexity"];
+		if (allowAdvancedResearch) args.push("--research");
+		if (tag) args.push(`--tag=${tag}`);
+
+		await this._executeCommandAsync(
+			"Analyzing task complexity...",
+			"Task complexity analysis completed successfully!",
+			"Failed to analyze task complexity",
+			this._mainCommand,
+			args,
+		);
+	}
+
+	/**
+	 * @description Displays the task complexity report
+	 * @param tag Context tag
+	 */
+	public async showComplexityReportAsync(tag?: string): Promise<void> {
+		const reportExists = fs.existsSync(REPORT_PATH);
+		const { generateReport } = await inquirer.prompt([
+			{
+				type: "confirm",
+				name: "generateReport",
+				message: reportExists
+					? "Do you want to update the complexity report?"
+					: "No complexity report found. Do you want to generate one?",
+				default: true,
+			},
+		]);
+
+		if (generateReport) await this.analyzeComplexityAsync(false, tag);
+
+		const args = ["complexity-report"];
+		if (tag) args.push(`--tag=${tag}`);
+
+		await this._executeCommandAsync(
+			"Generating complexity report...",
+			"Complexity report generated successfully!",
+			"Failed to generate complexity report",
+			this._mainCommand,
+			args,
+		);
+	}
+
+	/**
+	 * @description Synchronizes tasks with the README.md file
+	 * @param withSubtasks Whether to include subtasks in the synchronization
+	 * @param tag Context tag
+	 */
+	public async syncReadmeAsync(
+		withSubtasks = false,
+		tag?: string,
+	): Promise<void> {
+		await createFileIfNotExistsAsync(README_PATH);
+
+		const args = ["sync-readme"];
+		if (withSubtasks) args.push("--with-subtasks");
+		if (tag) args.push(`--tag=${tag}`);
+
+		await this._executeCommandAsync(
+			"Synchronizing tasks with README.md...",
+			"Tasks synchronized with README.md successfully!",
+			"Failed to synchronize tasks with README.md",
+			this._mainCommand,
+			args,
+		);
+	}
+
+	// ==============================================
 	// Backup, Restore and Clear Methods
 	// ==============================================
 
@@ -1544,7 +1712,7 @@ export class TaskMaster {
 
 		// Vérifier si le répertoire source existe
 		if (!fs.existsSync(TASKS_SRC_PATH)) {
-			console.warn(
+			console.log(
 				chalk.yellow(
 					`Source directory ${TASKS_SRC_PATH} does not exist. Skipping backup.`,
 				),
@@ -1574,7 +1742,7 @@ export class TaskMaster {
 		const backupPath = path.join(TASKS_BCK_DEST_PATH, `slot_${slot}.zip`);
 
 		if (!fs.existsSync(backupPath)) {
-			console.warn(
+			console.log(
 				chalk.yellow(`No backup found in slot ${slot}. Skipping restore.`),
 			);
 			return;

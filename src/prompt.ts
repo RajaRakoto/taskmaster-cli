@@ -4,7 +4,7 @@ import chalk from "chalk";
 import * as emoji from "node-emoji";
 
 // ==============================
-// Main menu
+// Main Menu
 // ==============================
 
 export const mainMenu_prompt = [
@@ -50,7 +50,7 @@ export const mainMenu_prompt = [
 ];
 
 // ==============================
-// Initialization and Configuration menu
+// Initialization and Configuration Menu
 // ==============================
 
 export const tmaiInitMenu_prompt = [
@@ -81,21 +81,25 @@ export const tmaiInitMenu_prompt = [
 				value: "tmai-interactiveconfig",
 			},
 			{
-				name: `${emoji.get("fast_forward")} 4 - Configure AI models (quickly)`,
+				name: `${emoji.get("fast_forward")} Configure AI models (quickly)`,
 				value: "tmai-config",
 			},
 			{
 				name: `${emoji.get(
 					"globe_with_meridians",
-				)} 5 - Set the response language for AI-generated content in TMAI`,
+				)} 4 - Set the response language for AI-generated content in TMAI`,
 				value: "tmai-lang",
+			},
+			{
+				name: `${emoji.get("arrow_left")}  Back`,
+				value: "back",
 			},
 		],
 	},
 ];
 
 // ==============================
-// Generation and Decomposition menu
+// Generation and Decomposition Menu
 // ==============================
 
 export const tmaiGenDecMenu_prompt = [
@@ -108,25 +112,29 @@ export const tmaiGenDecMenu_prompt = [
 		choices: [
 			new inquirer.Separator("=== Generation and Decomposition ==="),
 			{
-				name: `${emoji.get("notebook")} Generate tasks from PRD (AI)`,
+				name: `${emoji.get("notebook")} 1 - Generate tasks from PRD (AI)`,
 				value: "tmai-parse",
 			},
 			{
 				name: `${emoji.get(
 					"page_facing_up",
-				)} Generate task files (from tasks.json) `,
+				)} 2 - Generate task files (from tasks.json) `,
 				value: "tmai-gen",
 			},
 			{
-				name: `${emoji.get("factory")} Decompose all tasks (AI)`,
+				name: `${emoji.get("factory")} 3 - Decompose all tasks (AI)`,
 				value: "tmai-dec",
+			},
+			{
+				name: `${emoji.get("arrow_left")}  Back`,
+				value: "back",
 			},
 		],
 	},
 ];
 
 // ==============================
-// Task management menu
+// Task management Menu
 // ==============================
 
 export const tmaiManageMenu_prompt = [
@@ -154,12 +162,16 @@ export const tmaiManageMenu_prompt = [
 				name: `${emoji.get("wastebasket")}  Delete tasks`,
 				value: "tmai-deletetasks",
 			},
+			{
+				name: `${emoji.get("arrow_left")}  Back`,
+				value: "back",
+			},
 		],
 	},
 ];
 
 // ==============================
-// Task list and navigation menu
+// Task list and navigation Menu
 // ==============================
 
 export const tmaiListNavMenu_prompt = [
@@ -183,12 +195,16 @@ export const tmaiListNavMenu_prompt = [
 				name: `${emoji.get("arrow_forward")}  Show next task`,
 				value: "tmai-next",
 			},
+			{
+				name: `${emoji.get("arrow_left")}  Back`,
+				value: "back",
+			},
 		],
 	},
 ];
 
 // ==============================
-// Adding tasks menu
+// Adding tasks Menu
 // ==============================
 
 export const tmaiAddTasksMenu_prompt = [
@@ -216,12 +232,16 @@ export const tmaiAddTasksMenu_prompt = [
 				name: `${emoji.get("heavy_plus_sign")} Add subtask (manually)`,
 				value: "tmai-addsubtaskmanual",
 			},
+			{
+				name: `${emoji.get("arrow_left")}  Back`,
+				value: "back",
+			},
 		],
 	},
 ];
 
 // ==============================
-// Modifying tasks menu
+// Modifying tasks Menu
 // ==============================
 
 export const tmaiUpdateTasksMenu_prompt = [
@@ -257,12 +277,16 @@ export const tmaiUpdateTasksMenu_prompt = [
 				name: `${emoji.get("pencil2")}  Convert subtask to task`,
 				value: "tmai-convertsubtasktotask",
 			},
+			{
+				name: `${emoji.get("arrow_left")}  Back`,
+				value: "back",
+			},
 		],
 	},
 ];
 
 // ==============================
-// Deleting tasks menu
+// Deleting tasks Menu
 // ==============================
 
 export const tmaiDeleteTasksMenu_prompt = [
@@ -294,12 +318,16 @@ export const tmaiDeleteTasksMenu_prompt = [
 				name: `${emoji.get("wastebasket")} Delete all dependencies from a task (unsafe but fast)`,
 				value: "tmai-deletealldepsunsafefromtask",
 			},
+			{
+				name: `${emoji.get("arrow_left")}  Back`,
+				value: "back",
+			},
 		],
 	},
 ];
 
 // ==============================
-// Dependencies menu
+// Dependencies Menu
 // ==============================
 
 export const tmaiDepsMenu_prompt = [
@@ -323,13 +351,16 @@ export const tmaiDepsMenu_prompt = [
 				name: `${emoji.get("wrench")} Fix dependencies`,
 				value: "tmai-fixdeps",
 			},
+			{
+				name: `${emoji.get("arrow_left")}  Back`,
+				value: "back",
+			},
 		],
 	},
 ];
 
-// TODO: pending
 // ==============================
-// Analysis menu
+// Analysis, Report and Documentation Menu
 // ==============================
 
 export const tmaiAnalysisReportDocs_prompt = [
@@ -343,22 +374,26 @@ export const tmaiAnalysisReportDocs_prompt = [
 			new inquirer.Separator("=== Analysis, Report and Documentation ==="),
 			{
 				name: `${emoji.get("bar_chart")} Analyze task complexity`,
-				value: "tmai-analysis-complexity",
+				value: "tmai-analyze",
 			},
 			{
 				name: `${emoji.get("page_with_curl")} Show complexity report`,
-				value: "tmai-analysis-complexity-report",
+				value: "tmai-report",
 			},
 			{
 				name: `${emoji.get("books")} Sync tasks with README.md`,
-				value: "tmai-docs-sync-readme",
+				value: "tmai-sync",
+			},
+			{
+				name: `${emoji.get("arrow_left")}  Back`,
+				value: "back",
 			},
 		],
 	},
 ];
 
 // ==============================
-// Backup, Restore and Clear menu
+// Backup, Restore and Clear Menu
 // ==============================
 
 export const tmaiBackupRestoreClearClear_prompt = [
@@ -397,6 +432,10 @@ export const tmaiBackupRestoreClearClear_prompt = [
 					`${emoji.get("broom")} Clear all current tasks (including subtasks) and all related tmai files`,
 				),
 				value: "tmai-clearall",
+			},
+			{
+				name: `${emoji.get("arrow_left")}  Back`,
+				value: "back",
 			},
 		],
 	},
