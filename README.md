@@ -2,24 +2,162 @@
 
 [![forthebadge](https://forthebadge.com/images/badges/built-with-love.svg)](https://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/for-you.svg)](https://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/open-source.svg)](https://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/uses-git.svg)](https://forthebadge.com) [![forthebadge](https://rajarakoto.github.io/github-docs/badge/build-by.svg)](https://forthebadge.com)
 
-![Git](https://img.shields.io/badge/-Git-777?style=flat&logo=git&logoColor=F05032&labelColor=ffffff) ![Gitub](https://img.shields.io/badge/-Gitub-777?style=flat&logo=github&logoColor=777&labelColor=ffffff)
+![Git](https://img.shields.io/badge/-Git-777?style=flat&logo=git&logoColor=F05032&labelColor=ffffff) ![GitHub](https://img.shields.io/badge/-GitHub-777?style=flat&logo=github&logoColor=777&labelColor=ffffff)
 
-**Taskmaster AI** is an advanced artificial intelligence solution designed for task and project management, particularly in the field of software development. It acts as an orchestrator of AI agents, capable of maintaining long-term context and effectively managing complex, multi-step tasks. This helps prevent the context loss that often occurs with traditional AI tools during large-scale projects. Taskmaster AI automates the creation of Product Requirement Documents (PRDs), breaks down tasks, plans next steps, and guides AI agents to implement tasks in a coherent and organized manner. It supports multiple AI providers (OpenAI, Anthropic, Google Gemini, etc.) and offers a multi-role configuration (main, research, fallback) to optimize AI resource allocation based on project needs.
+**TaskMaster CLI** is an interactive command-line interface designed to simplify the management of complex projects using **TaskMaster AI**.
 
-- **Github**: [claude-task-master](https://github.com/eyaltoledano/claude-task-master)
-- **Website**: [task-master.dev](https://www.task-master.dev/)
+## About TaskMaster AI
 
-**Taskmaster CLI** was created to simplify and streamline the use of Taskmaster AI by providing an intuitive, interactive command-line interface. Instead of memorizing complex commands or navigating configuration files manually, users can easily manage AI agents, break down tasks, generate PRDs, and orchestrate project workflows step by step—all directly from the terminal. This tool makes Taskmaster AI more accessible and efficient for developers, allowing them to focus on their projects while the CLI handles the underlying complexity.
+**TaskMaster AI** is an advanced AI agent orchestrator for complex project management, especially in software development. It prevents context loss often seen in traditional AI tools during large-scale projects by maintaining long-term context. TaskMaster AI automates PRD creation, task breakdown, and planning, guiding AI agents to implement tasks coherently. It supports multiple AI providers (OpenAI, Anthropic, Google Gemini, etc.) and features a multi-role configuration (main, research, fallback) to optimize AI resource allocation.
+
+- **Website**: [task-master.dev](https://www.task-master.dev)
+- **GitHub**: [claude-task-master](https://github.com/eyaltoledano/claude-task-master)
+- **Discord**: [TaskMaster AI Community](https://discord.com/invite/taskmasterai)
+
+## Why TaskMaster CLI?
+
+TaskMaster CLI was created to streamline the use of TaskMaster AI with an intuitive and interactive interface. It aims to:
+
+- **Simplify Usage**: Hide the complexity of underlying commands behind a user-friendly interactive interface.
+- **Preserve Core Logic**: Operate as a wrapper without altering the core system of TaskMaster AI.
+- **Automate Workflows**: Optimize common operations to reduce manual intervention.
+- **Enhance Flexibility**: Provide new features for managing tasks, dependencies, and processing order.
 
 ---
 
-### 📌 Usage
+## 🚀 Getting Started
 
-This project is still in development and not yet ready for use, but you can contribute to its development by making pull requests, reporting issues, and suggesting new features ...
+### Installation
+
+Install TaskMaster CLI globally on your system:
+
+```bash
+npm install -g taskmaster-cli
+```
+
+### Standard Workflow
+
+1.  **Initialize a new project** using the dedicated command.
+2.  **Configure your AI models** (main, research, fallback) and response language.
+3.  **Generate tasks automatically** from a PRD file (text or Markdown).
+4.  **Generate the associated task files**.
+5.  **Break down main tasks into subtasks** for better granularity.
+6.  **Manage project progress** through the interactive CLI, including CRUD operations, dependency management, complexity analysis, reporting, and more.
 
 ---
 
-### 📌 Scripts
+## ✨ Features
+
+TaskMaster CLI provides a comprehensive set of features to manage your entire project lifecycle.
+
+### Functional Scope
+
+-   **Initialization & Configuration**:
+    -   Global package installation.
+    -   Create new TaskMaster projects.
+    -   Define main, research, and fallback AI models.
+    -   Set the response language.
+-   **Task Generation & Decomposition**:
+    -   Generate tasks from a PRD (txt, markdown).
+    -   Generate task files.
+    -   Automatically decompose tasks into subtasks.
+-   **Task Management (CRUD)**:
+    -   **View**: Tree display, status filtering, detailed view, and show next task.
+    -   **Add**: Add tasks/subtasks via AI prompts or from a PRD.
+    -   **Update**: Modify tasks/subtasks, manage statuses, and convert between tasks and subtasks.
+    -   **Delete**: Remove tasks, subtasks, and dependencies.
+-   **Dependency Management**:
+    -   Add dependencies to tasks.
+    -   Automatic validation and correction of inconsistencies.
+-   **Analysis, Reporting & Documentation**:
+    -   Complexity evaluation.
+    -   Report generation.
+    -   Synchronization with documentation.
+-   **Backup, Restore & Cleanup**:
+    -   Save and restore the state of all tasks and configurations.
+    -   Massively clean up data (tasks, subtasks, dependencies).
+
+### Command Tree
+
+```
+TMAI-CLI
+├── 🚀 Initialization and Configuration
+│   ├── 📦 1 - Install/Upgrade TMAI
+│   ├── ✨ 2 - Initialize TMAI | Update/Fix rules
+│   ├── 🔧 3 - Configure AI models (interactive)
+│   ├── ⏩ Configure AI models (quickly)
+│   └── 🌐 4 - Set response language
+│
+├── 📄 Generation and Decomposition
+│   ├── 📓 1 - Generate tasks from PRD (AI)
+│   ├── 📄 2 - Generate task files from tasks.json
+│   └── 🏭 3 - Decompose all tasks (AI)
+│
+├── ✅ Task Management (CRUD) 
+│   ├── 🔗 List and Navigation
+│   │   ├── 📋 List tasks
+│   │   ├── 🔎 Show task details
+│   │   └── ➡️ Show next task
+│   │
+│   ├── ➕ Add tasks
+│   │   ├── ➕ Add task (AI)
+│   │   ├── ➕ Add tasks from PRD (AI)
+│   │   ├── ➕ Add subtask (AI)
+│   │   └── ➕ Add subtask (manual)
+│   │
+│   ├── ✏️ Update tasks
+│   │   ├── ✏️ Update task (AI)
+│   │   ├── ✏️ Update multiple tasks (AI)
+│   │   ├── ✏️ Update subtask (AI)
+│   │   ├── ✏️ Update task/subtask status
+│   │   ├── ✏️ Convert task to subtask
+│   │   └── ✏️ Convert subtask to task
+│   │
+│   └── 🗑️ Delete tasks
+│       ├── 🗑️ Delete task (with subtasks)
+│       ├── 🗑️ Delete a subtask
+│       ├── 🗑️ Delete all subtasks from a task
+│       ├── 🗑️ Delete all dependencies (safe)
+│       └── 🗑️ Delete all dependencies (unsafe)
+│
+├── 🔗 Dependencies
+│   ├── 📎 Add dependency
+│   ├── ✅ Validate dependencies
+│   └── 🔧 Fix dependencies
+│
+├── 📊 Analysis, Report, Documentation
+│   ├── 📊 Analyze task complexity
+│   ├── 📄 Show complexity report
+│   └── 📚 Sync tasks with README.md
+│
+├── 💾 Backup, Restore and Clear
+│   ├── 💾 Backup tasks
+│   ├── 🔄 Restore tasks
+│   ├── 🧹 Clear all dependencies
+│   ├── 🧹 Clear all subtasks (only)
+│   └── 🧹 Clear all tasks + related files
+│
+└── 🚪 Exit
+```
+
+---
+
+## 🗺️ Roadmap
+
+-   [ ] Automatic dependency regeneration.
+-   [ ] Ensure accuracy and consistency in tag application.
+
+---
+
+## ❤️ Acknowledgements & Contributing
+
+This project would not have been possible without the **TaskMaster AI team**, as it is built entirely on their exceptional ecosystem.
+
+We welcome contributions to improve the project! Whether you want to contribute to **TaskMaster AI Core** or **TaskMaster CLI**, feel free to make pull requests, report issues, or suggest new features.
+
+### For Developers
+
+The following scripts are available for developing the CLI itself.
 
 **Start**
 
@@ -91,8 +229,6 @@ This project is still in development and not yet ready for use, but you can cont
 
 - 📜 `qtype:tasks` - Generate types for tasks.json file.
 
----
+### Build Target
 
-### 📌 Build
-
-When using the **build.js** file in this boilerplate, it's important to note the significance of the **target** option. By default, if the target option is not specified in the **build.js** file, it will be set to `browser`. However, for projects utilizing the `bun.js` runtime environment, it's imperative to explicitly set the target to `bun`. This guarantees compatibility with the `bun` shell environment and prevents unexpected behavior. Furthermore, it's noteworthy that the `target` supports three possible values: `browser`, `bun`, and `node`, providing flexibility in defining the build target according to specific project requirements.
+When using the **build.js** file, it's important to note the significance of the **target** option. By default, it is set to `browser`. For projects utilizing the `bun.js` runtime, it's imperative to explicitly set the target to `bun`. This ensures compatibility with the `bun` shell environment. The `target` supports three values: `browser`, `bun`, and `node`.
