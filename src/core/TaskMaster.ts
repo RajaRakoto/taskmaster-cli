@@ -169,7 +169,7 @@ export class TaskMaster {
 	 * by encapsulating the 'tasks' and 'metadata' keys under a 'master' key
 	 * @param mode Operation mode: 'init' for initialization or 'repair' for fixing existing file
 	 */
-	public async _fixTasksFileFormatAsync(
+	private async _fixTasksFileFormatAsync(
 		mode: "init" | "repair" = "repair",
 	): Promise<void> {
 		const isInitMode = mode === "init";
@@ -316,6 +316,65 @@ export class TaskMaster {
 			runCommandAsync(command, escapedArgs, false, false),
 			oraOptions,
 		);
+	}
+
+	// TODO: done
+	/**
+	 * @description Validates that tasks are ready (file exists and has at least one task)
+	 * @returns True if tasks are ready, false otherwise
+	 */
+	public async validateTasksReadyAsync(): Promise<boolean> {
+		// Check if tasks.json file exists
+		if (!fs.existsSync(this._tasksFilePath)) {
+			console.log(
+				chalk.yellow(
+					"TMAI is not initialized. Please run the initialization process and generate at least one task.",
+				),
+			);
+			await this.countdownAsync(10);
+			return false;
+		}
+
+		try {
+			// Read the tasks file
+			const tasks = await this.getTasksContentAsync();
+
+			// Check if tasks object and master property exist
+			if (!tasks || !tasks.master) {
+				console.log(
+					chalk.yellow(
+						"TMAI is not initialized. Please run the initialization process and generate at least one task.",
+					),
+				);
+				await this.countdownAsync(10);
+				return false;
+			}
+
+			// Check if there's at least one task in master.tasks
+			if (
+				!tasks.master.tasks ||
+				!Array.isArray(tasks.master.tasks) ||
+				tasks.master.tasks.length === 0
+			) {
+				console.log(
+					chalk.yellow(
+						"TMAI is not initialized. Please generate at least one task.",
+					),
+				);
+				await this.countdownAsync(10);
+				return false;
+			}
+
+			return true;
+		} catch {
+			console.log(
+				chalk.yellow(
+					"TMAI is not initialized. Please run the initialization process and generate at least one task.",
+				),
+			);
+			await this.countdownAsync(10);
+			return false;
+		}
 	}
 
 	// TODO: done
@@ -662,6 +721,7 @@ export class TaskMaster {
 
 		await runCommandAsync(this._mainCommand, ["init"], false, false);
 		console.log(chalk.bgGreen("Task-master project initialized successfully!"));
+		await this._fixTasksFileFormatAsync("init");
 	}
 
 	// TODO: done
@@ -670,7 +730,7 @@ export class TaskMaster {
 	 */
 	public async interactiveConfigModelAsync(): Promise<void> {
 		await this._executeCommandAsync(
-			"Configuring AI models...",
+			"Configuring AI models...\n",
 			"AI models configured successfully!",
 			"AI model configuration failed",
 			this._mainCommand,
@@ -693,7 +753,7 @@ export class TaskMaster {
 		provider?: string,
 	): Promise<void> {
 		const oraOptions = {
-			text: "Configuring AI models...",
+			text: "Configuring AI models...\n",
 			successText: chalk.bgGreen("AI models configured successfully!"),
 			failText: chalk.bgRed("AI model configuration failed"),
 		};

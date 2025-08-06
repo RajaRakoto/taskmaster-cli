@@ -1,6 +1,7 @@
 /* libs */
 import inquirer from "inquirer";
 import path from "node:path";
+import fs from "node:fs";
 
 /* index */
 import { taskmasterCLI } from "@/index";
@@ -141,9 +142,30 @@ export async function tmaiGenAsync() {
 	if (choice.tmaiGenDecMenu === "tmai-parse") {
 		const tasksJsonPath = path.join(".taskmaster", "tasks", "tasks.json");
 		if (await existsAsync(tasksJsonPath)) {
-			const overwrite = await askOverwriteConfirmationAsync();
-			if (!overwrite) {
-				return restartAsync();
+			const fileContent = fs.readFileSync(tasksJsonPath, "utf8");
+			let isEmpty = fileContent.trim() === "[]";
+
+			// Also check for the specific empty structure
+			if (!isEmpty) {
+				try {
+					const tasksData = JSON.parse(fileContent);
+					isEmpty =
+						tasksData.master &&
+						Array.isArray(tasksData.master.tasks) &&
+						tasksData.master.tasks.length === 0 &&
+						typeof tasksData.master.metadata === "object";
+				} catch {
+					// If parsing fails, we'll assume it's not empty
+					isEmpty = false;
+				}
+			}
+
+			// Only ask for overwrite confirmation if the file is not empty
+			if (!isEmpty) {
+				const overwrite = await askOverwriteConfirmationAsync();
+				if (!overwrite) {
+					return restartAsync();
+				}
 			}
 		}
 
@@ -186,6 +208,10 @@ export async function tmaiGenAsync() {
  * - Delete tasks
  */
 export async function tmaiManageAsync() {
+	if (!(await tmai.validateTasksReadyAsync())) {
+		return taskmasterCLI();
+	}
+
 	let tasks = await tmai.getTasksContentAsync();
 	const { mainIDs, subtasksIDs } = await tmai.getAllTaskIdsAsync(tasks);
 	const { tmaiManageMenu } = await inquirer.prompt(tmaiManageMenu_prompt);
@@ -441,6 +467,10 @@ export async function tmaiManageAsync() {
  * dependencies. Based on the user's choice, it executes the corresponding operation.
  */
 export async function tmaiDependenciesAsync() {
+	if (!(await tmai.validateTasksReadyAsync())) {
+		return taskmasterCLI();
+	}
+
 	let tasks = await tmai.getTasksContentAsync();
 	const { tmaiDepsMenu } = await inquirer.prompt(tmaiDepsMenu_prompt);
 
@@ -492,6 +522,10 @@ export async function tmaiDependenciesAsync() {
  * choice, it executes the corresponding operation.
  */
 export async function tmaiAnalysisReportDocsAsync() {
+	if (!(await tmai.validateTasksReadyAsync())) {
+		return taskmasterCLI();
+	}
+
 	const { tmaiAnalysisReportDocsMenu } = await inquirer.prompt(
 		tmaiAnalysisReportDocs_prompt,
 	);
