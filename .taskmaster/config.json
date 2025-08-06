@@ -1,21 +1,21 @@
 {
   "models": {
     "main": {
-      "provider": "openrouter",
-      "modelId": "qwen/qwen3-235b-a22b",
-      "maxTokens": 24000,
+      "provider": "gemini-cli",
+      "modelId": "gemini-2.5-flash",
+      "maxTokens": 65536,
       "temperature": 0.2
     },
     "research": {
-      "provider": "openrouter",
-      "modelId": "qwen/qwen-turbo",
-      "maxTokens": 32768,
-      "temperature": 0.2
+      "provider": "gemini-cli",
+      "modelId": "gemini-2.5-flash",
+      "maxTokens": 65536,
+      "temperature": 0.1
     },
     "fallback": {
-      "provider": "openrouter",
-      "modelId": "qwen/qwen3-235b-a22b",
-      "maxTokens": 24000,
+      "provider": "gemini-cli",
+      "modelId": "gemini-2.5-flash",
+      "maxTokens": 65536,
       "temperature": 0.2
     }
   },
