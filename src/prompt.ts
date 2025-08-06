@@ -81,13 +81,13 @@ export const tmaiInitMenu_prompt = [
 				value: "tmai-interactiveconfig",
 			},
 			{
-				name: `${emoji.get("fast_forward")} 4 - Configure AI models (quickly)`,
+				name: `${emoji.get("fast_forward")} Configure AI models (quickly)`,
 				value: "tmai-config",
 			},
 			{
 				name: `${emoji.get(
 					"globe_with_meridians",
-				)} 5 - Set the response language for AI-generated content in TMAI`,
+				)} 4 - Set the response language for AI-generated content in TMAI`,
 				value: "tmai-lang",
 			},
 		],
@@ -108,17 +108,17 @@ export const tmaiGenDecMenu_prompt = [
 		choices: [
 			new inquirer.Separator("=== Generation and Decomposition ==="),
 			{
-				name: `${emoji.get("notebook")} Generate tasks from PRD (AI)`,
+				name: `${emoji.get("notebook")} 1 - Generate tasks from PRD (AI)`,
 				value: "tmai-parse",
 			},
 			{
 				name: `${emoji.get(
 					"page_facing_up",
-				)} Generate task files (from tasks.json) `,
+				)} 2 - Generate task files (from tasks.json) `,
 				value: "tmai-gen",
 			},
 			{
-				name: `${emoji.get("factory")} Decompose all tasks (AI)`,
+				name: `${emoji.get("factory")} 3 - Decompose all tasks (AI)`,
 				value: "tmai-dec",
 			},
 		],
