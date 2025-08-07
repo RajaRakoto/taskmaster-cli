@@ -259,4 +259,19 @@ The following scripts are available for developing the CLI itself.
 
 ### Build Target
 
-When using the **build.js** file, it's important to note the significance of the **target** option. By default, it is set to `browser`. For projects utilizing the `bun.js` runtime, it's imperative to explicitly set the target to `bun`. This ensures compatibility with the `bun` shell environment. The `target` supports three values: `browser`, `bun`, and `node`.
+The build configuration uses Node.js as the target (`target: "node"`) with an appropriate shebang (`#!/usr/bin/env node`) to ensure maximum compatibility across different environments. This choice provides the best balance between performance and compatibility.
+
+The CLI can be installed using any of the following package managers according to user preference:
+- npm: `npm install -g taskmaster-cli`
+- pnpm: `pnpm install -g taskmaster-cli` 
+- bun: `bun install -g taskmaster-cli`
+
+**Important note for local registry testing:**
+When testing the CLI with Verdaccio or a local registry, you may need to clear Bun's cache directories to avoid version conflicts. Delete the following directories:
+
+```bash
+~/.bun/_bun
+~/.bun/install/cache/
+```
+
+> This ensures you're testing with the freshly published version rather than a cached one.
