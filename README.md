@@ -27,6 +27,13 @@ TaskMaster CLI was created to streamline the use of TaskMaster AI with an intuit
 
 ## 🚀 Getting Started
 
+### Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+-   **Node.js**: `v22.8.0` or higher
+-   **TaskMaster AI Core**: You can install it via the interactive CLI setup or manually. The minimum required version is `v0.23.0` or higher.
+
 ### Installation
 
 Install TaskMaster CLI globally on your system:
@@ -34,6 +41,28 @@ Install TaskMaster CLI globally on your system:
 ```bash
 npm install -g taskmaster-cli
 ```
+
+### Configuration
+
+TaskMaster CLI requires API keys to communicate with various AI providers.
+
+1.  Create a `.env` file in the root of your project by copying/renaming the `.env.example` file:
+2.  Open the `.env` file and add your API keys.
+
+    ```dotenv
+    # API Keys (Required to enable respective provider)
+    ANTHROPIC_API_KEY="your_anthropic_api_key_here"       # Required: Format: sk-ant-api03-...
+    PERPLEXITY_API_KEY="your_perplexity_api_key_here"     # Optional: Format: pplx-...
+    OPENAI_API_KEY="your_openai_api_key_here"             # Optional, for OpenAI/OpenRouter models. Format: sk-proj-...
+    GOOGLE_API_KEY="your_google_api_key_here"             # Optional, for Google Gemini models.
+    GEMINI_API_KEY="your_gemini_api_key_here"
+    MISTRAL_API_KEY="your_mistral_key_here"               # Optional, for Mistral AI models.
+    XAI_API_KEY="YOUR_XAI_KEY_HERE"                       # Optional, for xAI AI models.
+    AZURE_OPENAI_API_KEY="your_azure_key_here"            # Optional, for Azure OpenAI models (requires endpoint in .taskmaster/config.json).
+    OLLAMA_API_KEY="your_ollama_api_key_here"             # Optional: For remote Ollama servers that require authentication.
+    GITHUB_API_KEY="your_github_api_key_here"             # Optional: For GitHub import/export features. Format: ghp_... or github_pat_...
+    OPENROUTER_API_KEY="your_openrouter_api_key_here"     # Optional: For OpenRouter models. Format: sk-proj-...
+    ```
 
 ### Standard Workflow
 
@@ -152,7 +181,6 @@ TMAI-CLI
 ## ❤️ Acknowledgements & Contributing
 
 This project would not have been possible without the **TaskMaster AI team**, as it is built entirely on their exceptional ecosystem.
-
 We welcome contributions to improve the project! Whether you want to contribute to **TaskMaster AI Core** or **TaskMaster CLI**, feel free to make pull requests, report issues, or suggest new features.
 
 ### For Developers
