@@ -38,8 +38,8 @@ Before you begin, ensure you have the following installed:
 
 Install TaskMaster CLI globally on your system:
 
-```bash
-npm install -g taskmaster-cli
+```text
+npm install -g @raja-rakoto/taskmaster-cli
 ```
 
 ### Configuration
@@ -73,13 +73,17 @@ TaskMaster CLI requires API keys to communicate with various AI providers.
 5.  **Break down main tasks into subtasks** for better granularity.
 6.  **Manage project progress** through the interactive CLI, including CRUD operations, dependency management, complexity analysis, reporting, and more.
 
-https://github.com/user-attachments/assets/f779074d-0b75-4cf2-acca-124e455ce1ed
+https://github.com/user-attachments/assets/685afcc9-b6c9-406c-8485-7151a27dbe35
 
-https://github.com/user-attachments/assets/9bb694da-2a66-4f19-a21c-c548453a423b
+https://github.com/user-attachments/assets/99d46178-a93c-441d-82e7-2ec1dd508dc5
 
-https://github.com/user-attachments/assets/f6948145-c68d-4a63-9516-6c2e9198a287
+https://github.com/user-attachments/assets/bf553b97-a11b-4cfc-9337-9877e954c0c7
 
-https://github.com/user-attachments/assets/4415b336-7515-425d-b8c9-98873eb7408b
+https://github.com/user-attachments/assets/44337fb8-a5a9-4709-9a65-1dc0bdd86181
+
+https://github.com/user-attachments/assets/aa7334d6-7653-476d-8b65-f222f8273845
+
+https://github.com/user-attachments/assets/fdb884c1-1f56-468e-985b-3977158dcb9e
 
 ---
 
@@ -270,9 +274,9 @@ The following scripts are available for developing the CLI itself.
 The build configuration uses Node.js as the target (`target: "node"`) with an appropriate shebang (`#!/usr/bin/env node`) to ensure maximum compatibility across different environments. This choice provides the best balance between performance and compatibility.
 
 The CLI can be installed using any of the following package managers according to user preference:
-- npm: `npm install -g taskmaster-cli`
-- pnpm: `pnpm install -g taskmaster-cli` 
-- bun: `bun install -g taskmaster-cli`
+- npm: `npm install -g @raja-rakoto/taskmaster-cli`
+- pnpm: `pnpm install -g @raja-rakoto/taskmaster-cli` 
+- bun: `bun install -g @raja-rakoto/taskmaster-cli`
 
 **Important note for local registry testing:**
 When testing the CLI with Verdaccio or a local registry, you may need to clear Bun's cache directories to avoid version conflicts. Delete the following directories:

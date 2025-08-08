@@ -1,5 +1,5 @@
 /**
- * @description: gruntfile for taskmaster-cli
+ * @description: gruntfile for @raja-rakoto/taskmaster-cli
  * @requires: grunt | load-grunt-tasks | grunt-contrib-compress | grunt-shell
  */
 module.exports = (grunt) => {

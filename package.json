@@ -1,5 +1,5 @@
 {
-	"name": "taskmaster-cli",
+	"name": "@raja-rakoto/taskmaster-cli",
 	"version": "1.0.0",
 	"description": "Interactive CLI for Taskmaster AI: simplifies complex project management by orchestrating AI agents, planning, and execution — all from your terminal 🧩",
 	"author": "Raja Rakotonirina <raja.rakoto7@gmail.com>",
@@ -62,13 +62,13 @@
 		"npm-version:patch": "npm version patch",
 		"npm-login": "npm login",
 		"npm-publish": "npm publish --access public",
-		"npm-unpublish": "npm unpublish --force taskmaster-cli",
+		"npm-unpublish": "npm unpublish --force @raja-rakoto/taskmaster-cli",
 		"npm-reset:registry": "npm config delete registry",
 		"npm-check:registry": "npm config get registry",
 		"npm-proxy:start": "bun run npm-proxy:set-registry && verdaccio",
 		"npm-proxy:set-registry": "npm set registry http://localhost:4873/",
 		"npm-proxy:publish": "npm publish --registry http://localhost:4873/",
-		"npm-proxy:unpublish": "npm unpublish --force --registry http://localhost:4873/ taskmaster-cli",
+		"npm-proxy:unpublish": "npm unpublish --force --registry http://localhost:4873/ @raja-rakoto/taskmaster-cli",
 		"npm-proxy:republish": "bun run npm-proxy:unpublish && bun run npm-proxy:publish",
 		"nvm": "nvm use",
 		"qtype:tasks": "quicktype .taskmaster/tasks/tasks.json -o src/@types/tasks.d.ts --just-types"
