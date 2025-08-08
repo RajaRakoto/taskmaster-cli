@@ -38,8 +38,8 @@ Before you begin, ensure you have the following installed:
 
 Install TaskMaster CLI globally on your system:
 
-```bash
-npm install -g taskmaster-cli
+```text
+npm install -g @raja-rakoto/taskmaster-cli
 ```
 
 ### Configuration
@@ -270,9 +270,9 @@ The following scripts are available for developing the CLI itself.
 The build configuration uses Node.js as the target (`target: "node"`) with an appropriate shebang (`#!/usr/bin/env node`) to ensure maximum compatibility across different environments. This choice provides the best balance between performance and compatibility.
 
 The CLI can be installed using any of the following package managers according to user preference:
-- npm: `npm install -g taskmaster-cli`
-- pnpm: `pnpm install -g taskmaster-cli` 
-- bun: `bun install -g taskmaster-cli`
+- npm: `npm install -g @raja-rakoto/taskmaster-cli`
+- pnpm: `pnpm install -g @raja-rakoto/taskmaster-cli` 
+- bun: `bun install -g @raja-rakoto/taskmaster-cli`
 
 **Important note for local registry testing:**
 When testing the CLI with Verdaccio or a local registry, you may need to clear Bun's cache directories to avoid version conflicts. Delete the following directories:
