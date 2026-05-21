@@ -4,286 +4,255 @@
 
 ![Git](https://img.shields.io/badge/-Git-777?style=flat&logo=git&logoColor=F05032&labelColor=ffffff) ![GitHub](https://img.shields.io/badge/-GitHub-777?style=flat&logo=github&logoColor=777&labelColor=ffffff)
 
-**TaskMaster CLI** is an interactive command-line interface designed to simplify the management of complex projects using **TaskMaster AI**.
+**TaskMaster CLI** is an interactive command-line interface for managing complex projects with TaskMaster AI. It wraps task-master-ai core commands with an intuitive menu-driven interface, supporting task generation from PRDs, hierarchical task decomposition, cross-tag organization, AI research, dependency management, and multi-provider AI orchestration.
 
-## About TaskMaster AI
-
-**TaskMaster AI** is an advanced AI agent orchestrator for complex project management, especially in software development. It prevents context loss often seen in traditional AI tools during large-scale projects by maintaining long-term context. TaskMaster AI automates PRD creation, task breakdown, and planning, guiding AI agents to implement tasks coherently. It supports multiple AI providers (OpenAI, Anthropic, Google Gemini, etc.) and features a multi-role configuration (main, research, fallback) to optimize AI resource allocation.
+**TaskMaster AI** is an advanced AI agent orchestrator that maintains long-term context across large-scale projects, automates PRD creation and task breakdown, and supports multiple AI providers (Anthropic, OpenAI, Google, Groq, xAI, OpenRouter, Mistral, Azure, Ollama) with multi-role configuration (main, research, fallback).
 
 - **Website**: [task-master.dev](https://www.task-master.dev)
 - **GitHub**: [claude-task-master](https://github.com/eyaltoledano/claude-task-master)
 - **Discord**: [TaskMaster AI Community](https://discord.com/invite/taskmasterai)
 
-## Why TaskMaster CLI?
-
-TaskMaster CLI was created to streamline the use of TaskMaster AI with an intuitive and interactive interface. It aims to:
-
-- **Simplify Usage**: Hide the complexity of underlying commands behind a user-friendly interactive interface.
-- **Preserve Core Logic**: Operate as a wrapper without altering the core system of TaskMaster AI.
-- **Automate Workflows**: Optimize common operations to reduce manual intervention.
-- **Enhance Flexibility**: Provide new features for managing tasks, dependencies, and processing order.
-
 ---
 
 ## 🚀 Getting Started
 
-### Prerequisites
+## Prerequisites
 
-Before you begin, ensure you have the following installed:
+- Node.js 18+ or Bun 1.0+
+- TaskMaster AI Core v0.43.1+ (installed via CLI setup or manually)
+- API keys for at least one AI provider (see Configuration)
 
--   **Node.js**: `v22.8.0` or higher
--   **TaskMaster AI Core**: You can install it via the interactive CLI setup or manually. The minimum required version is `v0.23.0` or higher.
+## Installation
 
-### Installation
-
-Install TaskMaster CLI globally on your system:
-
-```text
+```bash
 npm install -g @raja-rakoto/taskmaster-cli
+# or
+bun install -g @raja-rakoto/taskmaster-cli
 ```
 
-### Configuration
+## Configuration
 
-TaskMaster CLI requires API keys to communicate with various AI providers.
+Create a `.env` file in your project root with API keys for your chosen providers:
 
-1.  Create a `.env` file in the root of your project by copying/renaming the `.env.example` file:
-2.  Open the `.env` file and add your API keys.
+```env
+# Anthropic (Claude models)
+ANTHROPIC_API_KEY=sk-ant-...
 
-    ```dotenv
-    # API Keys (Required to enable respective provider)
-    ANTHROPIC_API_KEY="your_anthropic_api_key_here"       # Required: Format: sk-ant-api03-...
-    PERPLEXITY_API_KEY="your_perplexity_api_key_here"     # Optional: Format: pplx-...
-    OPENAI_API_KEY="your_openai_api_key_here"             # Optional, for OpenAI/OpenRouter models. Format: sk-proj-...
-    GOOGLE_API_KEY="your_google_api_key_here"             # Optional, for Google Gemini models.
-    GEMINI_API_KEY="your_gemini_api_key_here"
-    MISTRAL_API_KEY="your_mistral_key_here"               # Optional, for Mistral AI models.
-    XAI_API_KEY="YOUR_XAI_KEY_HERE"                       # Optional, for xAI AI models.
-    AZURE_OPENAI_API_KEY="your_azure_key_here"            # Optional, for Azure OpenAI models (requires endpoint in .taskmaster/config.json).
-    OLLAMA_API_KEY="your_ollama_api_key_here"             # Optional: For remote Ollama servers that require authentication.
-    GITHUB_API_KEY="your_github_api_key_here"             # Optional: For GitHub import/export features. Format: ghp_... or github_pat_...
-    OPENROUTER_API_KEY="your_openrouter_api_key_here"     # Optional: For OpenRouter models. Format: sk-proj-...
-    ```
+# OpenAI (GPT models)
+OPENAI_API_KEY=sk-...
 
-### Standard Workflow
+# Google (Gemini models)
+GOOGLE_API_KEY=...
 
-1.  **Initialize a new project** using the dedicated command.
-2.  **Configure your AI models** (main, research, fallback) and response language.
-3.  **Generate tasks automatically** from a PRD file (text or Markdown).
-4.  **Generate the associated task files**.
-5.  **Break down main tasks into subtasks** for better granularity.
-6.  **Manage project progress** through the interactive CLI, including CRUD operations, dependency management, complexity analysis, reporting, and more.
+# Groq (Llama models - free tier available)
+GROQ_API_KEY=gsk_...
 
-https://github.com/user-attachments/assets/685afcc9-b6c9-406c-8485-7151a27dbe35
+# xAI (Grok models)
+XAI_API_KEY=...
 
-https://github.com/user-attachments/assets/99d46178-a93c-441d-82e7-2ec1dd508dc5
+# OpenRouter (multi-model aggregator)
+OPENROUTER_API_KEY=sk-or-...
 
-https://github.com/user-attachments/assets/bf553b97-a11b-4cfc-9337-9877e954c0c7
+# Mistral
+MISTRAL_API_KEY=...
 
-https://github.com/user-attachments/assets/44337fb8-a5a9-4709-9a65-1dc0bdd86181
+# Azure OpenAI
+AZURE_OPENAI_API_KEY=...
+AZURE_OPENAI_ENDPOINT=https://...
 
-https://github.com/user-attachments/assets/aa7334d6-7653-476d-8b65-f222f8273845
+# Ollama (local models, no key needed)
+OLLAMA_BASE_URL=http://localhost:11434
 
-https://github.com/user-attachments/assets/fdb884c1-1f56-468e-985b-3977158dcb9e
+# Claude Code (local, no key needed)
+# Uses local Claude Code installation
 
----
+# Task Master Tools Mode (optional)
+TASK_MASTER_TOOLS=all
+```
 
-## ✨ Features
+**TASK_MASTER_TOOLS modes:**
+- `all` - All available tools (default)
+- `standard` - Core + research + tags
+- `core` - Basic CRUD operations only
 
-TaskMaster CLI provides a comprehensive set of features to manage your entire project lifecycle.
+**Supported Providers:**
+- `anthropic` - Claude Haiku, Sonnet, Opus
+- `openai` - GPT-4, GPT-4 Turbo, GPT-3.5
+- `google` - Gemini Pro, Gemini 1.5
+- `groq` - Llama 3.3 70B, Llama 3.1 8B, DeepSeek R1
+- `xai` - Grok models
+- `openrouter` - 200+ models via aggregator
+- `mistral` - Mistral Small, Medium, Large
+- `azure` - Azure OpenAI deployment
+- `ollama` - Local models (Llama, Mistral, etc.)
+- `claude-code` - Local Claude Code (no API key)
+- `claude-codex` - Claude Codex (no API key)
 
-### Functional Scope
+## Workflow
 
--   **Initialization & Configuration**:
-    -   Global package installation.
-    -   Create new TaskMaster projects.
-    -   Define main, research, and fallback AI models.
-    -   Set the response language.
--   **Task Generation & Decomposition**:
-    -   Generate tasks from a PRD (txt, markdown).
-    -   Generate task files.
-    -   Automatically decompose tasks into subtasks.
--   **Task Management (CRUD)**:
-    -   **View**: Tree display, status filtering, detailed view, and show next task.
-    -   **Add**: Add tasks/subtasks via AI prompts or from a PRD.
-    -   **Update**: Modify tasks/subtasks, manage statuses, and convert between tasks and subtasks.
-    -   **Delete**: Remove tasks, subtasks, and dependencies.
--   **Dependency Management**:
-    -   Add dependencies to tasks.
-    -   Automatic validation and correction of inconsistencies.
--   **Analysis, Reporting & Documentation**:
-    -   Complexity evaluation.
-    -   Report generation.
-    -   Synchronization with documentation.
--   **Backup, Restore & Cleanup**:
-    -   Save and restore the state of all tasks and configurations.
-    -   Massively clean up data (tasks, subtasks, dependencies).
+1. **Initialize** - Set up project, configure AI models, select language
+2. **Generate** - Parse PRD and auto-generate tasks with AI
+3. **Manage** - CRUD operations, show multiple tasks, manage statuses
+4. **Organize** - Create tags, move tasks across tags, manage workstreams
+5. **Research** - Execute AI research queries with optional project context
+6. **Dependencies** - Add, validate, and manage task dependencies
+7. **Analyze** - Generate complexity reports and documentation
+8. **Backup** - Save/restore project state across slots
 
-### Command Tree
+## Command Tree
 
 ```
-TMAI-CLI
-├── 🚀 Initialization and Configuration
-│   ├── 📦 1 - Install/Upgrade TMAI
-│   ├── ✨ 2 - Initialize TMAI | Update/Fix rules
-│   ├── 🔧 3 - Configure AI models (interactive)
-│   ├── ⏩ Configure AI models (quickly)
-│   └── 🌐 4 - Set response language
+TaskMaster CLI
+├── 1. Initialize & Configuration
+│   ├── Install/Upgrade TaskMaster AI
+│   ├── Initialize project
+│   ├── Configure AI models (interactive)
+│   ├── Configure AI models (quick)
+│   ├── Set response language
+│   └── Add editor rules
 │
-├── 📄 Generation and Decomposition
-│   ├── 📓 1 - Generate tasks from PRD (AI)
-│   ├── 📄 2 - Generate task files from tasks.json
-│   └── 🏭 3 - Decompose all tasks (AI)
+├── 2. Generate & Decompose
+│   ├── Generate tasks from PRD (AI)
+│   ├── Generate task files
+│   └── Decompose all tasks (AI)
 │
-├── ✅ Task Management (CRUD) 
-│   ├── 🔗 List and Navigation
-│   │   ├── 📋 List tasks
-│   │   ├── 🔎 Show task details
-│   │   └── ➡️ Show next task
+├── 3. Manage Tasks (CRUD)
+│   ├── List & Navigate
+│   │   ├── List tasks
+│   │   ├── Show task details
+│   │   ├── Show next task
+│   │   └── Show multiple tasks (comma-separated IDs)
 │   │
-│   ├── ➕ Add tasks
-│   │   ├── ➕ Add task (AI)
-│   │   ├── ➕ Add tasks from PRD (AI)
-│   │   ├── ➕ Add subtask (AI)
-│   │   └── ➕ Add subtask (manual)
+│   ├── Add Tasks
+│   │   ├── Add task (AI)
+│   │   ├── Add tasks from PRD (AI)
+│   │   ├── Add subtask (AI)
+│   │   └── Add subtask (manual)
 │   │
-│   ├── ✏️ Update tasks
-│   │   ├── ✏️ Update task (AI)
-│   │   ├── ✏️ Update multiple tasks (AI)
-│   │   ├── ✏️ Update subtask (AI)
-│   │   ├── ✏️ Update task/subtask status
-│   │   ├── ✏️ Convert task to subtask
-│   │   └── ✏️ Convert subtask to task
+│   ├── Update Tasks
+│   │   ├── Update task (AI)
+│   │   ├── Update multiple tasks (AI)
+│   │   ├── Update subtask (AI)
+│   │   ├── Update task/subtask status
+│   │   ├── Convert task to subtask
+│   │   └── Convert subtask to task
 │   │
-│   └── 🗑️ Delete tasks
-│       ├── 🗑️ Delete task (with subtasks)
-│       ├── 🗑️ Delete a subtask
-│       ├── 🗑️ Delete all subtasks from a task
-│       ├── 🗑️ Delete all dependencies (safe)
-│       └── 🗑️ Delete all dependencies (unsafe)
+│   └── Delete Tasks
+│       ├── Delete task (with subtasks)
+│       ├── Delete subtask
+│       ├── Delete all subtasks from task
+│       ├── Delete all dependencies (safe)
+│       └── Delete all dependencies (unsafe)
 │
-├── 🔗 Dependencies
-│   ├── 📎 Add dependency
-│   ├── ✅ Validate dependencies
-│   └── 🔧 Fix dependencies
+├── 4. Dependencies
+│   ├── Add dependency
+│   ├── Validate dependencies
+│   └── Fix dependencies
 │
-├── 📊 Analysis, Report, Documentation
-│   ├── 📊 Analyze task complexity
-│   ├── 📄 Show complexity report
-│   └── 📚 Sync tasks with README.md
+├── 5. Tags & Workstreams
+│   ├── List tags
+│   ├── Add tag
+│   ├── Use tag (switch context)
+│   ├── Rename tag
+│   ├── Copy tag
+│   ├── Remove tag
+│   └── Move task(s) to another tag
+│       ├── --from-tag (source tag)
+│       ├── --to-tag (destination tag)
+│       ├── --with-dependencies (move related tasks)
+│       └── --ignore-dependencies (skip validation)
 │
-├── 💾 Backup, Restore and Clear
-│   ├── 💾 Backup tasks
-│   ├── 🔄 Restore tasks
-│   ├── 🧹 Clear all dependencies
-│   ├── 🧹 Clear all subtasks (only)
-│   └── 🧹 Clear all tasks + related files
+├── 6. Research
+│   ├── Enter research query
+│   ├── Add optional context
+│   └── Include project file tree
 │
-└── 🚪 Exit
+├── 7. Analysis & Reports
+│   ├── Analyze task complexity
+│   ├── Show complexity report
+│   └── Sync tasks with README.md
+│
+├── 8. Backup & Restore
+│   ├── Backup tasks (slot 1-3)
+│   ├── Restore tasks (slot 1-3)
+│   ├── Clear all dependencies
+│   ├── Clear all subtasks
+│   └── Clear all tasks + files
+│
+└── 9. Exit
 ```
 
 ---
 
 ## 🗺️ Roadmap
 
--   [ ] Automatic dependency regeneration.
--   [ ] Ensure accuracy and consistency in tag application.
+- [ ] Automatic dependency regeneration
+- [ ] Enhanced tag filtering and search
+- [ ] Task templates and reusable workflows
 
 ---
 
-## ❤️ Acknowledgements & Contributing
+## ❤️ Contributing
 
-This project would not have been possible without the **TaskMaster AI team**, as it is built entirely on their exceptional ecosystem.
-We welcome contributions to improve the project! Whether you want to contribute to **TaskMaster AI Core** or **TaskMaster CLI**, feel free to make pull requests, report issues, or suggest new features.
+Contributions welcome! Report issues, suggest features, or submit PRs to improve TaskMaster CLI or TaskMaster AI Core.
 
-### For Developers
+## Development
 
-The following scripts are available for developing the CLI itself.
+### Scripts
 
-**Start**
+**Core**
+- `bun run build` - Compile TypeScript
+- `bun run start` - Run CLI
+- `bun run dev` - Development mode with watch
+- `bun run test` - Run test suite
+- `bun run type-check` - TypeScript type checking
 
-- 📜 `start` - Run your application with bun.
-- 📜 `start:smol` - Run your application with bun and a flag which configures the JavaScriptCore heap size to be smaller and grow slower.
-- 📜 `start:bin` - Run your standalone binary app.
+**Code Quality**
+- `bun run biome:check` - Check formatting/linting
+- `bun run biome:fix` - Auto-fix formatting/linting
+- `bun run biome:unsafe` - Apply risky fixes
 
-**Clean**
+**Maintenance**
+- `bun run clean` - Remove build artifacts
+- `bun run pkg-check` - Check for unused dependencies
+- `bun run pkg-upgrade` - Upgrade dependencies (interactive)
 
-- 📜 `clean` - Remove coverage data, prod, build.
+### Project Structure
 
-**Development**
+```
+src/
+├── core/              # Business logic
+│   ├── TaskMaster.ts  # Main task management
+│   ├── exec.ts        # Command handlers
+│   └── asks.ts        # Interactive prompts
+├── constants/         # Configuration
+├── utils/             # Utilities
+├── prompt.ts          # Menu definitions
+├── @types/            # Type definitions
+└── index.ts           # Entry point
+```
 
-- 📜 `dev` - Launch your application in development mode with bun.
-- 📜 `dev:watch` - Interactive watch mode to automatically transpile source files with bun in development.
-- 📜 `dev:hot` - Hot reloading of source files with bun in development.
-- 📜 `dev:smol:watch` - Interactive watch mode to automatically transpile source files with bun in development, while using --smol flag.
-- 📜 `dev:smol:hot` - Hot reloading source files with bun in development, while using --smol flag.
+### Testing
 
-**Build**
+Tests colocate with source files using `.test.ts` suffix:
 
-- 📜 `build` - Transpile and bundle source files with bun.
-- 📜 `build:watch` - Interactive watch mode to automatically transpile source files with bun.
-- 📜 `build:bin` - bun's bundler implements a --compile flag for generating a standalone binary from a TypeScript or JavaScript file, use this in your production environment to ensure optimal execution of your app.
-
-**Testing**
-
-- 📜 `test` - Run bun test.
-- 📜 `test:watch` - Interactive watch mode to automatically re-run tests with bun.
-
-**Linting and Formatting**
-
-- 📜 `biome:start` - Starts the Biome daemon server. You can specify a custom configuration file path using the `--config-path` option.
-- 📜 `biome:stop` - Stops the Biome daemon server.
-- 📜 `biome:fix` - Runs a source code check and applies automatic fixes (linter & formatter) according to the defined rules.
-- 📜 `biome:unsafe` - Works like `biome:fix`, but may apply more invasive or risky changes.
-
-**Backup and Dependency Management**
-
-- 📜 `backup` - Backup files with Grunt.
-- 📜 `pkg-check` - Check useless dependencies with depcheck.
-- 📜 `pkg-upgrade` - Upgrade outdated dependencies (interactive mode) with npm-check-updates.
-
-**Versioning**
-
-- 📜 `versioning` - Start ungit server.
-
-**NPM Commands**
-
-- 📜 `npm-version:major` - Increments the major version number of your project using npm.
-- 📜 `npm-version:minor` - Increments the minor version number of your project using npm.
-- 📜 `npm-version:patch` - Increments the version patch number of your project using npm.
-- 📜 `npm-login` - Login to a registry user account.
-- 📜 `npm-publish` - Publish your npm package with public access.
-- 📜 `npm-unpublish` - Forcefully unpublish the cli package from npm.
-- 📜 `npm-reset:registry` - Delete the custom npm registry.
-- 📜 `npm-check:registry` - Get the currently configured registry for npm.
-- 📜 `npm-proxy:start` - Start a Verdaccio server with a local npm proxy.
-- 📜 `npm-proxy:set-registry` - Set the npm registry to use a local proxy.
-- 📜 `npm-proxy:publish` - Publish your npm package via the local proxy.
-- 📜 `npm-proxy:unpublish` - Forcefully unpublish the cli package from the npm registry via the local proxy.
-- 📜 `npm-proxy:republish` - Republish your npm package by first unpublishing it and then publishing it again via the local proxy.
-
-**NVM**
-
-- 📜 `nvm` - Manage multiple node.js versions. Easily switch between node versions per project to ensure compatibility.
-
-**Others**
-
-- 📜 `qtype:tasks` - Generate types for tasks.json file.
+```bash
+bun run test           # Run all tests
+bun run test --watch   # Watch mode
+```
 
 ### Build Target
 
-The build configuration uses Node.js as the target (`target: "node"`) with an appropriate shebang (`#!/usr/bin/env node`) to ensure maximum compatibility across different environments. This choice provides the best balance between performance and compatibility.
-
-The CLI can be installed using any of the following package managers according to user preference:
-- npm: `npm install -g @raja-rakoto/taskmaster-cli`
-- pnpm: `pnpm install -g @raja-rakoto/taskmaster-cli` 
-- bun: `bun install -g @raja-rakoto/taskmaster-cli`
-
-**Important note for local registry testing:**
-When testing the CLI with Verdaccio or a local registry, you may need to clear Bun's cache directories to avoid version conflicts. Delete the following directories:
+Targets Node.js with shebang `#!/usr/bin/env node` for maximum compatibility. Install via npm, pnpm, or bun:
 
 ```bash
-~/.bun/_bun
-~/.bun/install/cache/
+npm install -g @raja-rakoto/taskmaster-cli
+pnpm install -g @raja-rakoto/taskmaster-cli
+bun install -g @raja-rakoto/taskmaster-cli
 ```
 
-> This ensures you're testing with the freshly published version rather than a cached one.
+**Note for local registry testing:** Clear Bun cache to avoid version conflicts:
+
+```bash
+rm -rf ~/.bun/_bun ~/.bun/install/cache/
+```
