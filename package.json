@@ -17,7 +17,9 @@
 	},
 	"homepage": "https://github.com/RajaRakoto/taskmaster-cli#readme",
 	"bugs": "https://github.com/RajaRakoto/taskmaster-cli/issues",
-	"files": ["dist"],
+	"files": [
+		"dist"
+	],
 	"keywords": [
 		"cli",
 		"interactive",

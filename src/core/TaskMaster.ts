@@ -340,7 +340,7 @@ export class TaskMaster {
 			const tasks = await this.getTasksContentAsync();
 
 			// Check if tasks object and master property exist
-			if (!tasks || !tasks.master) {
+			if (!tasks?.master) {
 				console.log(
 					chalk.yellow(
 						"TMAI is not initialized. Please run the initialization process and generate at least one task.",
@@ -461,8 +461,7 @@ export class TaskMaster {
 				const subtaskIndex = Number.parseInt(subtaskIdStr, 10) - 1;
 				const parentTask = tasks.master.tasks.find((t) => t.id === parentId);
 				if (
-					!parentTask ||
-					!parentTask.subtasks ||
+					!parentTask?.subtasks ||
 					subtaskIndex < 0 ||
 					subtaskIndex >= parentTask.subtasks.length
 				) {
@@ -1999,7 +1998,10 @@ export class TaskMaster {
 	 * @param oldName Current tag name
 	 * @param newName New tag name
 	 */
-	public async tagsRenameAsync(oldName: string, newName: string): Promise<void> {
+	public async tagsRenameAsync(
+		oldName: string,
+		newName: string,
+	): Promise<void> {
 		await this._executeCommandAsync(
 			`Renaming tag ${chalk.bold(oldName)} to ${chalk.bold(newName)}...`,
 			`Tag renamed successfully!`,

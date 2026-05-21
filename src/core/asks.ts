@@ -650,10 +650,12 @@ export async function askMoveTaskParamsAsync(): Promise<{
 			name: "fromIds",
 			message: "Enter task ID(s) to move (comma-separated):",
 			validate: (input) => {
-				if (!input || input.trim().length === 0) return "At least one ID is required";
+				if (!input || input.trim().length === 0)
+					return "At least one ID is required";
 				const ids = input.split(",").map((s: string) => s.trim());
 				for (const id of ids) {
-					if (!/^\d+$/.test(id)) return `"${id}" is not a valid integer task ID`;
+					if (!/^\d+$/.test(id))
+						return `"${id}" is not a valid integer task ID`;
 				}
 				return true;
 			},
@@ -663,7 +665,8 @@ export async function askMoveTaskParamsAsync(): Promise<{
 			name: "fromTag",
 			message: "Source tag (from-tag):",
 			validate: (input) => {
-				if (!input || input.trim().length === 0) return "Source tag is required";
+				if (!input || input.trim().length === 0)
+					return "Source tag is required";
 				return true;
 			},
 		},
@@ -672,7 +675,8 @@ export async function askMoveTaskParamsAsync(): Promise<{
 			name: "toTag",
 			message: "Destination tag (to-tag):",
 			validate: (input) => {
-				if (!input || input.trim().length === 0) return "Destination tag is required";
+				if (!input || input.trim().length === 0)
+					return "Destination tag is required";
 				return true;
 			},
 		},
@@ -711,9 +715,11 @@ export async function askRulesToAddAsync(): Promise<string> {
 	const { rules } = await inquirer.prompt({
 		type: "input",
 		name: "rules",
-		message: "Enter rules to add (comma-separated, e.g. cursor,windsurf,vscode):",
+		message:
+			"Enter rules to add (comma-separated, e.g. cursor,windsurf,vscode):",
 		validate: (input) => {
-			if (!input || input.trim().length === 0) return "At least one rule is required";
+			if (!input || input.trim().length === 0)
+				return "At least one rule is required";
 			return true;
 		},
 	});
@@ -729,10 +735,12 @@ export async function askMultipleShowTaskIdAsync(): Promise<string> {
 		name: "ids",
 		message: "Enter task IDs to show (comma-separated, e.g. 1,3,5):",
 		validate: (input) => {
-			if (!input || input.trim().length === 0) return "At least one ID is required";
+			if (!input || input.trim().length === 0)
+				return "At least one ID is required";
 			const parts = input.split(",").map((s: string) => s.trim());
 			for (const part of parts) {
-				if (!/^\d+(\.\d+)?$/.test(part)) return `"${part}" is not a valid task ID`;
+				if (!/^\d+(\.\d+)?$/.test(part))
+					return `"${part}" is not a valid task ID`;
 			}
 			return true;
 		},
