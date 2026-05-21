@@ -10,6 +10,8 @@ import {
 	tmaiDependenciesAsync,
 	tmaiAnalysisReportDocsAsync,
 	tmaiBackupRestoreClearAsync,
+	tmaiTagsAsync,
+	tmaiResearchAsync,
 } from "@/core/exec";
 
 /* utils */
@@ -51,6 +53,12 @@ export async function taskmasterCLI(): Promise<void> {
 			break;
 		case "tmai-deps":
 			await tmaiDependenciesAsync();
+			break;
+		case "tmai-tags":
+			await tmaiTagsAsync();
+			break;
+		case "tmai-research":
+			await tmaiResearchAsync();
 			break;
 		case "tmai-analysis":
 			await tmaiAnalysisReportDocsAsync();

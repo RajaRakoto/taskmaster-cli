@@ -554,3 +554,188 @@ export async function askWithSubtasksAsync(): Promise<boolean> {
 	});
 	return withSubtasks;
 }
+
+/**
+ * @description Asks the user for a research prompt
+ */
+export async function askResearchPromptAsync(): Promise<string> {
+	const { prompt } = await inquirer.prompt({
+		type: "input",
+		name: "prompt",
+		message: "Enter your research query:",
+		validate: (input) => {
+			if (!input || input.trim().length === 0) {
+				return "Research query cannot be empty";
+			}
+			if (input.trim().length > MAX_PROMPT_LENGTH) {
+				return `Query must be at most ${MAX_PROMPT_LENGTH} characters`;
+			}
+			return true;
+		},
+	});
+	return prompt;
+}
+
+/**
+ * @description Asks the user for optional extra context for a research query
+ */
+export async function askResearchContextAsync(): Promise<string> {
+	const { context } = await inquirer.prompt({
+		type: "input",
+		name: "context",
+		message: "Enter optional extra context (leave empty to skip):",
+		default: "",
+	});
+	return context.trim();
+}
+
+/**
+ * @description Asks whether to include the project file tree as context
+ */
+export async function askResearchTreeAsync(): Promise<boolean> {
+	const { useTree } = await inquirer.prompt({
+		type: "confirm",
+		name: "useTree",
+		message: "Include project file tree as context?",
+		default: false,
+	});
+	return useTree;
+}
+
+/**
+ * @description Asks the user for a tag name (simple identifier, no validation against existing tags)
+ */
+export async function askTagNameAsync(message: string): Promise<string> {
+	const { tagName } = await inquirer.prompt({
+		type: "input",
+		name: "tagName",
+		message,
+		validate: (input) => {
+			const regex = /^[a-z0-9_-]+$/;
+			if (!regex.test(input)) {
+				return "Tag name must contain only lowercase letters, numbers, hyphens (-), and underscores (_).";
+			}
+			return true;
+		},
+	});
+	return tagName;
+}
+
+/**
+ * @description Asks the user for an optional tag description
+ */
+export async function askTagDescriptionAsync(): Promise<string> {
+	const { description } = await inquirer.prompt({
+		type: "input",
+		name: "description",
+		message: "Enter an optional description for the tag (leave empty to skip):",
+		default: "",
+	});
+	return description.trim();
+}
+
+/**
+ * @description Asks for cross-tag move parameters
+ */
+export async function askMoveTaskParamsAsync(): Promise<{
+	fromIds: string;
+	fromTag: string;
+	toTag: string;
+	withDependencies: boolean;
+	ignoreDependencies: boolean;
+}> {
+	const answers = await inquirer.prompt([
+		{
+			type: "input",
+			name: "fromIds",
+			message: "Enter task ID(s) to move (comma-separated):",
+			validate: (input) => {
+				if (!input || input.trim().length === 0) return "At least one ID is required";
+				const ids = input.split(",").map((s: string) => s.trim());
+				for (const id of ids) {
+					if (!/^\d+$/.test(id)) return `"${id}" is not a valid integer task ID`;
+				}
+				return true;
+			},
+		},
+		{
+			type: "input",
+			name: "fromTag",
+			message: "Source tag (from-tag):",
+			validate: (input) => {
+				if (!input || input.trim().length === 0) return "Source tag is required";
+				return true;
+			},
+		},
+		{
+			type: "input",
+			name: "toTag",
+			message: "Destination tag (to-tag):",
+			validate: (input) => {
+				if (!input || input.trim().length === 0) return "Destination tag is required";
+				return true;
+			},
+		},
+		{
+			type: "confirm",
+			name: "withDependencies",
+			message: "Move with dependencies (--with-dependencies)?",
+			default: false,
+		},
+	]);
+
+	let ignoreDependencies = false;
+	if (!answers.withDependencies) {
+		const { ignore } = await inquirer.prompt({
+			type: "confirm",
+			name: "ignore",
+			message: "Ignore dependency checks (--ignore-dependencies)?",
+			default: false,
+		});
+		ignoreDependencies = ignore;
+	}
+
+	return {
+		fromIds: answers.fromIds,
+		fromTag: answers.fromTag.trim(),
+		toTag: answers.toTag.trim(),
+		withDependencies: answers.withDependencies,
+		ignoreDependencies,
+	};
+}
+
+/**
+ * @description Asks the user for a comma-separated list of rules to add
+ */
+export async function askRulesToAddAsync(): Promise<string> {
+	const { rules } = await inquirer.prompt({
+		type: "input",
+		name: "rules",
+		message: "Enter rules to add (comma-separated, e.g. cursor,windsurf,vscode):",
+		validate: (input) => {
+			if (!input || input.trim().length === 0) return "At least one rule is required";
+			return true;
+		},
+	});
+	return rules.trim();
+}
+
+/**
+ * @description Asks the user for a comma-separated list of task IDs to show (multi-show)
+ */
+export async function askMultipleShowTaskIdAsync(): Promise<string> {
+	const { ids } = await inquirer.prompt({
+		type: "input",
+		name: "ids",
+		message: "Enter task IDs to show (comma-separated, e.g. 1,3,5):",
+		validate: (input) => {
+			if (!input || input.trim().length === 0) return "At least one ID is required";
+			const parts = input.split(",").map((s: string) => s.trim());
+			for (const part of parts) {
+				if (!/^\d+(\.\d+)?$/.test(part)) return `"${part}" is not a valid task ID`;
+			}
+			return true;
+		},
+	});
+	return ids.trim();
+}

@@ -1029,6 +1029,21 @@ export class TaskMaster {
 
 	// TODO: done
 	/**
+	 * @description Shows details of multiple tasks by comma-separated IDs
+	 * @param ids Comma-separated task IDs (e.g. "1,3,5" or "1,2.1,4")
+	 */
+	public async showMultipleAsync(ids: string): Promise<void> {
+		await this._executeCommandAsync(
+			`Fetching details for tasks ${chalk.bold(ids)}...`,
+			"Task details retrieved successfully!",
+			"Failed to retrieve task details",
+			this._mainCommand,
+			["show", ids],
+		);
+	}
+
+	// TODO: done
+	/**
 	 * @description Shows the next available task to work on
 	 */
 	public async nextAsync(): Promise<void> {
@@ -1863,5 +1878,202 @@ export class TaskMaster {
 				await writeFile(this._tasksFilePath, JSON.stringify(tasks, null, 2));
 			}, oraOptions);
 		}
+	}
+
+	// ==============================================
+	// Research Methods
+	// ==============================================
+
+	/**
+	 * @description Performs an AI-powered research query with optional project context
+	 * @param prompt Research query
+	 * @param context Optional additional context string
+	 * @param useTree Include project file tree as context
+	 */
+	public async researchAsync(
+		prompt: string,
+		context: string,
+		useTree: boolean,
+	): Promise<void> {
+		const args = ["research", prompt];
+		if (context) args.push(`-c=${context}`);
+		if (useTree) args.push("--tree");
+
+		await this._executeCommandAsync(
+			`Researching: "${chalk.bold(prompt)}"...`,
+			"Research completed successfully!",
+			"Research query failed",
+			this._mainCommand,
+			args,
+		);
+	}
+
+	// ==============================================
+	// Move Methods (cross-tag)
+	// ==============================================
+
+	/**
+	 * @description Moves task(s) from one tag to another
+	 * @param fromIds Comma-separated task IDs to move
+	 * @param fromTag Source tag
+	 * @param toTag Destination tag
+	 * @param withDependencies Also move dependencies
+	 * @param ignoreDependencies Skip dependency checks
+	 */
+	public async moveTaskAsync(
+		fromIds: string,
+		fromTag: string,
+		toTag: string,
+		withDependencies: boolean,
+		ignoreDependencies: boolean,
+	): Promise<void> {
+		const args = [
+			"move",
+			`--from=${fromIds}`,
+			`--from-tag=${fromTag}`,
+			`--to-tag=${toTag}`,
+		];
+		if (withDependencies) args.push("--with-dependencies");
+		if (ignoreDependencies) args.push("--ignore-dependencies");
+
+		await this._executeCommandAsync(
+			`Moving task(s) ${chalk.bold(fromIds)} from ${chalk.bold(fromTag)} to ${chalk.bold(toTag)}...`,
+			"Task(s) moved successfully!",
+			"Failed to move task(s)",
+			this._mainCommand,
+			args,
+		);
+	}
+
+	// ==============================================
+	// Tags Methods
+	// ==============================================
+
+	/**
+	 * @description Lists all available tags
+	 */
+	public async tagsListAsync(): Promise<void> {
+		await this._executeCommandAsync(
+			"Listing all tags...",
+			"Tags listed successfully!",
+			"Failed to list tags",
+			this._mainCommand,
+			["tags", "list"],
+		);
+	}
+
+	/**
+	 * @description Creates a new tag
+	 * @param name Tag name
+	 * @param description Optional tag description
+	 */
+	public async tagsAddAsync(name: string, description: string): Promise<void> {
+		const args = ["tags", "add", name];
+		if (description) args.push("--description", description);
+
+		await this._executeCommandAsync(
+			`Creating tag ${chalk.bold(name)}...`,
+			`Tag "${name}" created successfully!`,
+			`Failed to create tag "${name}"`,
+			this._mainCommand,
+			args,
+		);
+	}
+
+	/**
+	 * @description Switches to a different tag context
+	 * @param name Tag name to switch to
+	 */
+	public async tagsUseAsync(name: string): Promise<void> {
+		await this._executeCommandAsync(
+			`Switching to tag ${chalk.bold(name)}...`,
+			`Switched to tag "${name}" successfully!`,
+			`Failed to switch to tag "${name}"`,
+			this._mainCommand,
+			["tags", "use", name],
+		);
+	}
+
+	/**
+	 * @description Renames an existing tag
+	 * @param oldName Current tag name
+	 * @param newName New tag name
+	 */
+	public async tagsRenameAsync(oldName: string, newName: string): Promise<void> {
+		await this._executeCommandAsync(
+			`Renaming tag ${chalk.bold(oldName)} to ${chalk.bold(newName)}...`,
+			`Tag renamed successfully!`,
+			`Failed to rename tag "${oldName}"`,
+			this._mainCommand,
+			["tags", "rename", oldName, newName],
+		);
+	}
+
+	/**
+	 * @description Copies a tag with all its tasks
+	 * @param source Source tag name
+	 * @param target Target tag name
+	 * @param description Optional description for the new tag
+	 */
+	public async tagsCopyAsync(
+		source: string,
+		target: string,
+		description: string,
+	): Promise<void> {
+		const args = ["tags", "copy", source, target];
+		if (description) args.push("--description", description);
+
+		await this._executeCommandAsync(
+			`Copying tag ${chalk.bold(source)} to ${chalk.bold(target)}...`,
+			`Tag copied successfully!`,
+			`Failed to copy tag "${source}"`,
+			this._mainCommand,
+			args,
+		);
+	}
+
+	/**
+	 * @description Removes an existing tag and all its tasks
+	 * @param name Tag name to remove
+	 */
+	public async tagsRemoveAsync(name: string): Promise<void> {
+		const { confirm } = await inquirer.prompt({
+			type: "confirm",
+			name: "confirm",
+			message: chalk.red(
+				`Are you sure you want to delete tag "${name}" and ALL its tasks?`,
+			),
+			default: false,
+		});
+
+		if (confirm) {
+			await this._executeCommandAsync(
+				`Removing tag ${chalk.bold(name)}...`,
+				`Tag "${name}" removed successfully!`,
+				`Failed to remove tag "${name}"`,
+				this._mainCommand,
+				["tags", "remove", name, "-y"],
+			);
+		} else {
+			console.log(chalk.yellow("Tag removal cancelled."));
+		}
+	}
+
+	// ==============================================
+	// Rules Methods
+	// ==============================================
+
+	/**
+	 * @description Adds editor rules after initialization
+	 * @param rules Comma-separated list of rules (e.g. "cursor,windsurf,vscode")
+	 */
+	public async rulesAddAsync(rules: string): Promise<void> {
+		await this._executeCommandAsync(
+			`Adding rules: ${chalk.bold(rules)}...`,
+			"Rules added successfully!",
+			"Failed to add rules",
+			this._mainCommand,
+			["rules", "add", rules],
+		);
 	}
 }

@@ -6,6 +6,7 @@ export const VALID_PROVIDERS = [
 	"bedrock",
 	"azure",
 	"vertex",
+	"groq",
 ] as const;
 
 export type T_Provider = (typeof VALID_PROVIDERS)[number];
