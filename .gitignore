@@ -96,3 +96,4 @@ docs
 examples
 tmp
 \n# TaskMaster CLI config\n.taskmaster/config.json\n.taskmaster/state.json
+OFFICIAL.md
