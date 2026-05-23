@@ -63,18 +63,47 @@ const MODELS_COMPATIBILITY = {
 	low: "🟣",
 };
 export const AI_MODELS: I_AIModel[] = [
+	// --- No API key required ---
 	{
-		name: `${MODELS_COMPATIBILITY.high} Gemini 2.5 Flash (free) ${chalk.gray("(google > free | 1M context)")}`,
+		name: `${MODELS_COMPATIBILITY.high} Claude Code / Sonnet ${chalk.gray("(claude-code > no API key | requires Claude Code CLI)")}`,
+		value: "claude-code/sonnet",
+		provider: null,
+	},
+	{
+		name: `${MODELS_COMPATIBILITY.high} Claude Code / Opus ${chalk.gray("(claude-code > no API key | requires Claude Code CLI)")}`,
+		value: "claude-code/opus",
+		provider: null,
+	},
+	// --- Google ---
+	{
+		name: `${MODELS_COMPATIBILITY.high} Gemini 2.5 Flash (free) ${chalk.gray("(google > free | 1M context)")}`,
 		value: "gemini-2.5-flash",
 		provider: null,
 	},
 	{
-		name: `${MODELS_COMPATIBILITY.high} Gemini 2.5 Pro (free) ${chalk.gray("(google > free | 1M context)")}`,
+		name: `${MODELS_COMPATIBILITY.high} Gemini 2.5 Pro (free) ${chalk.gray("(google > free | 1M context)")}`,
 		value: "gemini-2.5-pro",
 		provider: null,
 	},
+	// --- Groq ---
 	{
-		name: `${MODELS_COMPATIBILITY.medium} Qwen 3 Coder ${chalk.gray("(openrouter > $0.20/M input | $0.80/M output | 262k context)")}`,
+		name: `${MODELS_COMPATIBILITY.high} Llama 3.3 70B (Groq) ${chalk.gray("(groq > $0.05/M input | $0.10/M output | 128k context)")}`,
+		value: "llama-3.3-70b-versatile",
+		provider: "groq",
+	},
+	{
+		name: `${MODELS_COMPATIBILITY.high} Llama 3.1 8B (Groq) ${chalk.gray("(groq > free tier | 128k context)")}`,
+		value: "llama-3.1-8b-instant",
+		provider: "groq",
+	},
+	{
+		name: `${MODELS_COMPATIBILITY.medium} DeepSeek R1 Distill Llama 70B (Groq) ${chalk.gray("(groq > $0.07/M input | $0.17/M output | 128k context)")}`,
+		value: "deepseek-r1-distill-llama-70b",
+		provider: "groq",
+	},
+	// --- OpenRouter ---
+	{
+		name: `${MODELS_COMPATIBILITY.medium} Qwen 3 Coder ${chalk.gray("(openrouter > $0.20/M input | $0.80/M output | 262k context)")}`,
 		value: "qwen/qwen3-coder",
 		provider: "openrouter",
 	},
@@ -99,7 +128,7 @@ export const AI_MODELS: I_AIModel[] = [
 		provider: "openrouter",
 	},
 	{
-		name: `${MODELS_COMPATIBILITY.low} DeepSeek Chat V3‑0324 (free) ${chalk.gray("(openrouter > fre | 163k context)")}`,
+		name: `${MODELS_COMPATIBILITY.low} DeepSeek Chat V3‑0324 (free) ${chalk.gray("(openrouter > free | 163k context)")}`,
 		value: "deepseek/deepseek-chat-v3-0324:free",
 		provider: "openrouter",
 	},
@@ -179,7 +208,7 @@ export const SUBTASK_TO_TASK_RULES = [
 ];
 
 // notes
-export const NOTE_MODELS = `Note: Model compatibility levels are indicated by: ${MODELS_COMPATIBILITY.high} high (most reliable), ${MODELS_COMPATIBILITY.medium} medium, ${MODELS_COMPATIBILITY.low} low. Higher compatibility means more reliable TMAI operations with fewer errors. While all models can perform tasks, those with higher compatibility are recommended for critical operations. Additional models — including popular paid options with competitive pricing — are available, mostly via OpenRouter.`;
+export const NOTE_MODELS = `Note: Model compatibility levels are indicated by: ${MODELS_COMPATIBILITY.high} high (most reliable), ${MODELS_COMPATIBILITY.medium} medium, ${MODELS_COMPATIBILITY.low} low. Higher compatibility means more reliable TMAI operations with fewer errors. Claude Code models (claude-code/sonnet, claude-code/opus) require no API key but need the Claude Code CLI installed. Groq models offer fast inference. Additional models are available via OpenRouter.`;
 export const NOTE_LANGS =
 	"Note: Make sure the LLM used by TMAI supports the language you choose!";
 

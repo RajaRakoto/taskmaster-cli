@@ -44,6 +44,14 @@ import {
 	askModelsAsync,
 	askStatusAsync,
 	askWithSubtasksAsync,
+	askResearchPromptAsync,
+	askResearchContextAsync,
+	askResearchTreeAsync,
+	askTagNameAsync,
+	askTagDescriptionAsync,
+	askMoveTaskParamsAsync,
+	askRulesToAddAsync,
+	askMultipleShowTaskIdAsync,
 } from "@/core/asks";
 
 import chalk from "chalk";
@@ -60,6 +68,8 @@ import {
 	tmaiDepsMenu_prompt,
 	tmaiAnalysisReportDocs_prompt,
 	tmaiBackupRestoreClearClear_prompt,
+	tmaiTagsMenu_prompt,
+	tmaiResearchMenu_prompt,
 } from "@/prompt";
 
 // ===============================
@@ -89,6 +99,9 @@ export async function tmaiInitAsync() {
 		await tmai.installAsync();
 	} else if (choice.tmaiInitMenu === "tmai-init") {
 		await tmai.initAsync();
+	} else if (choice.tmaiInitMenu === "tmai-rules-add") {
+		const rules = await askRulesToAddAsync();
+		await tmai.rulesAddAsync(rules);
 	} else if (choice.tmaiInitMenu === "tmai-interactiveconfig") {
 		await tmai.interactiveConfigModelAsync();
 	} else if (choice.tmaiInitMenu === "tmai-config") {
@@ -236,6 +249,9 @@ export async function tmaiManageAsync() {
 				await tmai.listAsync(tasks, TASKS_STATUSES.join(","), true, true);
 				const taskId = await askHybridTaskIdAsync(mainIDs, subtasksIDs);
 				await tmai.showAsync(taskId);
+			} else if (tmaiListNavMenu === "tmai-show-multiple") {
+				const ids = await askMultipleShowTaskIdAsync();
+				await tmai.showMultipleAsync(ids);
 			} else if (tmaiListNavMenu === "tmai-next") {
 				await tmai.nextAsync();
 			}
@@ -392,6 +408,19 @@ export async function tmaiManageAsync() {
 					await tmai.convertSubtaskToTaskAsync(subtaskId);
 					tasks = await tmai.getTasksContentAsync();
 					await tmai.listAsync(tasks, TASKS_STATUSES.join(","), true, true);
+					break;
+				}
+				case "tmai-movetask": {
+					const moveParams = await askMoveTaskParamsAsync();
+					await tmai.moveTaskAsync(
+						moveParams.fromIds,
+						moveParams.fromTag,
+						moveParams.toTag,
+						moveParams.withDependencies,
+						moveParams.ignoreDependencies,
+					);
+					tasks = await tmai.getTasksContentAsync();
+					await tmai.listAsync(tasks, TASKS_STATUSES.join(","), true, false);
 					break;
 				}
 			}
@@ -629,4 +658,82 @@ export async function tmaiBackupRestoreClearAsync() {
 
 	await tmai.countdownAsync(DEFAULT_COUNTDOWN);
 	await tmaiBackupRestoreClearAsync();
+}
+
+/**
+ * @description Handles the Tags and Workstreams menu.
+ */
+export async function tmaiTagsAsync() {
+	const { tmaiTagsMenu } = await inquirer.prompt(tmaiTagsMenu_prompt);
+
+	if (tmaiTagsMenu === "back") {
+		return taskmasterCLI();
+	}
+
+	switch (tmaiTagsMenu) {
+		case "tmai-tags-list": {
+			await tmai.tagsListAsync();
+			break;
+		}
+		case "tmai-tags-add": {
+			const name = await askTagNameAsync("Enter new tag name:");
+			const description = await askTagDescriptionAsync();
+			await tmai.tagsAddAsync(name, description);
+			break;
+		}
+		case "tmai-tags-use": {
+			const name = await askTagNameAsync("Enter tag name to switch to:");
+			await tmai.tagsUseAsync(name);
+			break;
+		}
+		case "tmai-tags-rename": {
+			const oldName = await askTagNameAsync("Enter current tag name:");
+			const newName = await askTagNameAsync("Enter new tag name:");
+			await tmai.tagsRenameAsync(oldName, newName);
+			break;
+		}
+		case "tmai-tags-copy": {
+			const source = await askTagNameAsync("Enter source tag name:");
+			const target = await askTagNameAsync("Enter target tag name:");
+			const description = await askTagDescriptionAsync();
+			await tmai.tagsCopyAsync(source, target, description);
+			break;
+		}
+		case "tmai-tags-remove": {
+			const name = await askTagNameAsync("Enter tag name to remove:");
+			await tmai.tagsRemoveAsync(name);
+			break;
+		}
+		default:
+			console.log("Invalid option selected.");
+	}
+
+	await tmai.countdownAsync(DEFAULT_COUNTDOWN);
+	await tmaiTagsAsync();
+}
+
+/**
+ * @description Handles the Research menu.
+ */
+export async function tmaiResearchAsync() {
+	const { tmaiResearchMenu } = await inquirer.prompt(tmaiResearchMenu_prompt);
+
+	if (tmaiResearchMenu === "back") {
+		return taskmasterCLI();
+	}
+
+	switch (tmaiResearchMenu) {
+		case "tmai-research-query": {
+			const prompt = await askResearchPromptAsync();
+			const context = await askResearchContextAsync();
+			const useTree = await askResearchTreeAsync();
+			await tmai.researchAsync(prompt, context, useTree);
+			break;
+		}
+		default:
+			console.log("Invalid option selected.");
+	}
+
+	await tmai.countdownAsync(DEFAULT_COUNTDOWN);
+	await tmaiResearchAsync();
 }

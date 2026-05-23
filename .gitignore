@@ -89,6 +89,7 @@ typings
 # taskmaster ai
 dev-debug.log
 tasks
+tasks.json
 
 # own
 backups
@@ -96,3 +97,5 @@ docs
 examples
 tmp
 \n# TaskMaster CLI config\n.taskmaster/config.json\n.taskmaster/state.json
+OFFICIAL.md
+TODO.md

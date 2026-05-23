@@ -1,6 +1,6 @@
 {
 	"name": "@raja-rakoto/taskmaster-cli",
-	"version": "1.0.0",
+	"version": "2.0.0",
 	"description": "Interactive CLI for Taskmaster AI: simplifies complex project management by orchestrating AI agents, planning, and execution — all from your terminal 🧩",
 	"author": "Raja Rakotonirina <raja.rakoto7@gmail.com>",
 	"license": "MIT",
@@ -17,7 +17,9 @@
 	},
 	"homepage": "https://github.com/RajaRakoto/taskmaster-cli#readme",
 	"bugs": "https://github.com/RajaRakoto/taskmaster-cli/issues",
-	"files": ["dist"],
+	"files": [
+		"dist"
+	],
 	"keywords": [
 		"cli",
 		"interactive",
@@ -74,39 +76,39 @@
 		"qtype:tasks": "quicktype .taskmaster/tasks/tasks.json -o src/@types/tasks.d.ts --just-types"
 	},
 	"dependencies": {
-		"chalk": "^5.5.0",
-		"commander": "^14.0.0",
-		"compressing": "^1.10.3",
-		"execa": "^9.6.0",
-		"figlet": "^1.8.2",
+		"chalk": "^5.6.2",
+		"commander": "^14.0.3",
+		"compressing": "^2.1.1",
+		"execa": "^9.6.1",
+		"figlet": "^1.11.0",
 		"figures": "^6.1.0",
 		"inquirer": "^9.2.15",
 		"node-emoji": "^2.2.0",
-		"ora": "^8.2.0",
-		"strip-ansi": "^7.1.0",
+		"ora": "^9.4.0",
+		"strip-ansi": "^7.2.0",
 		"user": "^0.0.0"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "1.9.4",
+		"@biomejs/biome": "2.4.15",
 		"@types/bun": "latest",
 		"@types/commander": "^2.12.5",
 		"@types/execa": "^2.0.2",
 		"@types/figlet": "^1.7.0",
-		"@types/inquirer": "^9.0.8",
+		"@types/inquirer": "^9.0.9",
 		"@types/jest": "^30.0.0",
 		"@types/node-emoji": "^2.1.0",
 		"@types/ora": "^3.2.0",
-		"bun-plugin-dts": "^0.3.0",
+		"bun-plugin-dts": "^0.4.0",
 		"depcheck": "^1.4.7",
-		"grunt": "^1.6.1",
+		"grunt": "^1.6.2",
 		"grunt-contrib-compress": "^2.0.0",
 		"grunt-shell": "^4.0.0",
-		"jest": "^30.0.5",
+		"jest": "^30.4.2",
 		"load-grunt-tasks": "^5.1.0",
-		"npm-check-updates": "^18.0.2",
-		"rimraf": "^6.0.1",
-		"ts-jest": "^29.4.1",
-		"ungit": "^1.5.28"
+		"npm-check-updates": "^22.2.0",
+		"rimraf": "^6.1.3",
+		"ts-jest": "^29.4.11",
+		"ungit": "^1.5.30"
 	},
 	"peerDependencies": {
 		"typescript": "^5.0.0"

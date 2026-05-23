@@ -33,6 +33,14 @@ export const mainMenu_prompt = [
 				value: "tmai-deps",
 			},
 			{
+				name: `${emoji.get("label")}  Tags and Workstreams`,
+				value: "tmai-tags",
+			},
+			{
+				name: `${emoji.get("mag")}  Research`,
+				value: "tmai-research",
+			},
+			{
 				name: `${emoji.get("bar_chart")} Analysis, Report and Documentation`,
 				value: "tmai-analysis",
 			},
@@ -75,9 +83,13 @@ export const tmaiInitMenu_prompt = [
 				value: "tmai-init",
 			},
 			{
+				name: `${emoji.get("bookmark")} 3 - Add editor rules (e.g. cursor, windsurf, vscode)`,
+				value: "tmai-rules-add",
+			},
+			{
 				name: `${emoji.get(
 					"wrench",
-				)} 3 - Configure AI models (interactive mode)`,
+				)} 4 - Configure AI models (interactive mode)`,
 				value: "tmai-interactiveconfig",
 			},
 			{
@@ -87,7 +99,7 @@ export const tmaiInitMenu_prompt = [
 			{
 				name: `${emoji.get(
 					"globe_with_meridians",
-				)} 4 - Set the response language for AI-generated content in TMAI`,
+				)} 5 - Set the response language for AI-generated content in TMAI`,
 				value: "tmai-lang",
 			},
 			{
@@ -180,7 +192,7 @@ export const tmaiListNavMenu_prompt = [
 		name: "tmaiListNavMenu",
 		message: chalk.bgBlue("Choose an operation"),
 		loop: true,
-		pageSize: 5,
+		pageSize: 6,
 		choices: [
 			new inquirer.Separator("=== List and Navigation ==="),
 			{
@@ -190,6 +202,10 @@ export const tmaiListNavMenu_prompt = [
 			{
 				name: `${emoji.get("mag_right")} Show task details`,
 				value: "tmai-show",
+			},
+			{
+				name: `${emoji.get("mag_right")} Show multiple tasks (comma-separated IDs)`,
+				value: "tmai-show-multiple",
 			},
 			{
 				name: `${emoji.get("arrow_forward")}  Show next task`,
@@ -250,7 +266,7 @@ export const tmaiUpdateTasksMenu_prompt = [
 		name: "tmaiUpdateTasksMenu",
 		message: chalk.bgBlue("Choose an operation"),
 		loop: true,
-		pageSize: 7,
+		pageSize: 9,
 		choices: [
 			new inquirer.Separator("=== Updating tasks ==="),
 			{
@@ -276,6 +292,10 @@ export const tmaiUpdateTasksMenu_prompt = [
 			{
 				name: `${emoji.get("pencil2")}  Convert subtask to task`,
 				value: "tmai-convertsubtasktotask",
+			},
+			{
+				name: "🔄 Move task(s) to another tag (cross-tag)",
+				value: "tmai-movetask",
 			},
 			{
 				name: `${emoji.get("arrow_left")}  Back`,
@@ -432,6 +452,76 @@ export const tmaiBackupRestoreClearClear_prompt = [
 					`${emoji.get("broom")} Clear all current tasks (including subtasks) and all related tmai files`,
 				),
 				value: "tmai-clearall",
+			},
+			{
+				name: `${emoji.get("arrow_left")}  Back`,
+				value: "back",
+			},
+		],
+	},
+];
+
+// ==============================
+// Tags and Workstreams Menu
+// ==============================
+
+export const tmaiTagsMenu_prompt = [
+	{
+		type: "list",
+		name: "tmaiTagsMenu",
+		message: chalk.bgBlue("Choose an operation"),
+		loop: true,
+		pageSize: 9,
+		choices: [
+			new inquirer.Separator("=== Tags and Workstreams ==="),
+			{
+				name: `${emoji.get("label")}  List all tags`,
+				value: "tmai-tags-list",
+			},
+			{
+				name: `${emoji.get("heavy_plus_sign")} Create a new tag`,
+				value: "tmai-tags-add",
+			},
+			{
+				name: `${emoji.get("arrows_counterclockwise")} Switch to a tag`,
+				value: "tmai-tags-use",
+			},
+			{
+				name: `${emoji.get("pencil2")}  Rename a tag`,
+				value: "tmai-tags-rename",
+			},
+			{
+				name: `${emoji.get("bookmark")} Copy a tag (with all its tasks)`,
+				value: "tmai-tags-copy",
+			},
+			{
+				name: `${emoji.get("wastebasket")} Remove a tag`,
+				value: "tmai-tags-remove",
+			},
+			{
+				name: `${emoji.get("arrow_left")}  Back`,
+				value: "back",
+			},
+		],
+	},
+];
+
+// ==============================
+// Research Menu
+// ==============================
+
+export const tmaiResearchMenu_prompt = [
+	{
+		type: "list",
+		name: "tmaiResearchMenu",
+		message: chalk.bgBlue("Choose an operation"),
+		loop: true,
+		pageSize: 5,
+		choices: [
+			new inquirer.Separator("=== Research ==="),
+			{
+				name: `${emoji.get("mag")}  Research a topic (with optional project context)`,
+				value: "tmai-research-query",
 			},
 			{
 				name: `${emoji.get("arrow_left")}  Back`,
