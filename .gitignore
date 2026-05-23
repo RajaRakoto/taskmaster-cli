@@ -89,6 +89,7 @@ typings
 # taskmaster ai
 dev-debug.log
 tasks
+tasks.json
 
 # own
 backups
