@@ -1,6 +1,6 @@
 {
 	"name": "@raja-rakoto/taskmaster-cli",
-	"version": "1.0.0",
+	"version": "2.0.0",
 	"description": "Interactive CLI for Taskmaster AI: simplifies complex project management by orchestrating AI agents, planning, and execution — all from your terminal 🧩",
 	"author": "Raja Rakotonirina <raja.rakoto7@gmail.com>",
 	"license": "MIT",
