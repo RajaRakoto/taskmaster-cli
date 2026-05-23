@@ -286,16 +286,16 @@ export const tmaiUpdateTasksMenu_prompt = [
 				value: "tmai-updatestatus",
 			},
 			{
-				name: `${emoji.get("arrows_counterclockwise")} Move task(s) to another tag (cross-tag)`,
-				value: "tmai-movetask",
-			},
-			{
 				name: `${emoji.get("pencil2")}  Convert task to subtask`,
 				value: "tmai-converttasktosubtask",
 			},
 			{
 				name: `${emoji.get("pencil2")}  Convert subtask to task`,
 				value: "tmai-convertsubtasktotask",
+			},
+			{
+				name: "🔄 Move task(s) to another tag (cross-tag)",
+				value: "tmai-movetask",
 			},
 			{
 				name: `${emoji.get("arrow_left")}  Back`,

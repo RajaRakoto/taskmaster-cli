@@ -1263,7 +1263,7 @@ export class TaskMaster {
 	public async updateTaskStatusAsync(
 		ids: string[],
 		status: string,
-		tag: string,
+		_tag: string,
 	): Promise<void> {
 		const formatedIds = ids.length > 1 ? ids.join(",") : ids[0];
 		await this._executeCommandAsync(
@@ -1271,12 +1271,7 @@ export class TaskMaster {
 			`Status of task(s) ${formatedIds} updated successfully!`,
 			`Failed to update status of task(s) ${formatedIds}`,
 			this._mainCommand,
-			[
-				"set-status",
-				`--id=${formatedIds}`,
-				`--status=${status}`,
-				`--tag=${tag}`,
-			],
+			["set-status", `--id=${formatedIds}`, `--status=${status}`],
 		);
 	}
 
