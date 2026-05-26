@@ -6,10 +6,8 @@ import chalk from "chalk";
 import pkg from "../../package.json";
 
 /* constants */
-import { DEV_MODE, FONT_PATH, GITHUB_URL } from "@/constants";
-
-/* utils */
-import { resolveRealPathAsync, readFileAsync } from "@/utils/extras";
+import { DEV_MODE, GITHUB_URL } from "@/constants";
+import { getEmbeddedFont } from "@/constants/embedded-font";
 
 // ==============================
 
@@ -22,10 +20,7 @@ export async function bannerRendererAsync(
 	title: string,
 	description: string,
 ): Promise<string> {
-	const fontSource = DEV_MODE
-		? FONT_PATH
-		: await resolveRealPathAsync(FONT_PATH);
-	const font = await readFileAsync(fontSource, "utf8");
+	const font = getEmbeddedFont();
 	figlet.parseFont("StandardFont", font);
 
 	return new Promise((resolve, reject) => {
